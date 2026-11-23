@@ -4134,3 +4134,18 @@ main {
   font-size: 12.5px;
   text-align: center;
 }
+
+html.is-framed body > * {
+  display: none !important;
+}
+
+html.is-framed body::before {
+  content: "khayrullayev03.github.io/dashboard";
+  display: block;
+  padding: 48px 16px;
+  color: #f2334a;
+  font:
+    700 16px/1.5 ui-monospace,
+    monospace;
+  text-align: center;
+}

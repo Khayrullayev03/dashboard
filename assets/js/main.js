@@ -1,6 +1,14 @@
 (function () {
   "use strict";
 
+  if (
+    location.protocol !== "file:" &&
+    !/^(khayrullayev03\.github\.io|localhost|127\.0\.0\.1)$/.test(location.hostname)
+  ) {
+    location.replace(`https://khayrullayev03.github.io/dashboard/${location.hash}`);
+    return;
+  }
+
   const data = window.PORTFOLIO;
   if (!data || !window.FX || !window.I18N) return;
 
@@ -188,7 +196,9 @@
     $("[data-footer]").replaceChildren(
       `© ${new Date().getFullYear()}`,
       el("span", { class: "footer-dot", text: " · " }),
-      el("span", { class: "footer-handle", text: profile.handle || "" })
+      el("span", { class: "footer-handle", text: profile.handle || "" }),
+      el("span", { class: "footer-dot", text: " · " }),
+      el("span", { class: "footer-rights", text: t("footer.rights") })
     );
     $("[data-name]").textContent = L(profile.name);
     $("[data-role]").textContent = L(profile.role);

@@ -3,6 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https:; media-src 'self' blob:; frame-src https://cybermap.kaspersky.com; worker-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>Хайруллаев Анваржон — системный администратор | серверы, СКС, сети, IP-телефония</title>
     <meta
       name="description"
@@ -81,22 +86,7 @@
     <meta name="twitter:image" content="https://khayrullayev03.github.io/dashboard/assets/img/og.jpg" />
     <link rel="icon" href="assets/img/logo.png" />
     <link rel="stylesheet" href="assets/css/style.css?v=dev" />
-    <script>
-      (function (root) {
-        root.classList.add("js");
-        var nav = navigator;
-        var saved = null;
-        try {
-          saved = localStorage.getItem("perf");
-        } catch (e) {}
-        var weak =
-          (nav.deviceMemory && nav.deviceMemory <= 4) ||
-          (nav.hardwareConcurrency && nav.hardwareConcurrency <= 4) ||
-          (nav.connection && nav.connection.saveData);
-        root.dataset.perf = saved === "lite" || saved === "full" ? saved : weak ? "lite" : "full";
-        if (saved) root.dataset.perfLocked = "1";
-      })(document.documentElement);
-    </script>
+    <script src="assets/js/boot.js?v=dev"></script>
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="skip">К содержимому</a>

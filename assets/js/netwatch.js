@@ -130,6 +130,7 @@
     frame.title = t("net.mapTitle");
     frame.loading = "lazy";
     frame.referrerPolicy = "no-referrer";
+    frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox");
     frame.setAttribute("allowfullscreen", "");
     frame.addEventListener("load", () => frameBox.classList.add("is-ready"));
     frameBox.append(frame);

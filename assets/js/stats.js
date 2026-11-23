@@ -127,8 +127,8 @@
     seen.add(page);
     store.set("sessionStorage", "seen", [...seen].join(","));
     request(
-      "visits",
-      { page, source: detectSource(), place: place(), device: device(), lang: I18N.lang },
+      "rpc/add_visit",
+      { p_page: page, p_source: detectSource(), p_place: place(), p_device: device(), p_lang: I18N.lang },
       "return=minimal"
     ).catch(() => {});
   }
@@ -326,7 +326,7 @@
     mine = n;
     message = "saving";
     renderRating();
-    request("ratings", { stars: n }, "return=minimal")
+    request("rpc/add_rating", { p_stars: n }, "return=minimal")
       .then(() => {
         store.set("localStorage", "rated", String(n));
         message = "thanks";
