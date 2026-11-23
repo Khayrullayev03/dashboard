@@ -26,7 +26,20 @@
     <link rel="icon" href="assets/img/logo.png" />
     <link rel="stylesheet" href="assets/css/style.css?v=dev" />
     <script>
-      document.documentElement.classList.add("js");
+      (function (root) {
+        root.classList.add("js");
+        var nav = navigator;
+        var saved = null;
+        try {
+          saved = localStorage.getItem("perf");
+        } catch (e) {}
+        var weak =
+          (nav.deviceMemory && nav.deviceMemory <= 4) ||
+          (nav.hardwareConcurrency && nav.hardwareConcurrency <= 4) ||
+          (nav.connection && nav.connection.saveData);
+        root.dataset.perf = saved === "lite" || saved === "full" ? saved : weak ? "lite" : "full";
+        if (saved) root.dataset.perfLocked = "1";
+      })(document.documentElement);
     </script>
   </head>
   <body>
@@ -282,14 +295,28 @@
             <span class="sub-mark" aria-hidden="true">▸</span
             ><span class="sub-text" data-i18n="net.pingTitle">Пинг от вас до серверов</span>
           </h3>
-          <div class="term net-ping" data-reveal>
+          <div class="term net-ping" data-ping data-reveal>
             <div class="term-bar">
               <span>~/info/ping</span
-              ><button class="anim-toggle" type="button" data-ping-run data-i18n="net.pingAgain">[ повторить ]</button>
+              ><span class="bar-actions"
+                ><span class="live">● live</span
+                ><button class="anim-toggle" type="button" data-ping-run data-i18n="net.pingAgain">
+                  [ повторить ]
+                </button></span
+              >
             </div>
-            <ul class="ping-list" data-ping-list></ul>
+            <div class="ping-tabs" role="tablist">
+              <button class="sec-tab" type="button" role="tab" data-ping-tab="apps" data-i18n="net.pingApps">
+                Приложения
+              </button>
+              <button class="sec-tab" type="button" role="tab" data-ping-tab="isp" data-i18n="net.pingIsp">
+                Провайдеры и регионы
+              </button>
+            </div>
+            <div class="ping-list" data-ping-list></div>
             <p class="net-note" data-i18n="net.pingNote">
-              Время отклика HTTP из вашего браузера, лучшее из трёх попыток.
+              Время отклика HTTP из вашего браузера: лучшее из трёх последних замеров, обновляется вживую. Зарубежные
+              регионы измеряются до дата-центров AWS.
             </p>
           </div>
 
@@ -370,6 +397,9 @@
         </p>
         <span class="footer-line" aria-hidden="true"></span>
       </div>
+      <p class="footer-perf">
+        <button class="perf-toggle" type="button" data-perf-toggle></button>
+      </p>
     </footer>
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
@@ -394,6 +424,7 @@
     <script src="assets/js/geo.js?v=dev"></script>
     <script src="assets/js/info.js?v=dev"></script>
     <script src="assets/js/netwatch.js?v=dev"></script>
+    <script src="assets/js/ping.js?v=dev"></script>
     <script src="assets/js/sectools.js?v=dev"></script>
   </body>
 </html>

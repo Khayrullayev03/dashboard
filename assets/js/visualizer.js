@@ -339,7 +339,7 @@
 
   function start() {
     const visible = box.offsetWidth > 0 && !document.hidden;
-    if (reduceMotion && mode === "idle") {
+    if ((reduceMotion || document.documentElement.dataset.perf === "lite") && mode === "idle") {
       cancelAnimationFrame(raf);
       raf = 0;
       idle(0);
@@ -391,6 +391,7 @@
   });
   document.addEventListener("langchange", syncToggle);
   document.addEventListener("visibilitychange", start);
+  document.addEventListener("perfchange", start);
   window.addEventListener("resize", () => {
     size();
     start();

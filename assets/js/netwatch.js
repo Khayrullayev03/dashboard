@@ -8,8 +8,6 @@
 
   const frameBox = page.querySelector("[data-net-frame]");
   const statsRoot = page.querySelector("[data-net-stats]");
-  const pingList = page.querySelector("[data-ping-list]");
-  const pingBtn = page.querySelector("[data-ping-run]");
 
   const API = "https://isc.sans.edu/api/";
   const PORTS = {
@@ -60,19 +58,10 @@
     60001: "HTTP-alt",
   };
   const LEVELS = { green: "#45d483", yellow: "#ffd23f", orange: "#ff8c42", red: "#f2334a" };
-  const TARGETS = [
-    ["Google", "https://www.google.com/generate_204"],
-    ["Cloudflare", "https://www.cloudflare.com/cdn-cgi/trace"],
-    ["Telegram", "https://telegram.org/favicon.ico"],
-    ["GitHub", "https://github.com/favicon.ico"],
-    ["Yandex", "https://ya.ru/favicon.ico"],
-    ["Microsoft", "https://www.microsoft.com/favicon.ico"],
-  ];
 
   let started = false;
   let stats = null;
   let statsFailed = false;
-  let pings = TARGETS.map(() => null);
   let timer = 0;
 
   const el = (tag, cls, text) => {
@@ -98,8 +87,43 @@
     return box;
   }
 
+  let mapWanted = false;
+  let unloadTimer = 0;
+
+  function offerFrame() {
+    if (!frameBox || frameBox.querySelector("iframe, .net-load")) return;
+    const btn = el("button", "cta-btn is-primary net-load", t("net.loadMap"));
+    btn.type = "button";
+    btn.addEventListener("click", () => {
+      mapWanted = true;
+      btn.remove();
+      loadFrame();
+    });
+    const loading = frameBox.querySelector(".net-loading");
+    if (loading) loading.hidden = true;
+    frameBox.append(btn);
+  }
+
+  function unloadFrame() {
+    if (!frameBox) return;
+    const frame = frameBox.querySelector("iframe");
+    if (frame) {
+      frame.src = "about:blank";
+      frame.remove();
+    }
+    frameBox.classList.remove("is-ready");
+  }
+
+  function showMap() {
+    clearTimeout(unloadTimer);
+    if (mapWanted || document.documentElement.dataset.perf !== "lite") loadFrame();
+    else offerFrame();
+  }
+
   function loadFrame() {
     if (!frameBox || frameBox.querySelector("iframe")) return;
+    const loading = frameBox.querySelector(".net-loading");
+    if (loading) loading.hidden = false;
     const lang = I18N.lang === "en" ? "en" : "ru";
     const frame = document.createElement("iframe");
     frame.src = `https://cybermap.kaspersky.com/${lang}/widget/dynamic/dark`;
@@ -193,69 +217,33 @@
     if (animate) statsRoot.classList.add("is-in");
   }
 
-  async function measure(url) {
-    let best = Infinity;
-    for (let k = 0; k < 3; k++) {
-      const t0 = performance.now();
-      try {
-        await fetch(`${url}${url.includes("?") ? "&" : "?"}_=${Date.now()}${k}`, {
-          mode: "no-cors",
-          cache: "no-store",
-        });
-        best = Math.min(best, performance.now() - t0);
-      } catch (e) {
-        continue;
-      }
-    }
-    return best === Infinity ? -1 : Math.round(best);
-  }
-
-  function renderPing() {
-    if (!pingList) return;
-    pingList.textContent = "";
-    TARGETS.forEach(([name], i) => {
-      const ms = pings[i];
-      const li = el("li", "ping-row");
-      const ok = typeof ms === "number" && ms >= 0;
-      li.append(el("span", "ping-name", name));
-      li.append(ok ? meter(Math.min(1, ms / 400), 20) : el("span", "ping-wait", ms === -1 ? t("net.blocked") : "…"));
-      const val = el("span", "ping-ms", ok ? `${ms} ${t("net.ms")}` : "");
-      if (ok) val.classList.add(ms < 80 ? "is-fast" : ms < 200 ? "is-mid" : "is-slow");
-      li.append(val);
-      pingList.append(li);
-    });
-  }
-
-  async function runPing() {
-    pings = TARGETS.map(() => null);
-    renderPing();
-    if (pingBtn) pingBtn.disabled = true;
-    for (let i = 0; i < TARGETS.length; i++) {
-      pings[i] = await measure(TARGETS[i][1]);
-      renderPing();
-    }
-    if (pingBtn) pingBtn.disabled = false;
-  }
-
   function start() {
     if (started) return;
     started = true;
-    loadFrame();
     loadStats();
-    runPing();
     timer = setInterval(
       () => document.documentElement.dataset.view === "info" && !document.hidden && loadStats(),
       5 * 60 * 1000
     );
   }
 
-  if (pingBtn) pingBtn.addEventListener("click", runPing);
-  document.addEventListener("pagechange", (event) => event.detail === "info" && start());
+  document.addEventListener("pagechange", (event) => {
+    if (event.detail === "info") {
+      start();
+      showMap();
+    } else {
+      clearTimeout(unloadTimer);
+      unloadTimer = setTimeout(unloadFrame, 15000);
+    }
+  });
   document.addEventListener("langchange", () => {
     renderStats(false);
-    renderPing();
+    const btn = frameBox && frameBox.querySelector(".net-load");
+    if (btn) btn.textContent = t("net.loadMap");
   });
-  if (document.documentElement.dataset.view === "info") start();
+  if (document.documentElement.dataset.view === "info") {
+    start();
+    showMap();
+  }
   renderStats(false);
-  renderPing();
 })();

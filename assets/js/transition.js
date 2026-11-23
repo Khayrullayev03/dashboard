@@ -962,5 +962,10 @@
     return current.done;
   }
 
-  window.TRANSITION = { run };
+  window.TRANSITION = {
+    run,
+    get busy() {
+      return Boolean(job);
+    },
+  };
 })();

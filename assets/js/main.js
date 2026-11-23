@@ -904,6 +904,68 @@
     toast(I18N.lang.toUpperCase());
   });
 
+  const perfBtn = $("[data-perf-toggle]");
+  const isLite = () => root.dataset.perf === "lite";
+
+  function syncPerf() {
+    if (!perfBtn) return;
+    perfBtn.textContent = `[ ${t(isLite() ? "perf.lite" : "perf.full")} ]`;
+    perfBtn.setAttribute("aria-pressed", String(isLite()));
+  }
+
+  function setPerf(mode, auto) {
+    if (root.dataset.perf === mode) return;
+    root.dataset.perf = mode;
+    try {
+      localStorage.setItem("perf", mode);
+    } catch (e) {}
+    if (!auto) root.dataset.perfLocked = "1";
+    syncPerf();
+    document.dispatchEvent(new CustomEvent("perfchange", { detail: mode }));
+    toast(t(mode === "full" ? "perf.fullOn" : auto ? "perf.autoLite" : "perf.liteOn"));
+  }
+
+  function watchFrames() {
+    if (reduceMotion || isLite() || root.dataset.perfLocked) return;
+    let start = 0;
+    let prev = 0;
+    let frames = 0;
+    let slow = 0;
+    let bad = 0;
+    let windows = 0;
+    const tick = (now) => {
+      if (isLite() || root.dataset.perfLocked) return;
+      if (document.hidden || (window.TRANSITION && window.TRANSITION.busy)) {
+        start = 0;
+        requestAnimationFrame(tick);
+        return;
+      }
+      if (!start) {
+        start = prev = now;
+        frames = slow = 0;
+      } else {
+        if (now - prev > 34) slow++;
+        prev = now;
+        frames++;
+      }
+      if (now - start >= 2000) {
+        const fps = (frames * 1000) / (now - start);
+        bad = fps < 38 || slow > frames * 0.25 ? bad + 1 : 0;
+        start = 0;
+        windows++;
+        if (bad >= 3) return setPerf("lite", true);
+        if (windows > 60 && !bad) return;
+      }
+      requestAnimationFrame(tick);
+    };
+    setTimeout(() => requestAnimationFrame(tick), 2500);
+  }
+
+  if (perfBtn) perfBtn.addEventListener("click", () => setPerf(isLite() ? "full" : "lite"));
+  document.addEventListener("langchange", syncPerf);
+  syncPerf();
+  watchFrames();
+
   window.APP = {
     logoGlitch(strength, ms) {
       if (logo && state.page === "home" && !document.hidden) logo.glitch(strength, ms);
@@ -931,6 +993,7 @@
         if (frame) return;
         frame = requestAnimationFrame(() => {
           frame = 0;
+          if (isLite()) return;
           const card = pending.target.closest && pending.target.closest(".term, .skill-tile");
           if (!card) return;
           const r = card.getBoundingClientRect();

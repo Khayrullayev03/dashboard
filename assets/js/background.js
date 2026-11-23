@@ -2,8 +2,10 @@
   "use strict";
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const root = document.documentElement;
   const lowPower =
     window.matchMedia("(max-width: 820px), (pointer: coarse)").matches || (navigator.hardwareConcurrency || 8) <= 4;
+  const lite = () => lowPower || root.dataset.perf === "lite";
   const canvas = document.createElement("canvas");
   canvas.className = "ascii-bg";
   canvas.setAttribute("aria-hidden", "true");
@@ -90,7 +92,7 @@
   }
 
   function resize() {
-    const dpr = lowPower ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = lite() ? 1 : Math.min(window.devicePixelRatio || 1, 2);
     width = window.innerWidth;
     height = window.innerHeight;
     canvas.width = Math.round(width * dpr);
@@ -99,6 +101,7 @@
     ctx.font = `500 ${FONT_PX}px "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace`;
     ctx.textBaseline = "top";
     cellW = ctx.measureText("0").width || 8;
+    sizeLayer(dpr);
     cols = Math.ceil(width / cellW) + 1;
     rows = Math.ceil(height / LINE_PX) + 1;
     drops = Array.from({ length: cols }, () => ({
@@ -137,13 +140,179 @@
     return s - Math.floor(s);
   };
 
+  let sprite = null;
+  let spriteKey = "";
+
+  function moonSprites(R) {
+    const key = `${Math.round(R / 6)}`;
+    if (sprite && spriteKey === key) return sprite;
+    spriteKey = key;
+    const gs = 0.25;
+    const gsz = Math.max(2, Math.ceil(R * 4.8 * gs));
+    const glow = document.createElement("canvas");
+    glow.width = glow.height = gsz;
+    const g = glow.getContext("2d");
+    const gc = gsz / 2;
+    const halo = g.createRadialGradient(gc, gc, R * 0.6 * gs, gc, gc, gc);
+    halo.addColorStop(0, colors.glow);
+    halo.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = halo;
+    g.fillRect(0, 0, gsz, gsz);
+
+    const dsz = Math.max(2, Math.ceil(R));
+    const disc = document.createElement("canvas");
+    disc.width = disc.height = dsz;
+    const d = disc.getContext("2d");
+    const r = dsz / 2;
+    d.beginPath();
+    d.arc(r, r, r, 0, Math.PI * 2);
+    d.clip();
+    const body = d.createRadialGradient(r - r * 0.35, r - r * 0.35, r * 0.05, r, r, r);
+    body.addColorStop(0, colors.moon3);
+    body.addColorStop(0.45, colors.moon2);
+    body.addColorStop(1, colors.edge);
+    d.fillStyle = body;
+    d.fillRect(0, 0, dsz, dsz);
+    [
+      [-0.28, -0.12, 0.34],
+      [0.22, 0.18, 0.28],
+      [0.05, -0.42, 0.18],
+      [-0.1, 0.45, 0.22],
+    ].forEach(([bx, by, br]) => {
+      const sea = d.createRadialGradient(r + r * bx, r + r * by, 0, r + r * bx, r + r * by, r * br);
+      sea.addColorStop(0, colors.sea);
+      sea.addColorStop(1, "rgba(0,0,0,0)");
+      d.fillStyle = sea;
+      d.fillRect(0, 0, dsz, dsz);
+    });
+    sprite = { glow, disc };
+    return sprite;
+  }
+
+  function put(c, text, py) {
+    const n = text.length;
+    let a = 0;
+    while (a < n && text.charCodeAt(a) === 32) a++;
+    if (a === n) return;
+    let b = n;
+    while (text.charCodeAt(b - 1) === 32) b--;
+    c.fillText(a || b < n ? text.slice(a, b) : text, a * cellW, py);
+  }
+
+  const layer = document.createElement("canvas");
+  const lctx = layer.getContext("2d");
+  let layerAt = -1e9;
+  let layerGeo = null;
+
+  function sizeLayer(dpr) {
+    layer.width = canvas.width;
+    layer.height = canvas.height;
+    lctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    lctx.font = ctx.font;
+    lctx.textBaseline = "top";
+    layerAt = -1e9;
+  }
+
+  function invalidate() {
+    layerAt = -1e9;
+  }
+
+  function cloudAt(x, y, rowFrac, now) {
+    const band = Math.sin(y * 0.55 + 1.3) * Math.sin(x * 0.045 + now * 0.00006 + y * 0.9);
+    return band > 0.82 && rowFrac < 0.75 ? band : 0;
+  }
+
+  function moonCell(d2, cloud) {
+    return d2 < 1 || (!cloud && (d2 < 1.14 || (d2 > 1.4 && d2 < 1.52))) || (cloud && d2 < 4);
+  }
+
+  function drawMoon(now, moon, art) {
+    const home = scene === "home";
+    const moonAlpha = home ? 1 : 0.45;
+    const rot = now * 0.000012;
+    lctx.clearRect(0, 0, width, height);
+    lctx.globalAlpha = Math.min(1, moonAlpha * (0.82 + 0.18 * Math.sin(now * 0.0012) + pulse * 0.6));
+    const gr = moon.R * 2.4;
+    lctx.drawImage(art.glow, moon.cx - gr, moon.cy - gr, gr * 2, gr * 2);
+    lctx.globalAlpha = moonAlpha * (home ? 0.75 : 0.5) * (home ? 0.42 : 0.3);
+    lctx.drawImage(art.disc, moon.cx - moon.R, moon.cy - moon.R, moon.R * 2, moon.R * 2);
+
+    const y0 = Math.max(0, Math.floor((moon.cy - moon.R * 2) / LINE_PX));
+    const y1 = Math.min(rows, Math.ceil((moon.cy + moon.R * 2) / LINE_PX) + 1);
+    for (let y = y0; y < y1; y++) {
+      const py = y * LINE_PX;
+      const rowFrac = y / rows;
+      let m1 = "";
+      let m2 = "";
+      let m3 = "";
+      let cloud = "";
+      for (let x = 0; x < cols; x++) {
+        const px = x * cellW + cellW / 2;
+        const dx = (px - moon.cx) / moon.R;
+        const dy = (py + LINE_PX / 2 - moon.cy) / moon.R;
+        const d2 = dx * dx + dy * dy;
+        const band = cloudAt(x, y, rowFrac, now);
+        let mc = " ";
+        let ml = 0;
+        let cc = " ";
+        if (d2 < 1) {
+          const z = Math.sqrt(1 - d2);
+          const light = Math.max(0, -dx * 0.55 - dy * 0.45 + z * 0.7);
+          let lon = Math.atan2(dx, z) / (Math.PI * 2) + rot;
+          lon -= Math.floor(lon);
+          const lat = Math.asin(Math.max(-1, Math.min(1, dy))) / Math.PI + 0.5;
+          const texel = tex[Math.min(TEX_H - 1, (lat * TEX_H) | 0) * TEX_W + ((lon * TEX_W) | 0)];
+          const b = Math.min(1, (0.05 + 0.95 * Math.pow(light, 1.15)) * texel * (0.55 + 0.45 * z) * 1.25);
+          if (band) {
+            cc = band > 0.9 ? "≈" : "~";
+          } else if (d2 > 0.9 && light > 0.12) {
+            mc = light > 0.45 ? "@" : "%";
+            ml = light > 0.45 ? 3 : 2;
+          } else if (home && d2 < 0.5 && hash2(x, y) > (d2 - 0.3) / 0.2) {
+          } else if (b > 0.04 || (x + y) % 3 === 0) {
+            mc = MOON_RAMP[Math.max(1, Math.min(9, (b * 10) | 0))];
+            ml = b > 0.6 ? 3 : b > 0.3 ? 2 : 1;
+          }
+        } else if (d2 < 1.14 && !band) {
+          const ang = Math.atan2(dy, dx);
+          const lit = Math.cos(ang + 2.4) * 0.5 + 0.5;
+          if (d2 < 1.06) {
+            mc = lit > 0.5 ? "·" : ".";
+            ml = lit > 0.55 ? 3 : 2;
+          }
+        } else if (d2 > 1.4 && d2 < 1.52 && !band) {
+          const ang = Math.atan2(dy, dx) + now * 0.00008;
+          if (Math.sin(ang * 18) > 0.82) {
+            mc = "·";
+            ml = 2;
+          }
+        } else if (band && d2 < 4) {
+          cc = "~";
+        }
+        m1 += ml === 1 ? mc : " ";
+        m2 += ml === 2 ? mc : " ";
+        m3 += ml === 3 ? mc : " ";
+        cloud += cc;
+      }
+      lctx.globalAlpha = moonAlpha;
+      lctx.fillStyle = colors.moon1;
+      put(lctx, m1, py);
+      lctx.fillStyle = colors.moon2;
+      put(lctx, m2, py);
+      lctx.fillStyle = colors.moon3;
+      put(lctx, m3, py);
+      lctx.fillStyle = colors.cloud;
+      put(lctx, cloud, py);
+    }
+    lctx.globalAlpha = 1;
+  }
+
   function draw(now) {
     const t = now * 0.00045;
     const scroll = window.scrollY * 0.004;
     const moon = moonGeometry();
+    const art = moonSprites(moon.R);
     if (pulse > 0.001) moon.R *= 1 + pulse * 0.06;
-    const rot = now * 0.000012;
-    const moonAlpha = scene === "home" ? 1 : 0.45;
     const tick = Math.floor(now / 120);
     const matrix = mode === "matrix";
 
@@ -158,119 +327,39 @@
       });
     }
 
-    ctx.clearRect(0, 0, width, height);
+    const moved =
+      !layerGeo ||
+      Math.abs(moon.cx - layerGeo.cx) + Math.abs(moon.cy - layerGeo.cy) + Math.abs(moon.R - layerGeo.R) > 0.5;
+    if (moved || now - layerAt > (lite() ? 240 : 140)) {
+      drawMoon(now, moon, art);
+      layerAt = now;
+      layerGeo = moon;
+    }
 
-    ctx.globalAlpha = Math.min(1, moonAlpha * (0.82 + 0.18 * Math.sin(now * 0.0012) + pulse * 0.6));
-    const glow = ctx.createRadialGradient(moon.cx, moon.cy, moon.R * 0.6, moon.cx, moon.cy, moon.R * 2.4);
-    glow.addColorStop(0, colors.glow);
-    glow.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, width, height);
-    const home = scene === "home";
-    ctx.globalAlpha = moonAlpha * (home ? 0.75 : 0.5);
-    const disc = ctx.createRadialGradient(
-      moon.cx - moon.R * 0.35,
-      moon.cy - moon.R * 0.35,
-      moon.R * 0.05,
-      moon.cx,
-      moon.cy,
-      moon.R
-    );
-    disc.addColorStop(0, colors.moon3);
-    disc.addColorStop(0.45, colors.moon2);
-    disc.addColorStop(1, colors.edge);
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(moon.cx, moon.cy, moon.R, 0, Math.PI * 2);
-    ctx.clip();
-    ctx.globalAlpha *= home ? 0.42 : 0.3;
-    ctx.fillStyle = disc;
-    ctx.fillRect(moon.cx - moon.R, moon.cy - moon.R, moon.R * 2, moon.R * 2);
-    [
-      [-0.28, -0.12, 0.34],
-      [0.22, 0.18, 0.28],
-      [0.05, -0.42, 0.18],
-      [-0.1, 0.45, 0.22],
-    ].forEach(([bx, by, br], i) => {
-      const ox = Math.cos(rot * 6.2832 + i) * 0.04;
-      const sea = ctx.createRadialGradient(
-        moon.cx + moon.R * (bx + ox),
-        moon.cy + moon.R * by,
-        0,
-        moon.cx + moon.R * (bx + ox),
-        moon.cy + moon.R * by,
-        moon.R * br
-      );
-      sea.addColorStop(0, colors.sea);
-      sea.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = sea;
-      ctx.fillRect(moon.cx - moon.R, moon.cy - moon.R, moon.R * 2, moon.R * 2);
-    });
-    ctx.restore();
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(layer, 0, 0, width, height);
 
     for (let y = 0; y < rows; y++) {
       const py = y * LINE_PX;
       const fy = y * 0.2 + scroll;
       const rowFrac = y / rows;
+      const starRow = rowFrac < 0.6;
       let dim = "";
       let red = "";
       let hot = "";
-      let m1 = "";
-      let m2 = "";
-      let m3 = "";
       let star = "";
-      let cloud = "";
 
       for (let x = 0; x < cols; x++) {
         const px = x * cellW + cellW / 2;
         const dx = (px - moon.cx) / moon.R;
         const dy = (py + LINE_PX / 2 - moon.cy) / moon.R;
         const d2 = dx * dx + dy * dy;
-        let mc = " ";
-        let ml = 0;
         let sc = " ";
-        let cc = " ";
         let fd = " ";
         let fl = 0;
-
-        const band = Math.sin(y * 0.55 + 1.3) * Math.sin(x * 0.045 + now * 0.00006 + y * 0.9);
-        const isCloud = band > 0.82 && rowFrac < 0.75;
-
-        if (d2 < 1) {
-          const z = Math.sqrt(1 - d2);
-          const light = Math.max(0, -dx * 0.55 - dy * 0.45 + z * 0.7);
-          let lon = Math.atan2(dx, z) / (Math.PI * 2) + rot;
-          lon -= Math.floor(lon);
-          const lat = Math.asin(Math.max(-1, Math.min(1, dy))) / Math.PI + 0.5;
-          const texel = tex[Math.min(TEX_H - 1, (lat * TEX_H) | 0) * TEX_W + ((lon * TEX_W) | 0)];
-          const b = Math.min(1, (0.05 + 0.95 * Math.pow(light, 1.15)) * texel * (0.55 + 0.45 * z) * 1.25);
-          if (isCloud) {
-            cc = band > 0.9 ? "≈" : "~";
-          } else if (d2 > 0.9 && light > 0.12) {
-            mc = light > 0.45 ? "@" : "%";
-            ml = light > 0.45 ? 3 : 2;
-          } else if (scene === "home" && d2 < 0.5 && hash2(x, y) > (d2 - 0.3) / 0.2) {
-          } else if (b > 0.04 || (x + y) % 3 === 0) {
-            mc = MOON_RAMP[Math.max(1, Math.min(9, (b * 10) | 0))];
-            ml = b > 0.6 ? 3 : b > 0.3 ? 2 : 1;
-          }
-        } else if (d2 < 1.14 && !isCloud) {
-          const ang = Math.atan2(dy, dx);
-          const lit = Math.cos(ang + 2.4) * 0.5 + 0.5;
-          mc = d2 < 1.06 ? (lit > 0.5 ? "·" : ".") : "";
-          if (mc) ml = lit > 0.55 ? 3 : 2;
-          else mc = " ";
-        } else if (d2 > 1.4 && d2 < 1.52 && !isCloud) {
-          const ang = Math.atan2(dy, dx) + now * 0.00008;
-          if (Math.sin(ang * 18) > 0.82) {
-            mc = "·";
-            ml = 2;
-          }
-        } else if (isCloud && d2 < 4) {
-          cc = "~";
-        } else {
+        if (!moonCell(d2, cloudAt(x, y, rowFrac, now))) {
           const h = hash2(x, y);
-          if (rowFrac < 0.6 && h > 0.993 && d2 > 1.4) {
+          if (starRow && h > 0.993 && d2 > 1.4) {
             const tw = Math.sin(now * 0.002 + h * 60);
             if (tw > -0.2) sc = tw > 0.85 && h > 0.997 ? "+" : "·";
           }
@@ -306,37 +395,25 @@
             }
           }
         }
-
-        m1 += ml === 1 ? mc : " ";
-        m2 += ml === 2 ? mc : " ";
-        m3 += ml === 3 ? mc : " ";
         star += sc;
-        cloud += cc;
         dim += fl === 1 ? fd : " ";
         red += fl === 2 ? fd : " ";
         hot += fl === 3 ? fd : " ";
       }
 
-      ctx.globalAlpha = matrix ? 1 : Math.min(1, Math.max(0, (rowFrac - 0.35) / 0.4));
-      ctx.fillStyle = colors.dim;
-      ctx.fillText(dim, 0, py);
-      ctx.fillStyle = colors.red;
-      ctx.fillText(red, 0, py);
-      ctx.fillStyle = colors.hot;
-      ctx.fillText(hot, 0, py);
-
-      ctx.globalAlpha = moonAlpha;
-      ctx.fillStyle = colors.moon1;
-      ctx.fillText(m1, 0, py);
-      ctx.fillStyle = colors.moon2;
-      ctx.fillText(m2, 0, py);
-      ctx.fillStyle = colors.moon3;
-      ctx.fillText(m3, 0, py);
-      ctx.fillStyle = colors.cloud;
-      ctx.fillText(cloud, 0, py);
+      const fieldAlpha = matrix ? 1 : Math.min(1, Math.max(0, (rowFrac - 0.35) / 0.4));
+      if (fieldAlpha > 0) {
+        ctx.globalAlpha = fieldAlpha;
+        ctx.fillStyle = colors.dim;
+        put(ctx, dim, py);
+        ctx.fillStyle = colors.red;
+        put(ctx, red, py);
+        ctx.fillStyle = colors.hot;
+        put(ctx, hot, py);
+      }
       ctx.globalAlpha = 1;
       ctx.fillStyle = colors.star;
-      ctx.fillText(star, 0, py);
+      put(ctx, star, py);
     }
     if (now < glitchUntil) glitchPass();
   }
@@ -374,8 +451,9 @@
   let pulse = 0;
   let live = false;
   function interval() {
-    if (live) return lowPower ? 50 : 33;
-    const base = scene === "home" ? (lowPower ? 55 : 40) : lowPower ? 110 : 70;
+    const low = lite();
+    if (live) return low ? 50 : 33;
+    const base = scene === "home" ? (low ? 60 : 40) : low ? 120 : 70;
     return cost > 14 ? Math.min(160, base * 1.8) : base;
   }
   function loop(now) {
@@ -424,8 +502,10 @@
   let skyRaf = 0;
   const TRAIL = ["@", "*", "*", "=", "=", "=", "=", "=", "-", "-", "-", "-", "-", "-", "·"];
 
+  sky.style.visibility = "hidden";
+
   function sizeSky() {
-    const dpr = lowPower ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = lite() ? 1 : Math.min(window.devicePixelRatio || 1, 2);
     sky.width = Math.round(window.innerWidth * dpr);
     sky.height = Math.round(window.innerHeight * dpr);
     sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -447,6 +527,7 @@
       len: 22 + Math.floor(Math.random() * 14),
       size: 16 + Math.random() * 4,
     });
+    sky.style.visibility = "visible";
     if (!skyRaf) skyRaf = requestAnimationFrame(flySky);
   }
 
@@ -487,7 +568,7 @@
     }
     sctx.globalAlpha = fade;
     sctx.shadowColor = colors.head;
-    sctx.shadowBlur = 28;
+    sctx.shadowBlur = lite() ? 0 : 28;
     sctx.fillStyle = colors.head;
     sctx.beginPath();
     sctx.arc(hx + ux * 4, hy + uy * 4, 3.6, 0, Math.PI * 2);
@@ -501,6 +582,7 @@
     meteors = meteors.filter((m) => now - m.born < m.life);
     meteors.forEach((m) => drawMeteor(m, now));
     skyRaf = meteors.length ? requestAnimationFrame(flySky) : 0;
+    if (!skyRaf) sky.style.visibility = "hidden";
   }
 
   function scheduleMeteor() {
@@ -512,7 +594,7 @@
         }
         scheduleMeteor();
       },
-      2600 + Math.random() * 4400
+      lite() ? 6000 + Math.random() * 8000 : 2600 + Math.random() * 4400
     );
   }
 
@@ -520,6 +602,11 @@
   resize();
   sizeSky();
   window.addEventListener("resize", sizeSky);
+  document.addEventListener("perfchange", () => {
+    resize();
+    sizeSky();
+    draw(performance.now());
+  });
   draw(performance.now());
   start();
   if (!reduceMotion) setTimeout(scheduleMeteor, 1500);
@@ -536,6 +623,7 @@
     },
     setMode(next) {
       mode = next === "matrix" ? "matrix" : "contour";
+      invalidate();
       draw(performance.now());
       return mode;
     },
@@ -544,6 +632,7 @@
     },
     setScene(next) {
       scene = next === "home" ? "home" : "page";
+      invalidate();
       draw(performance.now());
     },
     glitch(strength = 1, ms = 220) {
@@ -570,6 +659,8 @@
     },
     refreshColors() {
       readColors();
+      sprite = null;
+      invalidate();
       draw(performance.now());
     },
   };
