@@ -225,14 +225,14 @@
           }
         });
       },
-      glitch(strength = 1) {
+      glitch(strength = 1, ms) {
         if (reduceMotion || busy || !visible) return Promise.resolve();
         const hard = strength > 1.4;
         container.classList.add(hard ? "is-glitching-hard" : "is-glitching");
         let lastSwap = -1000;
         let shiftOf = [];
         let noise = [];
-        return run(140 + 240 * strength, (t) => {
+        return run(ms || 140 + 240 * strength, (t) => {
           if (t - lastSwap > 45) {
             lastSwap = t;
             shiftOf = [];

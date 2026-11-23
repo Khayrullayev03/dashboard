@@ -166,7 +166,7 @@
     (function schedule() {
       setTimeout(
         () => {
-          if (!document.hidden && state.page === "home")
+          if (!document.hidden && state.page === "home" && root.dataset.music !== "on")
             logo.glitch(Math.random() < 0.25 ? 2 : 0.7 + Math.random() * 0.6);
           schedule();
         },
@@ -905,6 +905,9 @@
   });
 
   window.APP = {
+    logoGlitch(strength, ms) {
+      if (logo && state.page === "home" && !document.hidden) logo.glitch(strength, ms);
+    },
     selectSkill(id) {
       goTo("about");
       selectSkill(id, { animate: true });

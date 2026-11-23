@@ -33,6 +33,8 @@
   let peak = 0.35;
   let beat = 0;
   let avgBass = 0;
+  let prevHit = 0;
+  let lastGlitch = 0;
   let bars = [];
   let cols = 0;
   let w = 0;
@@ -83,6 +85,8 @@
     mode = next;
     const live = mode !== "idle";
     btn.setAttribute("aria-pressed", String(live));
+    if (live) document.documentElement.dataset.music = "on";
+    else delete document.documentElement.dataset.music;
     stopBtn.hidden = !live;
     toggleBtn.hidden = mode !== "file";
     trackEl.hidden = mode !== "file";
@@ -180,6 +184,12 @@
     avgBass = avgBass * 0.96 + bass * 0.04;
     const hit = Math.min(1, Math.max(0, (bass - avgBass * 1.04) * 6) + Math.max(0, bass - 0.75));
     beat = hit > beat ? hit : beat * 0.88;
+    const now = performance.now();
+    if (hit > 0.3 && hit - prevHit > 0.1 && now - lastGlitch > 160 && window.APP && window.APP.logoGlitch) {
+      lastGlitch = now;
+      window.APP.logoGlitch(0.8 + hit * 1.6, 150 + hit * 170);
+    }
+    prevHit = hit;
     if (window.BG && window.BG.setPulse) window.BG.setPulse(beat);
     if (logo && document.documentElement.dataset.view === "home") logo.style.setProperty("--beat", beat.toFixed(3));
   }
