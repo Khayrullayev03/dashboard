@@ -68,7 +68,27 @@
       }
       g.globalAlpha = 1;
     });
-    return { w, h, dpr, colors, bg, origin, target, label: target === "home" ? "cd ~" : `cd ~/${target}` };
+    const base = layer(w, h, dpr, (g) => {
+      g.fillStyle = colors.bg;
+      g.fillRect(0, 0, w, h);
+      const top = g.createRadialGradient(w * 0.7, 0, 0, w * 0.7, 0, Math.max(w, h) * 1.1);
+      top.addColorStop(0, "rgba(40,6,12,0.9)");
+      top.addColorStop(1, "rgba(5,5,6,0)");
+      g.fillStyle = top;
+      g.fillRect(0, 0, w, h);
+      [
+        [0.1, 0.28, 0.38, "rgba(242,51,74,0.13)"],
+        [0.92, 0.78, 0.34, "rgba(150,20,70,0.16)"],
+      ].forEach(([fx, fy, r, c]) => {
+        const aura = g.createRadialGradient(w * fx, h * fy, 0, w * fx, h * fy, Math.max(w, h) * r);
+        aura.addColorStop(0, c);
+        aura.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = aura;
+        g.fillRect(0, 0, w, h);
+      });
+    });
+    const live = [...document.querySelectorAll("canvas.ascii-bg")];
+    return { w, h, dpr, colors, bg, base, live, origin, target, label: target === "home" ? "cd ~" : `cd ~/${target}` };
   }
 
   function cover(st, x = 0, y = 0, w = st.w, h = st.h, src = st.bg) {
@@ -77,7 +97,15 @@
     const sw = clamp(x + w, 0, st.w) - sx;
     const sh = clamp(y + h, 0, st.h) - sy;
     if (sw <= 0 || sh <= 0) return;
-    ctx.drawImage(src, sx * st.dpr, sy * st.dpr, sw * st.dpr, sh * st.dpr, sx, sy, sw, sh);
+    if (src !== st.bg) {
+      ctx.drawImage(src, sx * st.dpr, sy * st.dpr, sw * st.dpr, sh * st.dpr, sx, sy, sw, sh);
+      return;
+    }
+    ctx.drawImage(st.base, sx * st.dpr, sy * st.dpr, sw * st.dpr, sh * st.dpr, sx, sy, sw, sh);
+    st.live.forEach((c) => {
+      const k = c.width / st.w;
+      if (k > 0) ctx.drawImage(c, sx * k, sy * k, sw * k, sh * k, sx, sy, sw, sh);
+    });
   }
 
   function command(st, text, p, y = st.h / 2) {
@@ -247,65 +275,116 @@
     },
   };
 
-  const rack = {
-    cover: 540,
-    hold: 260,
-    reveal: 500,
+  const fiber = {
+    cover: 560,
+    hold: 640,
+    reveal: 640,
     init(st) {
-      st.unit = st.w < 600 ? 34 : 44;
-      st.n = Math.ceil(st.h / st.unit);
+      const { w, h, origin } = st;
+      st.far = Math.max(
+        Math.hypot(origin.x, origin.y),
+        Math.hypot(w - origin.x, origin.y),
+        Math.hypot(origin.x, h - origin.y),
+        Math.hypot(w - origin.x, h - origin.y)
+      );
+      st.strands = Array.from({ length: w < 700 ? 34 : 56 }, (_, i) => {
+        const a = (i / (w < 700 ? 34 : 56)) * Math.PI * 2 + (hash(i * 3.3) - 0.5) * 0.25;
+        return { a, speed: 0.7 + hash(i * 7.1) * 0.6, lag: hash(i * 1.9) * 0.25, hot: hash(i * 5.5) > 0.7 };
+      });
+      st.rowH = 22;
+      st.rows = Array.from({ length: Math.ceil(h / st.rowH) }, (_, i) => ({
+        lag: hash(i * 4.7) * 0.32,
+        speed: 1 + hash(i * 8.3) * 0.45,
+      }));
     },
-    onStart(st) {
-      for (let i = 0; i < 6; i++) later(i * 70, () => sound((s) => s.tone(1300 - i * 90, 0.03, "square", 0.02)));
+    onStart: () => {
+      for (let i = 0; i < 5; i++) later(i * 60, () => sound((s) => s.tone(700 + i * 160, 0.05, "sine", 0.025)));
     },
-    onSwap: () => sound((s) => s.beep()),
-    unitAt(st, i, x) {
-      const { w } = st;
-      const y = i * st.unit;
-      const u = st.unit;
-      ctx.fillStyle = "#0e0b0d";
-      ctx.fillRect(x, y, w, u - 2);
-      ctx.fillStyle = "rgba(255,255,255,0.07)";
-      ctx.fillRect(x, y, w, 1);
-      ctx.fillStyle = "rgba(0,0,0,0.6)";
-      ctx.fillRect(x, y + u - 3, w, 1);
-      ctx.font = `600 ${u < 40 ? 11 : 12}px ${FONT}`;
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = st.colors.muted;
-      ctx.fillText("◦", x + 8, y + u / 2);
-      ctx.fillText("◦", x + w - 16, y + u / 2);
-      ctx.fillStyle = st.colors.text;
-      ctx.fillText(`srv-${pad(i + 1)}  1U`, x + 28, y + u / 2);
-      ctx.fillStyle = "rgba(255,255,255,0.12)";
-      for (let k = 0; k < 18; k++) ctx.fillRect(x + w * 0.34 + k * 7, y + u * 0.3, 2, u * 0.4);
-      const tick = Math.floor(performance.now() / 120);
-      for (let k = 0; k < 4; k++) {
-        const on = hash(i * 13 + k * 7 + tick) > 0.45;
-        ctx.fillStyle = k === 0 ? st.colors.bright : on ? st.colors.accent : "rgba(242,51,74,0.18)";
+    onSwap: () => sound((s) => s.tone(1200, 0.18, "triangle", 0.03)),
+    strands(st, p, alpha) {
+      const { origin, far } = st;
+      st.strands.forEach((f, i) => {
+        const local = clamp((p - f.lag) / (1 - f.lag));
+        if (local <= 0) return;
+        const len = out(local) * far * f.speed * 1.15;
+        const x2 = origin.x + Math.cos(f.a) * len;
+        const y2 = origin.y + Math.sin(f.a) * len;
+        const g = ctx.createLinearGradient(origin.x, origin.y, x2, y2);
+        g.addColorStop(0, "rgba(242,51,74,0)");
+        g.addColorStop(0.75, f.hot ? "rgba(255,150,165,0.55)" : "rgba(242,51,74,0.45)");
+        g.addColorStop(1, f.hot ? "rgba(255,255,255,0.95)" : "rgba(255,120,135,0.9)");
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = g;
+        ctx.lineWidth = f.hot ? 2 : 1.2;
         ctx.beginPath();
-        ctx.arc(x + w - 110 + k * 18, y + u / 2, 3, 0, Math.PI * 2);
+        ctx.moveTo(origin.x, origin.y);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        const k = (performance.now() / 600 + i * 0.37) % 1;
+        ctx.fillStyle = st.colors.bright;
+        ctx.beginPath();
+        ctx.arc(
+          origin.x + Math.cos(f.a) * len * k,
+          origin.y + Math.sin(f.a) * len * k,
+          f.hot ? 2.4 : 1.6,
+          0,
+          Math.PI * 2
+        );
         ctx.fill();
-      }
+        if (f.hot) {
+          ctx.shadowColor = st.colors.bright;
+          ctx.shadowBlur = 14;
+          ctx.beginPath();
+          ctx.arc(x2, y2, 2.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      });
+      ctx.globalAlpha = 1;
     },
     drawCover(st, p) {
-      for (let i = 0; i < st.n; i++) {
-        const local = clamp((p - (i / st.n) * 0.55) / 0.45);
-        if (local > 0) this.unitAt(st, i, st.w * (1 - out(local)));
-      }
+      const { origin, far } = st;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(origin.x, origin.y, inOut(clamp(p * 1.1)) * far, 0, Math.PI * 2);
+      ctx.clip();
+      cover(st);
+      ctx.restore();
+      this.strands(st, p, 1);
     },
     drawHold(st, p) {
       cover(st);
-      for (let i = 0; i < st.n; i++) this.unitAt(st, i, 0);
-      const mid = Math.floor(st.n / 2) * st.unit;
-      ctx.fillStyle = "rgba(5,5,6,0.85)";
-      ctx.fillRect(st.w / 2 - 200, mid - 2, 400, st.unit - 2);
-      command(st, st.label, p, mid + st.unit / 2 - 2);
+      this.strands(st, 1, 1 - out(p));
+      const services = ((window.PORTFOLIO || {}).services || []).map((s) => s.id);
+      const pick = services.slice(0, 6);
+      const list = [
+        "$ systemctl start services",
+        ...pick.map((id) => `[ OK ] Started ${id}.service`),
+        `● ${services.length} units active`,
+      ];
+      const size = st.w < 600 ? 13 : 15;
+      const x = Math.max(18, st.w / 2 - (st.w < 600 ? 150 : 200));
+      lines(st, list, p * 1.15, x, st.h / 2 - list.length * ((size + 9) / 2), size, size + 9);
     },
     drawReveal(st, p) {
-      for (let i = 0; i < st.n; i++) {
-        const local = clamp((p - (i / st.n) * 0.5) / 0.5);
-        this.unitAt(st, i, -st.w * inn(local));
-      }
+      const { w, rowH } = st;
+      st.rows.forEach((r, i) => {
+        const y = i * rowH;
+        const local = clamp((p - r.lag) / (1 - r.lag));
+        const x = inOut(clamp(local * r.speed)) * (w + 200) - 40;
+        cover(st, Math.max(0, x), y, w - Math.max(0, x), rowH);
+        if (local <= 0 || x > w + 40) return;
+        const g = ctx.createLinearGradient(x - 160, 0, x, 0);
+        g.addColorStop(0, "rgba(242,51,74,0)");
+        g.addColorStop(1, "rgba(255,170,180,0.95)");
+        ctx.fillStyle = g;
+        ctx.fillRect(x - 160, y + rowH / 2 - 1, 160, 2);
+        ctx.shadowColor = st.colors.bright;
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = st.colors.bright;
+        ctx.fillRect(x - 3, y + rowH / 2 - 2, 6, 4);
+        ctx.shadowBlur = 0;
+      });
     },
   };
 
@@ -830,7 +909,7 @@
     },
   };
 
-  const EFFECTS = { home: boot, services: rack, about: scan, info: globe, who: logs, contact: plane };
+  const EFFECTS = { home: boot, services: fiber, about: scan, info: globe, who: logs, contact: plane };
 
   function play(ms, draw) {
     return new Promise((resolve) => {
@@ -867,12 +946,10 @@
     if (fx.onStart) fx.onStart(st);
     current.done = play(fx.cover, (p) => fx.drawCover(st, p))
       .then(() => {
-        if (window.BG && window.BG.pause) window.BG.pause(true);
         return play(fx.hold, (p) => fx.drawHold(st, p));
       })
       .then(() => {
         current.phase = "reveal";
-        if (window.BG && window.BG.pause) window.BG.pause(false);
         current.swap();
         if (fx.onSwap) fx.onSwap(st);
         return play(fx.reveal, (p) => fx.drawReveal(st, p));
