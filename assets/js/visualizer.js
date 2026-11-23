@@ -326,7 +326,7 @@
     window.APP.beat({
       strong,
       power: Math.min(1, score),
-      strength: strong ? 2.2 + punch * 0.4 : 0.7 + bass * 0.7 + punch * 0.3,
+      strength: strong ? 2.2 + punch * 0.4 : Math.min(1.3, 0.7 + bass * 0.4 + punch * 0.3),
       ms: strong ? 240 + punch * 120 : 110 + bass * 100,
     });
   }
