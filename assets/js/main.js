@@ -5,7 +5,7 @@
   if (!data || !window.FX || !window.I18N) return;
 
   const { profile, contacts = [], skills = [], experience = [], certs = [] } = data;
-  const { scramble, createAsciiArt, animate, easeInOut, randomFrom, GLYPHS } = window.FX;
+  const { scramble, createAsciiArt, animate, easeInOut } = window.FX;
   const I18N = window.I18N;
   const { t, pick: L } = I18N;
   const SOUND = window.SOUND || { enabled: false, set() {}, key() {}, tick() {}, beep() {} };
@@ -769,28 +769,6 @@
   const navLinks = $$(".nav a");
   const brandPath = $("[data-brand-path]");
 
-  function scanReveal(page) {
-    const band = el("div", { class: "scan-band", "aria-hidden": "true" });
-    const bandRows = [0, 1, 2].map(() => band.appendChild(document.createElement("div")));
-    document.body.append(band);
-    const top = page.getBoundingClientRect().top;
-    const viewport = window.innerHeight;
-    const width = Math.ceil(window.innerWidth / 6) + 4;
-    const row = (set) => Array.from({ length: width }, () => randomFrom(set)).join("");
-    page.style.clipPath = "inset(0 0 100% 0)";
-    return animate(620, (time, p) => {
-      const y = easeInOut(p) * (viewport + 40 - top) + top;
-      page.style.clipPath = `inset(0 0 ${Math.max(0, page.offsetHeight - (y - top))}px 0)`;
-      band.style.transform = `translateY(${y - band.offsetHeight / 2}px)`;
-      bandRows[0].textContent = row(" ░░▒");
-      bandRows[1].textContent = row(GLYPHS);
-      bandRows[2].textContent = row("▒▓▓█");
-    }).then(() => {
-      page.style.clipPath = "";
-      band.remove();
-    });
-  }
-
   function enterAnimations(page) {
     $$("[data-reveal]", page).forEach((node, i) => {
       node.classList.remove("in");
@@ -807,8 +785,30 @@
     if (page.dataset.page === "services") countUp(page);
   }
 
+  let lastPointer = null;
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (event.target.closest && event.target.closest('a[href^="#"]'))
+        lastPointer = { x: event.clientX, y: event.clientY };
+    },
+    { passive: true }
+  );
+
   function showPage(id, { animate: withAnimation = true } = {}) {
     id = resolvePage(id) || "home";
+    if (id === state.page) return;
+    if (withAnimation && state.page && window.TRANSITION && !reduceMotion) {
+      const origin = lastPointer || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+      lastPointer = null;
+      SOUND.tick();
+      window.TRANSITION.run(origin, id === "home" ? "cd ~" : `cd ~/${id}`, () => applyPage(id, true));
+      return;
+    }
+    applyPage(id, withAnimation);
+  }
+
+  function applyPage(id, withAnimation) {
     if (id === state.page) return;
     const next = $(`[data-page="${id}"]`);
     $$("main [data-page]").forEach((page) => (page.hidden = page !== next));
@@ -826,9 +826,12 @@
       if (logo && withAnimation) logo.decode(1000);
       if (heroShown && withAnimation) playHeroText();
     } else if (withAnimation && !reduceMotion) {
-      SOUND.tick();
       enterAnimations(next);
-      scanReveal(next);
+    }
+    if (withAnimation && !reduceMotion) {
+      next.classList.remove("page-enter");
+      void next.offsetWidth;
+      next.classList.add("page-enter");
     }
     syncServiceScenes();
     document.dispatchEvent(new CustomEvent("pagechange", { detail: id }));

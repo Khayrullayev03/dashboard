@@ -30,8 +30,7 @@
   src: url("../fonts/JetBrainsMono-ExtraBold.woff2") format("woff2");
 }
 
-:root,
-.scan-band {
+:root {
   --bg: #050506;
   --bg-2: #0b0507;
   --surface: #0c0b0d;
@@ -926,30 +925,28 @@ main {
   }
 }
 
-.scan-band {
+.page-wipe {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 250;
-  overflow: hidden;
+  inset: 0;
+  z-index: 9;
   pointer-events: none;
-  background: linear-gradient(to bottom, transparent, rgba(5, 5, 6, 0.85) 40%, rgba(5, 5, 6, 0.85) 60%, transparent);
-  font: 500 12px/1.2 var(--mono);
-  white-space: pre;
 }
 
-.scan-band div:nth-child(1) {
-  color: rgba(214, 215, 219, 0.35);
+.page-enter {
+  animation: page-in 0.75s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.scan-band div:nth-child(2) {
-  color: var(--accent);
-  text-shadow: 0 0 12px var(--accent-glow);
-}
-
-.scan-band div:nth-child(3) {
-  color: var(--text);
+@keyframes page-in {
+  from {
+    opacity: 0.3;
+    transform: scale(0.985);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
 }
 
 .office-map {
