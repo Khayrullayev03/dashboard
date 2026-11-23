@@ -10,6 +10,7 @@
   const canvas = box.querySelector("canvas");
   const ctx = canvas.getContext("2d");
   const micBtn = menu.querySelector("[data-viz-mic]");
+  const synthBtn = menu.querySelector("[data-viz-synth]");
   const fileBtn = menu.querySelector("[data-viz-file]");
   const toggleBtn = menu.querySelector("[data-viz-toggle]");
   const stopBtn = menu.querySelector("[data-viz-stop]");
@@ -25,6 +26,8 @@
   let stream = null;
   let player = null;
   let playerSource = null;
+  let synth = null;
+  let synthOut = null;
   let spec = null;
   let low = null;
   let bassTap = null;
@@ -118,6 +121,8 @@
     }
     if (player) player.pause();
     if (playerSource) playerSource.disconnect();
+    if (synth) synth.stop();
+    if (synthOut) synthOut.disconnect();
     if (analyser) analyser.disconnect();
   }
 
@@ -128,8 +133,8 @@
     if (live) document.documentElement.dataset.music = "on";
     else delete document.documentElement.dataset.music;
     stopBtn.hidden = !live;
-    toggleBtn.hidden = mode !== "file";
-    trackEl.hidden = mode !== "file";
+    toggleBtn.hidden = mode !== "file" && mode !== "synth";
+    trackEl.hidden = mode !== "file" && mode !== "synth";
     if (window.BG && window.BG.setLive) window.BG.setLive(live);
     if (!live) {
       reset(ref);
@@ -140,9 +145,30 @@
     start();
   }
 
+  function paused() {
+    return mode === "synth" ? !(synth && synth.playing) : !player || player.paused;
+  }
+
   function syncToggle() {
-    if (!player) return;
-    toggleBtn.textContent = player.paused ? `▶ ${t("viz.play")}` : `❚❚ ${t("viz.pause")}`;
+    if (mode !== "file" && mode !== "synth") return;
+    toggleBtn.textContent = paused() ? `▶ ${t("viz.play")}` : `❚❚ ${t("viz.pause")}`;
+    if (mode === "synth") trackEl.textContent = t("viz.synthName");
+  }
+
+  function useSynth() {
+    closeMenu();
+    if (!window.SOUNDTRACK || !context()) return toast(t("viz.unsupported"));
+    detach();
+    if (!synthOut) synthOut = audio.createGain();
+    synthOut.connect(analyser);
+    synthOut.connect(low);
+    analyser.connect(audio.destination);
+    if (!synth) synth = window.SOUNDTRACK.create(audio, synthOut);
+    synth.start();
+    source = null;
+    reset(0.7);
+    setMode("synth");
+    toast(t("viz.synthOn"));
   }
 
   async function useMic() {
@@ -252,8 +278,9 @@
     for (let k = k0; k <= k1; k++) {
       const db = Math.max(MIN_DB, spec[k] > -200 ? spec[k] : -200);
       bassPow += Math.pow(10, db / 10);
-      flux += Math.max(0, db - prevDb[k]);
-      prevDb[k] = db;
+      const floored = Math.max(-72, db);
+      flux += Math.max(0, floored - prevDb[k]);
+      prevDb[k] = floored;
       bassBins++;
     }
     flux = (flux / bassBins) * Math.min(1.5, 16.7 / Math.max(4, dt));
@@ -426,10 +453,28 @@
     input.value = "";
   });
   toggleBtn.addEventListener("click", () => {
+    if (mode === "synth" && synth) {
+      if (synth.playing) synth.stop();
+      else synth.start();
+      syncToggle();
+      return;
+    }
     if (!player) return;
     if (player.paused) player.play().catch(() => {});
     else player.pause();
   });
+  if (synthBtn) synthBtn.addEventListener("click", useSynth);
+
+  try {
+    if (!localStorage.getItem("vizHint") && !reduceMotion)
+      setTimeout(() => {
+        if (mode !== "idle" || document.hidden) return;
+        localStorage.setItem("vizHint", "1");
+        btn.classList.add("is-hint");
+        toast(t("viz.hint"));
+        setTimeout(() => btn.classList.remove("is-hint"), 6000);
+      }, 12000);
+  } catch (e) {}
   stopBtn.addEventListener("click", () => {
     closeMenu();
     stop();

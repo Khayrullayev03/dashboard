@@ -13,8 +13,16 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const skillById = new Map(skills.map((s) => [s.id, s]));
   const LEVELS = { basic: 3, intermediate: 6, confident: 8, advanced: 9, expert: 10 };
-  const PAGES = ["home", "services", "about", "info", "who", "contact"];
-  const ALIASES = { office: "services", skills: "about", experience: "about", projects: "about", terminal: "info" };
+  const PAGES = ["home", "services", "voip", "about", "info", "who", "contact"];
+  const ALIASES = {
+    office: "services",
+    telephony: "voip",
+    pbx: "voip",
+    skills: "about",
+    experience: "about",
+    projects: "about",
+    terminal: "info",
+  };
   const resolvePage = (id) => (PAGES.includes(id) ? id : ALIASES[id] || null);
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
@@ -282,6 +290,120 @@
     );
   }
 
+  const storyRoot = $("[data-story]");
+  const STORY_SCREEN = [
+    "C:\\> boot dad.pc",
+    "fergana ..... OK",
+    "> learn.exe",
+    "> networks.exe",
+    "> sysadmin.exe",
+    "> 30+ clients ✓",
+  ];
+  const storyTimer = { id: 0, visible: false };
+  let storyPre = null;
+
+  function storyFrame(lines, cursor) {
+    const W = 18;
+    const shown = lines.slice(-4);
+    while (shown.length < 4) shown.push("");
+    const screen = shown.map((line, i) => {
+      const last = i === Math.min(lines.length, 4) - 1 || (lines.length === 0 && i === 0);
+      const text = (" " + line + (last && cursor ? "_" : "")).padEnd(W).slice(0, W);
+      return `│ │<span class="story-screen">${escapeHtml(text)}</span>│ │`;
+    });
+    return [
+      "┌──────────────────────┐",
+      "│ ┌──────────────────┐ │",
+      ...screen,
+      "│ └──────────────────┘ │",
+      '│  ▄▄▄             <span class="story-led">●</span>   │',
+      "└───────┬──────┬───────┘",
+      "      ──┴──────┴──      ",
+      " ┌────────────────────┐ ",
+      " │ [][][][][][][][][] │ ",
+      " │ [][][][][][][][][] │ ",
+      " └────────────────────┘ ",
+    ].join("\n");
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+  }
+
+  function runStory() {
+    clearTimeout(storyTimer.id);
+    if (!storyPre) return;
+    if (reduceMotion) {
+      storyPre.innerHTML = storyFrame(STORY_SCREEN.slice(0, 4), false);
+      return;
+    }
+    let line = 0;
+    let char = 0;
+    let blink = 0;
+    const typed = [];
+    const step = () => {
+      if (!storyTimer.visible || document.hidden || state.page !== "about") {
+        storyTimer.id = setTimeout(step, 400);
+        return;
+      }
+      let delay = 70;
+      if (line < STORY_SCREEN.length) {
+        const full = STORY_SCREEN[line];
+        typed[line] = full.slice(0, ++char);
+        if (char >= full.length) {
+          line++;
+          char = 0;
+          delay = 420;
+        }
+      } else if (blink++ < 8) {
+        delay = 380;
+      } else {
+        typed.length = 0;
+        line = 0;
+        blink = 0;
+        delay = 600;
+      }
+      storyPre.innerHTML = storyFrame(typed, line >= STORY_SCREEN.length ? blink % 2 === 0 : true);
+      storyTimer.id = setTimeout(step, delay);
+    };
+    step();
+  }
+
+  function renderStory() {
+    if (!storyRoot || !data.story) return;
+    const story = data.story;
+    storyPre = el("pre", { class: "asc story-art", "aria-hidden": "true" });
+    storyRoot.replaceChildren(
+      el(
+        "div",
+        { class: "term-bar", "aria-hidden": "true" },
+        el("span", { text: "~/story/father.txt" }),
+        el("span", { class: "live", text: "● rahmat, dada" })
+      ),
+      el(
+        "div",
+        { class: "story-body" },
+        el("div", { class: "story-pc" }, storyPre),
+        el(
+          "div",
+          { class: "story-text" },
+          el("p", { class: "about-kicker", text: "fergana · uzbekistan" }),
+          el("h3", { class: "story-title", text: L(story.title) }),
+          ...(L(story.text) || []).map((p) => el("p", { text: p })),
+          el("p", { class: "story-closing", text: L(story.closing) })
+        )
+      )
+    );
+    storyPre.innerHTML = storyFrame([], true);
+    runStory();
+  }
+
+  if (storyRoot && "IntersectionObserver" in window) {
+    new IntersectionObserver((entries) => {
+      storyTimer.visible = entries.some((e) => e.isIntersecting);
+    }).observe(storyRoot);
+  } else storyTimer.visible = true;
+
   function renderFocus() {
     const list = $("[data-focus]");
     list.textContent = "";
@@ -360,69 +482,126 @@
   const officeBlock = $("[data-office]");
   const servicePlayers = new Map();
 
-  function renderServices() {
-    servicePlayers.forEach((p) => p.stop());
-    servicePlayers.clear();
-    if (officeBlock) officeBlock.remove();
-    servicesRoot.textContent = "";
-    (data.services || []).forEach((service, i) => {
-      const num = String(i + 1).padStart(2, "0");
-      const text = el(
+  const voipRoot = $("[data-voip-services]");
+
+  function buildServiceRow(service, i, page) {
+    const num = String(i + 1).padStart(2, "0");
+    const text = el(
+      "div",
+      { class: "service-text" },
+      el("span", { class: "service-num", text: num }),
+      el("h3", { text: L(service.title) }),
+      el("p", { class: "service-desc", text: L(service.desc) }),
+      el(
+        "ul",
+        { class: "points" },
+        (L(service.points) || []).map((p) => el("li", { text: p }))
+      )
+    );
+    let art = null;
+    if (service.scene && window.SCENES) {
+      const pre = el("pre", { class: "scene-pre asc" });
+      const player = window.SCENES.createPlayer(pre, service.scene);
+      servicePlayers.set(service.id, { player, page });
+      const toggle = el("button", { class: "anim-toggle", type: "button" });
+      const syncToggle = () => {
+        toggle.textContent = `[ ${t(player.paused ? "anim.play" : "anim.pause")} ]`;
+        toggle.setAttribute("aria-pressed", String(!player.paused));
+      };
+      toggle.addEventListener("click", () => {
+        player.setPaused(!player.paused);
+        syncToggle();
+        syncServiceScenes();
+      });
+      syncToggle();
+      art = el(
         "div",
-        { class: "service-text" },
-        el("span", { class: "service-num", text: num }),
-        el("h3", { text: L(service.title) }),
-        el("p", { class: "service-desc", text: L(service.desc) }),
+        { class: "service-art" },
+        el("div", { class: "term-bar" }, el("span", { text: `$ ./${service.id}.sh` }), toggle),
+        el("div", { class: "scene-screen", "aria-hidden": "true" }, pre)
+      );
+    }
+    const row = el(
+      "article",
+      {
+        class: `service term${service.feature ? " service-feature" : ""}${i % 2 ? " is-flipped" : ""}`,
+        "data-reveal": true,
+        "data-service": service.id,
+      },
+      el(
+        "div",
+        { class: "term-bar", "aria-hidden": "true" },
+        el("span", { text: `~/${page}/${num}-${service.id}` }),
+        el("span", { class: "live", text: "●" })
+      ),
+      el("div", { class: "service-body" }, art, text)
+    );
+    if (service.feature === "office" && officeBlock) row.append(officeBlock);
+    if (service.feature === "voip" && window.VOIP) row.append(window.VOIP.create());
+    if (service.feature === "secure" && window.SECURE) row.append(window.SECURE.create());
+    return row;
+  }
+
+  function renderServiceList(rootNode, page, list) {
+    servicePlayers.forEach((entry, id) => {
+      if (entry.page !== page) return;
+      entry.player.stop();
+      servicePlayers.delete(id);
+    });
+    rootNode.textContent = "";
+    list.forEach((service, i) => rootNode.append(buildServiceRow(service, i, page)));
+    observeServices();
+  }
+
+  function renderServices() {
+    if (officeBlock) officeBlock.remove();
+    renderServiceList(
+      servicesRoot,
+      "services",
+      (data.services || []).filter((s) => !s.page)
+    );
+  }
+
+  function renderVoip() {
+    if (!voipRoot) return;
+    renderServiceList(
+      voipRoot,
+      "voip",
+      (data.services || []).filter((s) => s.page === "voip")
+    );
+    const voip = data.voip || {};
+    const table = $("[data-voip-compare]");
+    if (table && voip.compare) {
+      const cols = L(voip.compare.cols) || [];
+      const head = el(
+        "thead",
+        null,
         el(
-          "ul",
-          { class: "points" },
-          (L(service.points) || []).map((p) => el("li", { text: p }))
+          "tr",
+          null,
+          el("th", { scope: "col" }),
+          ...cols.map((c, i) => el("th", { scope: "col", class: `col-${i}`, text: c }))
         )
       );
-      let art = null;
-      if (service.scene && window.SCENES) {
-        const pre = el("pre", { class: "scene-pre asc" });
-        const player = window.SCENES.createPlayer(pre, service.scene);
-        servicePlayers.set(service.id, player);
-        const toggle = el("button", { class: "anim-toggle", type: "button" });
-        const syncToggle = () => {
-          toggle.textContent = `[ ${t(player.paused ? "anim.play" : "anim.pause")} ]`;
-          toggle.setAttribute("aria-pressed", String(!player.paused));
-        };
-        toggle.addEventListener("click", () => {
-          player.setPaused(!player.paused);
-          syncToggle();
-          syncServiceScenes();
-        });
-        syncToggle();
-        art = el(
-          "div",
-          { class: "service-art" },
-          el("div", { class: "term-bar" }, el("span", { text: `$ ./${service.id}.sh` }), toggle),
-          el("div", { class: "scene-screen", "aria-hidden": "true" }, pre)
-        );
-      }
-      const row = el(
-        "article",
-        {
-          class: `service term${service.feature ? " service-feature" : ""}${i % 2 ? " is-flipped" : ""}`,
-          "data-reveal": true,
-          "data-service": service.id,
-        },
-        el(
-          "div",
-          { class: "term-bar", "aria-hidden": "true" },
-          el("span", { text: `~/services/${num}-${service.id}` }),
-          el("span", { class: "live", text: "●" })
-        ),
-        el("div", { class: "service-body" }, art, text)
+      const body = el(
+        "tbody",
+        null,
+        (L(voip.compare.rows) || []).map(([label, ...cells]) =>
+          el(
+            "tr",
+            null,
+            el("th", { scope: "row", text: label }),
+            ...cells.map((c, i) => el("td", { class: `col-${i}`, text: c }))
+          )
+        )
       );
-      if (service.feature === "office" && officeBlock) row.append(officeBlock);
-      if (service.feature === "voip" && window.VOIP) row.append(window.VOIP.create());
-      if (service.feature === "secure" && window.SECURE) row.append(window.SECURE.create());
-      servicesRoot.append(row);
-    });
-    observeServices();
+      table.replaceChildren(head, body);
+    }
+    const stack = $("[data-voip-stack]");
+    if (stack)
+      stack.replaceChildren(
+        ...(voip.stack || []).map((name, i) => el("li", { class: "skill-chip", vars: { "--i": i } }, name))
+      );
   }
 
   const visibleServices = new Set();
@@ -439,11 +618,11 @@
       });
       syncServiceScenes();
     });
-    $$("[data-service]", servicesRoot).forEach((node) => servicesObserver.observe(node));
+    $$("[data-service]").forEach((node) => servicesObserver.observe(node));
   }
   function syncServiceScenes() {
-    servicePlayers.forEach((player, id) => {
-      if (visibleServices.has(id) && !document.hidden && state.page === "services") player.start();
+    servicePlayers.forEach(({ player, page }, id) => {
+      if (visibleServices.has(id) && !document.hidden && state.page === page) player.start();
       else player.stop();
     });
   }
@@ -764,6 +943,148 @@
       );
       if (art) window.ICONS.contact(art, c.label);
     });
+    renderContactExtra();
+  }
+
+  let clockTimer = 0;
+
+  function tashkentNow() {
+    const card = data.card || {};
+    const tz = (card.hours && card.hours.tz) || "Asia/Tashkent";
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: tz,
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(new Date())
+      .reduce((o, x) => ((o[x.type] = x.value), o), {});
+    return { h: Number(parts.hour), m: parts.minute, text: `${parts.hour}:${parts.minute}` };
+  }
+
+  function vcard() {
+    const card = data.card || {};
+    const en = (profile.name && profile.name.en) || L(profile.name);
+    const [first, ...rest] = en.split(" ");
+    const line = (v) => String(v).replace(/[,;\\]/g, (c) => "\\" + c);
+    const email = contacts.find((c) => c.label === "email");
+    const social = contacts.filter((c) => c.href.startsWith("http"));
+    return [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      `N:${line(rest.join(" "))};${line(first)};;;`,
+      `FN:${line(L(profile.name))}`,
+      `TITLE:${line(L(profile.role))}`,
+      email ? `EMAIL;TYPE=INTERNET:${email.value}` : "",
+      `URL:${card.url || location.href.split("#")[0]}`,
+      ...social.map((c) => `X-SOCIALPROFILE;TYPE=${c.label}:${c.href}`),
+      `NOTE:${line((profile.tags && L(profile.tags).join(" · ")) || "")}`,
+      "END:VCARD",
+    ]
+      .filter(Boolean)
+      .join("\r\n");
+  }
+
+  function qrSvg(rows) {
+    const n = rows.length;
+    const pad = 3;
+    const size = n + pad * 2;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+    svg.setAttribute("shape-rendering", "crispEdges");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", t("contact.qr"));
+    const bg = document.createElementNS(svg.namespaceURI, "rect");
+    bg.setAttribute("width", size);
+    bg.setAttribute("height", size);
+    bg.setAttribute("fill", "#f4f4f6");
+    let d = "";
+    rows.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) if (row[x] === "1") d += `M${x + pad} ${y + pad}h1v1h-1z`;
+    });
+    const path = document.createElementNS(svg.namespaceURI, "path");
+    path.setAttribute("d", d);
+    path.setAttribute("fill", "#050506");
+    svg.append(bg, path);
+    return svg;
+  }
+
+  function renderContactExtra() {
+    const root = $("[data-contact-extra]");
+    if (!root) return;
+    const card = data.card || {};
+    const hours = card.hours || { from: 9, to: 22 };
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const dot = el("span", { class: "status-dot" });
+    const state = el("span", { class: "status-state" });
+    const reply = el("p", { class: "status-reply" });
+    const clock = el("span", { class: "status-clock" });
+    const update = () => {
+      const now = tashkentNow();
+      const on = now.h >= hours.from && now.h < hours.to;
+      dot.classList.toggle("is-on", on);
+      state.textContent = t(on ? "contact.statusOn" : "contact.statusOff");
+      reply.textContent = t(on ? "contact.replyOn" : "contact.replyOff");
+      clock.textContent = now.text;
+    };
+    const save = el("button", { class: "cta-btn is-primary", type: "button", text: t("contact.vcard") });
+    save.addEventListener("click", () => {
+      const a = el("a", {
+        href: URL.createObjectURL(new Blob([vcard()], { type: "text/vcard;charset=utf-8" })),
+        download: `${profile.handle || "contact"}.vcf`,
+      });
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    });
+    const status = el(
+      "div",
+      { class: "term status-card", "data-reveal": true },
+      el(
+        "div",
+        { class: "term-bar", "aria-hidden": "true" },
+        el("span", { text: "~/status" }),
+        el("span", { class: "live", text: "● live" })
+      ),
+      el(
+        "div",
+        { class: "status-body" },
+        el("p", { class: "status-line" }, dot, state),
+        reply,
+        el(
+          "p",
+          { class: "status-time" },
+          el("span", { text: t("contact.time") }),
+          clock,
+          el("span", {
+            class: "status-hours",
+            text: t("contact.hours", { from: pad2(hours.from), to: pad2(hours.to) }),
+          })
+        ),
+        save
+      )
+    );
+    const qr = el(
+      "div",
+      { class: "term qr-card", "data-reveal": true },
+      el(
+        "div",
+        { class: "term-bar", "aria-hidden": "true" },
+        el("span", { text: "~/qr/visit-card" }),
+        el("span", { text: "scan me" })
+      ),
+      el(
+        "div",
+        { class: "qr-body" },
+        el("div", { class: "qr-code" }, card.qr ? qrSvg(card.qr) : null),
+        el("p", { class: "qr-note", text: t("contact.qr") })
+      )
+    );
+    root.replaceChildren(status, qr);
+    update();
+    clearInterval(clockTimer);
+    clockTimer = setInterval(() => state.isConnected && root.isConnected && update(), 30000);
   }
 
   const navLinks = $$(".nav a");
@@ -874,7 +1195,8 @@
 
   const PAGE_RENDER = {
     services: [renderServicesStats, renderServices],
-    about: [renderFocus, renderSkillLevels, renderSkills, renderExperience],
+    voip: [renderVoip],
+    about: [renderStory, renderFocus, renderSkillLevels, renderSkills, renderExperience],
     contact: [renderContacts],
   };
   const rendered = new Set();
@@ -895,7 +1217,10 @@
 
   const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 200));
   setTimeout(
-    () => ["services", "about", "contact"].forEach((id, i) => setTimeout(() => idle(() => ensurePage(id)), i * 800)),
+    () =>
+      ["services", "voip", "about", "contact"].forEach((id, i) =>
+        setTimeout(() => idle(() => ensurePage(id)), i * 800)
+      ),
     6000
   );
   document.addEventListener("langchange", () => {

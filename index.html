@@ -3,11 +3,67 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Хайруллаев Анваржон — системный администратор</title>
+    <title>Хайруллаев Анваржон — системный администратор | серверы, СКС, сети, IP-телефония</title>
     <meta
       name="description"
-      content="Системный администратор: Windows Server, Active Directory, сети, СКС, видеонаблюдение."
+      content="Хайруллаев Анваржон — системный администратор из Ферганы. Windows Server и Active Directory, сети и VPN, монтаж СКС и видеонаблюдения, IP-телефония и облачные АТС. 30+ компаний в Узбекистане."
     />
+    <link rel="canonical" href="https://khayrullayev03.github.io/dashboard/" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="Хайруллаев Анваржон" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "https://khayrullayev03.github.io/dashboard/#person",
+            "name": "Anvarjon Khayrullayev",
+            "alternateName": ["Хайруллаев Анваржон", "Xayrullayev Anvarjon"],
+            "jobTitle": "System administrator",
+            "url": "https://khayrullayev03.github.io/dashboard/",
+            "image": "https://khayrullayev03.github.io/dashboard/assets/img/og.jpg",
+            "email": "mailto:aa7469303@gmail.com",
+            "homeLocation": { "@type": "Place", "name": "Fergana, Uzbekistan" },
+            "sameAs": ["https://t.me/anvar_amerikanskiy", "https://www.instagram.com/_ultraviolence_03/"],
+            "knowsAbout": [
+              "Windows Server",
+              "Active Directory",
+              "Computer networks",
+              "VPN",
+              "Structured cabling",
+              "CCTV",
+              "IP telephony",
+              "IP-PBX",
+              "IP-PBX",
+              "Cloud PBX"
+            ]
+          },
+          {
+            "@type": "ProfessionalService",
+            "@id": "https://khayrullayev03.github.io/dashboard/#service",
+            "name": "Anvarjon Khayrullayev — IT infrastructure services",
+            "url": "https://khayrullayev03.github.io/dashboard/",
+            "image": "https://khayrullayev03.github.io/dashboard/assets/img/og.jpg",
+            "email": "aa7469303@gmail.com",
+            "founder": { "@id": "https://khayrullayev03.github.io/dashboard/#person" },
+            "areaServed": { "@type": "Country", "name": "Uzbekistan" },
+            "address": { "@type": "PostalAddress", "addressLocality": "Fergana", "addressCountry": "UZ" },
+            "knowsLanguage": ["ru", "uz", "en"],
+            "serviceType": [
+              "System administration",
+              "Server setup",
+              "Network and Wi-Fi setup",
+              "Structured cabling",
+              "CCTV installation",
+              "IP telephony",
+              "Cloud PBX",
+              "Secure infrastructure"
+            ]
+          }
+        ]
+      }
+    </script>
     <meta name="theme-color" content="#050506" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://khayrullayev03.github.io/dashboard/" />
@@ -58,6 +114,7 @@
         <nav class="nav" aria-label="Menu">
           <a href="#home" data-i18n="nav.main">главная</a>
           <a href="#services" data-i18n="nav.services">услуги</a>
+          <a href="#voip" data-i18n="nav.voip">телефония</a>
           <a href="#about" data-i18n="nav.about">о себе</a>
           <a href="#info" data-i18n="nav.info">инфо</a>
           <a href="#who" data-i18n="nav.who">кто</a>
@@ -87,6 +144,7 @@
             </button>
             <div class="viz-menu" data-viz-menu hidden>
               <p class="viz-title" data-i18n="viz.open">Аудиовизуализатор</p>
+              <button type="button" data-viz-synth data-i18n="viz.synth">Саундтрек сайта</button>
               <button type="button" data-viz-mic data-i18n="viz.mic">Слушать музыку рядом</button>
               <button type="button" data-viz-file data-i18n="viz.file">Открыть свой трек</button>
               <button type="button" data-viz-toggle hidden></button>
@@ -175,12 +233,44 @@
         </div>
       </section>
 
+      <section class="page" data-page="voip" aria-labelledby="voip-title" hidden>
+        <div class="container container-wide">
+          <div class="page-head">
+            <a class="back" href="#home" data-i18n="nav.back">← меню</a>
+            <h2 class="section-title" id="voip-title" data-title>
+              <span class="num">02.</span><span class="title-text" data-i18n="voip.title">Телефония</span>
+            </h2>
+          </div>
+          <p class="voip-lead" data-i18n="voip.lead" data-reveal>
+            Настраиваю телефонию для офисов под ключ: от IP-АТС в серверной до облачных номеров RingCentral и 8x8.
+          </p>
+          <div class="services" data-voip-services></div>
+
+          <h3 class="sub-title" data-reveal>
+            <span class="sub-mark" aria-hidden="true">▸</span
+            ><span class="sub-text" data-i18n="voip.compareTitle">Какую АТС выбрать</span>
+          </h3>
+          <div class="term voip-compare" data-reveal>
+            <div class="term-bar" aria-hidden="true">
+              <span>~/voip/compare.md</span><span>pbx · ip-pbx · cloud</span>
+            </div>
+            <div class="voip-compare-scroll"><table class="compare-table" data-voip-compare></table></div>
+          </div>
+
+          <h3 class="sub-title" data-reveal>
+            <span class="sub-mark" aria-hidden="true">▸</span
+            ><span class="sub-text" data-i18n="voip.stackTitle">С чем работаю</span>
+          </h3>
+          <ul class="skill-chips voip-stack" data-voip-stack data-reveal></ul>
+        </div>
+      </section>
+
       <section class="page" data-page="about" aria-labelledby="about-title" hidden>
         <div class="container">
           <div class="page-head">
             <a class="back" href="#home" data-i18n="nav.back">← меню</a>
             <h2 class="section-title" id="about-title" data-title>
-              <span class="num">02.</span><span class="title-text" data-i18n="about.title">О себе</span>
+              <span class="num">03.</span><span class="title-text" data-i18n="about.title">О себе</span>
             </h2>
           </div>
 
@@ -205,6 +295,8 @@
             <dl class="about-specs" data-about-specs></dl>
             <div class="about-stats" data-about-stats></div>
           </div>
+
+          <div class="term story" data-story data-reveal></div>
 
           <h3 class="sub-title" data-reveal>
             <span class="sub-mark" aria-hidden="true">▸</span
@@ -253,7 +345,7 @@
           <div class="page-head">
             <a class="back" href="#home" data-i18n="nav.back">← меню</a>
             <h2 class="section-title" id="info-title" data-title>
-              <span class="num">03.</span><span class="title-text" data-i18n="info.title">Инфо</span>
+              <span class="num">04.</span><span class="title-text" data-i18n="info.title">Инфо</span>
             </h2>
           </div>
 
@@ -309,11 +401,22 @@
               <button class="sec-tab" type="button" role="tab" data-ping-tab="apps" data-i18n="net.pingApps">
                 Приложения
               </button>
+              <button class="sec-tab" type="button" role="tab" data-ping-tab="email" data-i18n="net.pingEmail">
+                Почта
+              </button>
+              <button class="sec-tab" type="button" role="tab" data-ping-tab="vpn">VPN</button>
               <button class="sec-tab" type="button" role="tab" data-ping-tab="isp" data-i18n="net.pingIsp">
                 Провайдеры и регионы
               </button>
             </div>
+            <div class="ping-tools">
+              <button class="anim-toggle" type="button" data-ping-full></button>
+              <button class="anim-toggle" type="button" data-ping-copy></button>
+              <button class="anim-toggle" type="button" data-ping-save></button>
+            </div>
+            <p class="ping-summary" data-ping-summary aria-live="polite"></p>
             <div class="ping-list" data-ping-list></div>
+            <div class="ping-report" data-ping-report hidden><pre></pre></div>
             <p class="net-note" data-i18n="net.pingNote">
               Время отклика HTTP из вашего браузера: лучшее из трёх последних замеров, обновляется вживую. Зарубежные
               регионы измеряются до дата-центров AWS.
@@ -350,7 +453,7 @@
           <div class="page-head">
             <a class="back" href="#home" data-i18n="nav.back">← меню</a>
             <h2 class="section-title" id="who-title" data-title>
-              <span class="num">04.</span><span class="title-text" data-i18n="who.title">Кто заходил</span>
+              <span class="num">05.</span><span class="title-text" data-i18n="who.title">Кто заходил</span>
             </h2>
           </div>
           <div class="who" data-who></div>
@@ -362,10 +465,11 @@
           <div class="page-head">
             <a class="back" href="#home" data-i18n="nav.back">← меню</a>
             <h2 class="section-title" id="contact-title" data-title>
-              <span class="num">05.</span><span class="title-text" data-i18n="contact.title">Контакты</span>
+              <span class="num">06.</span><span class="title-text" data-i18n="contact.title">Контакты</span>
             </h2>
           </div>
           <ul class="contacts" data-contacts></ul>
+          <div class="contact-extra" data-contact-extra></div>
         </div>
       </section>
     </main>
@@ -418,6 +522,7 @@
     <script src="assets/js/config.js?v=dev"></script>
     <script src="assets/js/stats.js?v=dev"></script>
     <script src="assets/js/main.js?v=dev"></script>
+    <script src="assets/js/soundtrack.js?v=dev"></script>
     <script src="assets/js/visualizer.js?v=dev"></script>
     <script src="assets/js/office.js?v=dev"></script>
     <script src="assets/js/worldmap.js?v=dev"></script>

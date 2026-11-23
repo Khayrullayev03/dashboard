@@ -338,6 +338,7 @@
 
   let vulns = null;
   let vulnFailed = false;
+  let vulnRetries = 0;
 
   async function loadVulns() {
     const day = 86400000;
@@ -383,6 +384,7 @@
       vulnFailed = false;
     } catch (e) {
       vulnFailed = !vulns;
+      if (!vulns && vulnRetries < 2) setTimeout(loadVulns, 8000 * ++vulnRetries);
     }
     renderVulns();
   }

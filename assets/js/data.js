@@ -16,10 +16,165 @@ window.PORTFOLIO = {
       en: "Windows Server · AD · networks · cabling",
     },
     about: {
-      ru: "Я — системный администратор, к которому обращаются, когда IT должно просто работать. Больше 30 компаний доверили мне свою инфраструктуру: серверы Windows и Active Directory, сети и VPN, СКС и видеонаблюдение, IP-телефонию и облачные АТС. Я не латаю дыры — я выстраиваю систему так, чтобы поломок не было: резервные копии, мониторинг, права доступа и порядок в технике. Вы занимаетесь своим делом, а я отвечаю за то, чтобы связь, почта, камеры и компьютеры работали каждый день. Напишите мне — разберу вашу задачу и предложу решение.",
-      uz: "Men — IT shunchaki ishlashi kerak bo‘lganda murojaat qilinadigan tizim administratoriman. 30 dan ortiq kompaniya o‘z infratuzilmasini menga ishonib topshirgan: Windows serverlari va Active Directory, tarmoqlar va VPN, SKS va videokuzatuv, IP-telefoniya va bulutli ATS. Men teshiklarni yamamayman — tizimni buzilishlar bo‘lmaydigan qilib quraman: zaxira nusxalar, monitoring, kirish huquqlari va texnikada tartib. Siz o‘z ishingiz bilan shug‘ullanasiz, men esa aloqa, pochta, kameralar va kompyuterlar har kuni ishlashi uchun javob beraman. Menga yozing — vazifangizni ko‘rib chiqib, yechim taklif qilaman.",
-      en: "I'm the system administrator people call when IT just has to work. More than 30 companies trust me with their infrastructure: Windows servers and Active Directory, networks and VPN, structured cabling and CCTV, IP telephony and cloud PBX. I don't patch holes — I build systems that don't break: backups, monitoring, access rights and order in the hardware. You run your business, and I make sure phones, mail, cameras and computers work every single day. Message me — I'll look at your task and propose a solution.",
+      ru: "Я — ферганский парень и системный администратор, к которому обращаются, когда IT должно просто работать. Больше 30 компаний доверили мне свою инфраструктуру: серверы Windows и Active Directory, сети и VPN, СКС и видеонаблюдение, IP-телефонию и облачные АТС. Я не латаю дыры — я выстраиваю систему так, чтобы поломок не было: резервные копии, мониторинг, права доступа и порядок в технике. Вы занимаетесь своим делом, а я отвечаю за то, чтобы связь, почта, камеры и компьютеры работали каждый день. Напишите мне — разберу вашу задачу и предложу решение.",
+      uz: "Men — farg‘onalik yigit va IT shunchaki ishlashi kerak bo‘lganda murojaat qilinadigan tizim administratoriman. 30 dan ortiq kompaniya o‘z infratuzilmasini menga ishonib topshirgan: Windows serverlari va Active Directory, tarmoqlar va VPN, SKS va videokuzatuv, IP-telefoniya va bulutli ATS. Men teshiklarni yamamayman — tizimni buzilishlar bo‘lmaydigan qilib quraman: zaxira nusxalar, monitoring, kirish huquqlari va texnikada tartib. Siz o‘z ishingiz bilan shug‘ullanasiz, men esa aloqa, pochta, kameralar va kompyuterlar har kuni ishlashi uchun javob beraman. Menga yozing — vazifangizni ko‘rib chiqib, yechim taklif qilaman.",
+      en: "I'm a guy from Fergana and the system administrator people call when IT just has to work. More than 30 companies trust me with their infrastructure: Windows servers and Active Directory, networks and VPN, structured cabling and CCTV, IP telephony and cloud PBX. I don't patch holes — I build systems that don't break: backups, monitoring, access rights and order in the hardware. You run your business, and I make sure phones, mail, cameras and computers work every single day. Message me — I'll look at your task and propose a solution.",
     },
+  },
+
+  story: {
+    title: {
+      ru: "Всё началось с подарка отца",
+      uz: "Hammasi otamning sovg‘asidan boshlangan",
+      en: "It all started with a gift from my father",
+    },
+    text: {
+      ru: [
+        "Я — ферганский парень. Мой путь в IT начался дома, в Фергане, когда отец подарил мне первый компьютер. Он хотел, чтобы я рос умным, учился и знал больше, чем требует школа.",
+        "Я разобрал этот компьютер до последнего винтика, ломал и чинил его, переустанавливал Windows и собирал свои первые сети. Из любопытства выросла профессия — сегодня мне доверяют свою инфраструктуру больше 30 компаний.",
+        "Отец, спасибо тебе. Ты подарил мне не просто технику — ты подарил веру в то, что из меня выйдет толк. Твоё терпение, мудрость и забота — фундамент всего, чего я добился. Каждый настроенный сервер и каждая довольная компания — это и твоя заслуга.",
+      ],
+      uz: [
+        "Men farg‘onalik yigitman. IT sohasidagi yo‘lim uyda, Farg‘onada, otam menga birinchi kompyuterni sovg‘a qilganida boshlangan. U aqlli bo‘lib o‘sishimni, o‘qishimni va maktab talab qilganidan ko‘proq bilishimni xohlagan.",
+        "O‘sha kompyuterni oxirgi murvatigacha qismlarga ajratdim, buzdim va tuzatdim, Windows’ni qayta o‘rnatdim va ilk tarmoqlarimni yig‘dim. Qiziqishdan kasb o‘sib chiqdi — bugun 30 dan ortiq kompaniya o‘z infratuzilmasini menga ishonib topshiradi.",
+        "Ota, sizga rahmat. Siz menga shunchaki texnika emas — mendan odam chiqishiga bo‘lgan ishonchni sovg‘a qilgansiz. Sabr-toqatingiz, donoligingiz va g‘amxo‘rligingiz — men erishgan hamma narsaning poydevori. Har bir sozlangan server va har bir mamnun kompaniya — bu sizning ham xizmatingiz.",
+      ],
+      en: [
+        "I'm a guy from Fergana. My path into IT began at home in Fergana, when my father gave me my first computer. He wanted me to grow up smart, keep learning and know more than school asked of me.",
+        "I took that computer apart down to the last screw, broke it and fixed it, reinstalled Windows and built my first networks. Curiosity grew into a profession — today more than 30 companies trust me with their infrastructure.",
+        "Dad, thank you. You gave me more than a machine — you gave me your belief that I would make something of myself. Your patience, wisdom and care are the foundation of everything I've achieved. Every server I set up and every satisfied company is your achievement too.",
+      ],
+    },
+    closing: {
+      ru: "Rahmat, dadajon! — спасибо, отец!",
+      uz: "Rahmat, dadajon!",
+      en: "Rahmat, dadajon! — thank you, Dad!",
+    },
+  },
+
+  voip: {
+    compare: {
+      cols: {
+        ru: ["Обычная АТС", "IP-АТС в офисе", "Облачная АТС"],
+        uz: ["Oddiy ATS", "Ofisdagi IP-ATS", "Bulutli ATS"],
+        en: ["Classic PBX", "On-site IP PBX", "Cloud PBX"],
+      },
+      rows: {
+        ru: [
+          [
+            "Где стоит",
+            "станция и медные линии в офисе",
+            "сервер IP-PBX у вас",
+            "у провайдера: RingCentral, 8x8",
+          ],
+          ["Запуск", "дорого: станция + линии", "средне: сервер + IP-телефоны", "дёшево: только подписка"],
+          ["Каждый месяц", "абонплата за каждую линию", "SIP-транк, дешёвые звонки", "оплата за пользователя"],
+          ["Удалённая работа", "нет", "через VPN и софтфон", "из любой точки мира"],
+          ["Рост", "упирается в порты станции", "десятки и сотни номеров", "без ограничений"],
+          [
+            "Лучше всего для",
+            "маленький офис без интернета",
+            "офис от 10 человек, полный контроль",
+            "распределённые команды и колл-центры",
+          ],
+        ],
+        uz: [
+          [
+            "Qayerda turadi",
+            "stansiya va mis liniyalar ofisda",
+            "IP-PBX serveri sizda",
+            "provayderda: RingCentral, 8x8",
+          ],
+          ["Ishga tushirish", "qimmat: stansiya + liniyalar", "o‘rtacha: server + IP-telefonlar", "arzon: faqat obuna"],
+          [
+            "Har oy",
+            "har bir liniya uchun abonent to‘lovi",
+            "SIP-trank, arzon qo‘ng‘iroqlar",
+            "har bir foydalanuvchi uchun to‘lov",
+          ],
+          ["Masofaviy ish", "yo‘q", "VPN va softfon orqali", "dunyoning istalgan nuqtasidan"],
+          ["O‘sish", "stansiya portlariga taqaladi", "o‘nlab va yuzlab raqamlar", "cheklovsiz"],
+          [
+            "Kimga mos",
+            "internetsiz kichik ofis",
+            "10 kishidan ortiq ofis, to‘liq nazorat",
+            "tarqoq jamoalar va kol-markazlar",
+          ],
+        ],
+        en: [
+          [
+            "Where it lives",
+            "a box and copper lines in the office",
+            "your own IP-PBX server",
+            "at the provider: RingCentral, 8x8",
+          ],
+          ["Setup cost", "high: the box plus lines", "medium: a server plus IP phones", "low: just a subscription"],
+          ["Monthly", "a fee for every line", "a SIP trunk, cheap calls", "a per-user subscription"],
+          ["Remote work", "no", "over VPN and a softphone", "from anywhere in the world"],
+          ["Growth", "limited by the box's ports", "tens to hundreds of extensions", "no limits"],
+          [
+            "Best for",
+            "a small office without internet",
+            "offices of 10+ people wanting full control",
+            "distributed teams and call centres",
+          ],
+        ],
+      },
+    },
+    stack: [
+      "IP-PBX",
+      "IP-PBX",
+      "SIP",
+      "RTP",
+      "Softswitch",
+      "E1",
+      "IVR",
+      "QoS",
+      "Voice VLAN",
+      "PoE",
+      "RingCentral",
+      "8x8",
+    ],
+  },
+
+  card: {
+    url: "https://khayrullayev03.github.io/dashboard/",
+    hours: { from: 9, to: 22, tz: "Asia/Tashkent" },
+    qr: [
+      "111111100100011111011001001111111",
+      "100000100111111110100001001000001",
+      "101110100101110110100010101011101",
+      "101110100100011111110011001011101",
+      "101110100010101000111011001011101",
+      "100000101001100111011110101000001",
+      "111111101010101010101010101111111",
+      "000000000011100111100100100000000",
+      "100101101100011010101100010100000",
+      "011011010100010011000100111100011",
+      "100110110111111010111100000110101",
+      "010100011000110110100100000011000",
+      "101111110010101010101101011001010",
+      "010110001100001100100010001010011",
+      "100010101110001110000001011001110",
+      "111110001010101011000100101100010",
+      "001101100010101111010111001010010",
+      "001001010111010011000001110101010",
+      "001100101111110011000100001000101",
+      "000010001111001110001101010100011",
+      "111101100011100101001101110000011",
+      "001001010110110101001000001001011",
+      "110010110101111011010010110001101",
+      "010110001110011100111100100111000",
+      "101001100101000011001100111111001",
+      "000000001001001001011011100011001",
+      "111111100010110011101000101011110",
+      "100000101000100111110110100010000",
+      "101110100010011000100100111111010",
+      "101110101000111111100110001010000",
+      "101110100001011110100010000011001",
+      "100000100000010001101101100000000",
+      "111111101110011100011100101011010",
+    ],
   },
 
   contacts: [
@@ -723,6 +878,7 @@ window.PORTFOLIO = {
     },
     {
       id: "voip",
+      page: "voip",
       feature: "voip",
       title: { ru: "IP-телефония (VoIP)", uz: "IP-telefoniya (VoIP)", en: "IP telephony (VoIP)" },
       desc: {
@@ -753,6 +909,7 @@ window.PORTFOLIO = {
     },
     {
       id: "cloudpbx",
+      page: "voip",
       scene: "cloudpbx",
       title: { ru: "Облачная АТС", uz: "Bulutli ATS", en: "Cloud PBX" },
       desc: {

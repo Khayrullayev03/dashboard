@@ -909,7 +909,99 @@
     },
   };
 
-  const EFFECTS = { home: boot, services: fiber, about: scan, info: globe, who: logs, contact: plane };
+  const call = {
+    cover: 420,
+    hold: 640,
+    reveal: 620,
+    onStart: () =>
+      sound((s) => {
+        s.tone(425, 0.18, "sine", 0.03);
+        later(260, () => s.tone(425, 0.18, "sine", 0.03));
+      }),
+    onSwap: () => sound((s) => s.tone(1300, 0.08, "triangle", 0.04)),
+    drawCover(st, p) {
+      const { w, h, origin } = st;
+      const reach = Math.hypot(Math.max(origin.x, w - origin.x), Math.max(origin.y, h - origin.y));
+      const r = out(p) * reach;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(origin.x, origin.y, Math.max(1, r), 0, Math.PI * 2);
+      ctx.clip();
+      cover(st);
+      ctx.restore();
+      ctx.strokeStyle = st.colors.accent;
+      ctx.lineWidth = 2;
+      for (let k = 0; k < 4; k++) {
+        const rr = r - k * 34;
+        if (rr <= 0) continue;
+        ctx.globalAlpha = (1 - k / 4) * (1 - p * 0.4);
+        ctx.beginPath();
+        ctx.arc(origin.x, origin.y, rr, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    },
+    drawHold(st, p) {
+      cover(st);
+      const { w, h } = st;
+      const mid = h / 2 + 30;
+      const span = w * out(clamp(p * 1.4));
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = st.colors.accent;
+      ctx.shadowColor = st.colors.accent;
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      for (let x = 0; x <= span; x += 3) {
+        const env = Math.sin((x / w) * Math.PI);
+        const voice = 0.55 + 0.45 * Math.sin(x * 0.012 + p * 9);
+        const y = mid + Math.sin(x * 0.05 + p * 22) * 34 * env * voice + Math.sin(x * 0.23 + p * 47) * 7 * env;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      const msgs = ["INVITE sip:B@voip", "100 Trying", "180 Ringing", "200 OK"];
+      const n = Math.min(msgs.length, 1 + Math.floor(p * msgs.length * 1.1));
+      const top = mid - 150;
+      ctx.font = `700 ${w < 600 ? 14 : 17}px ${FONT}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let i = 0; i < n; i++) {
+        const last = i === n - 1;
+        ctx.globalAlpha = last ? 1 : 0.45;
+        ctx.fillStyle = last && i === msgs.length - 1 ? st.colors.accent : last ? st.colors.bright : st.colors.muted;
+        const arrow = i % 2 ? "<--  " : "-->  ";
+        ctx.fillText(arrow + msgs[i], w / 2, top + i * 28);
+      }
+      ctx.globalAlpha = 1;
+      ctx.textAlign = "left";
+    },
+    drawReveal(st, p) {
+      const { w, h } = st;
+      const cx = w / 2;
+      const cy = h / 2 + 30;
+      const r = inOut(p) * Math.hypot(w, h) * 0.6;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, w, h);
+      ctx.arc(cx, cy, Math.max(1, r), 0, Math.PI * 2, true);
+      ctx.clip("evenodd");
+      cover(st);
+      ctx.restore();
+      ctx.strokeStyle = st.colors.accent;
+      ctx.shadowColor = st.colors.accent;
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 1 - p;
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.max(1, r), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+    },
+  };
+
+  const EFFECTS = { home: boot, services: fiber, voip: call, about: scan, info: globe, who: logs, contact: plane };
 
   function play(ms, draw) {
     return new Promise((resolve) => {
