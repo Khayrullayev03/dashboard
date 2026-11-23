@@ -1,9 +1,3 @@
-/* Анимированный ASCII-фон:
- *  - алая луна из символов: кратеры, объём, медленное вращение, багровое свечение, плывущие облака;
- *  - мерцающие звёзды;
- *  - движущиеся «линии уровня» внизу экрана (вокруг курсора — гуще и ярче);
- *  - режим матрицы (пасхалка, команда matrix) — падающие столбцы символов.
- * Цвета — из CSS-переменных (--moon-*, --field-*), поэтому фон подстраивается под тему. */
 (function () {
   "use strict";
 
@@ -16,7 +10,7 @@
   if (!ctx) return;
 
   const RAMP = " .:-=+*#%@";
-  const MOON_RAMP = " .:;+x*%#@"; // без «горизонтальных» символов — луна не выглядит полосатой
+  const MOON_RAMP = " .:;+x*%#@";
   const RAIN = "01<>/\\[]{}=+*#$%&ABCDEFXYZ";
   const FONT_PX = 13;
   const LINE_PX = 18;
@@ -34,7 +28,6 @@
   let scene = "home";
   let drops = [];
 
-  /* ---------- текстура луны: моря и кратеры (своя, сгенерированная) ---------- */
   const TEX_W = 180;
   const TEX_H = 90;
   const tex = new Float32Array(TEX_W * TEX_H);
@@ -62,9 +55,7 @@
         }
       }
     };
-    // тёмные «моря»
     [[0.18, 0.38, 0.2], [0.32, 0.55, 0.16], [0.62, 0.42, 0.22], [0.78, 0.6, 0.14], [0.47, 0.3, 0.12]].forEach(([u, v, r]) => stamp(u, v, r, 0.38, 0));
-    // кратеры со светлым валом
     for (let i = 0; i < 40; i++) stamp(rand(), 0.15 + rand() * 0.7, 0.03 + rand() * 0.07, 0.34, 0.2);
     for (let i = 0; i < tex.length; i++) tex[i] = Math.min(1, Math.max(0.05, tex[i]));
   })();
@@ -106,11 +97,9 @@
     }));
   }
 
-  // Положение и размер луны: на главной — крупная справа сверху, на страницах — меньше и тусклее
   function moonGeometry() {
     const mobile = width < 720;
     const home = scene === "home";
-    // На главной луна огромная и стоит прямо за логотипом — как эмблема на фоне луны
     if (home) {
       const logoEl = document.querySelector("[data-home-logo]");
       const rect = logoEl && logoEl.getBoundingClientRect();
@@ -141,7 +130,7 @@
     const t = now * 0.00045;
     const scroll = window.scrollY * 0.004;
     const moon = moonGeometry();
-    const rot = now * 0.000012; // медленное вращение луны
+    const rot = now * 0.000012;
     const moonAlpha = scene === "home" ? 1 : 0.45;
     const tick = Math.floor(now / 120);
     const matrix = mode === "matrix";
@@ -159,14 +148,12 @@
 
     ctx.clearRect(0, 0, width, height);
 
-    // багровое свечение вокруг луны — медленно «дышит»
     ctx.globalAlpha = moonAlpha * (0.82 + 0.18 * Math.sin(now * 0.0012));
     const glow = ctx.createRadialGradient(moon.cx, moon.cy, moon.R * 0.6, moon.cx, moon.cy, moon.R * 2.4);
     glow.addColorStop(0, colors.glow);
     glow.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, width, height);
-    // гладкий алый диск с мягкими тёмными «морями» — луна читается целиком, даже в тени
     const home = scene === "home";
     ctx.globalAlpha = moonAlpha * (home ? 0.75 : 0.5);
     const disc = ctx.createRadialGradient(moon.cx - moon.R * 0.35, moon.cy - moon.R * 0.35, moon.R * 0.05, moon.cx, moon.cy, moon.R);
@@ -215,13 +202,10 @@
         let fd = " ";
         let fl = 0;
 
-        // облака (полосы, плывут влево)
         const band = Math.sin(y * 0.55 + 1.3) * Math.sin(x * 0.045 + now * 0.00006 + y * 0.9);
         const isCloud = band > 0.82 && rowFrac < 0.75;
 
         if (d2 < 1) {
-          // луна: объём (освещение сверху слева), текстура, затемнение к краю
-          // свет падает сверху слева: освещённая сторона плотная, теневая — редкие точки
           const z = Math.sqrt(1 - d2);
           const light = Math.max(0, -dx * 0.55 - dy * 0.45 + z * 0.7);
           let lon = Math.atan2(dx, z) / (Math.PI * 2) + rot;
@@ -232,24 +216,20 @@
           if (isCloud) {
             cc = band > 0.9 ? "≈" : "~";
           } else if (d2 > 0.9 && light > 0.12) {
-            // светлый край диска
             mc = light > 0.45 ? "@" : "%";
             ml = light > 0.45 ? 3 : 2;
           } else if (scene === "home" && d2 < 0.5 && hash2(x, y) > (d2 - 0.3) / 0.2) {
-            // центр луны на главной — гладкий диск без символов, чтобы логотип был хорошо виден
           } else if (b > 0.04 || (x + y) % 3 === 0) {
             mc = MOON_RAMP[Math.max(1, Math.min(9, (b * 10) | 0))];
             ml = b > 0.6 ? 3 : b > 0.3 ? 2 : 1;
           }
         } else if (d2 < 1.14 && !isCloud) {
-          // светящийся ободок вокруг диска
           const ang = Math.atan2(dy, dx);
           const lit = Math.cos(ang + 2.4) * 0.5 + 0.5;
           mc = d2 < 1.06 ? (lit > 0.5 ? "·" : ".") : "";
           if (mc) ml = lit > 0.55 ? 3 : 2;
           else mc = " ";
         } else if (d2 > 1.4 && d2 < 1.52 && !isCloud) {
-          // кольцо-гало: медленно вращающиеся точки
           const ang = Math.atan2(dy, dx) + now * 0.00008;
           if (Math.sin(ang * 18) > 0.82) {
             mc = "·";
@@ -258,7 +238,6 @@
         } else if (isCloud && d2 < 4) {
           cc = "~";
         } else {
-          // звёзды — в верхней части, не у луны
           const h = hash2(x, y);
           if (rowFrac < 0.6 && h > 0.993 && d2 > 1.4) {
             const tw = Math.sin(now * 0.002 + h * 60);
@@ -274,7 +253,6 @@
               sc = " ";
             }
           } else if (d2 > 1.15 && rowFrac > 0.35) {
-            // линии уровня рельефа — внизу экрана
             const fx = x * 0.1;
             const v =
               (Math.sin(fx + t * 1.2) +
@@ -308,7 +286,6 @@
         hot += fl === 3 ? fd : " ";
       }
 
-      // нижние линии ярче, к верху исчезают
       ctx.globalAlpha = matrix ? 1 : Math.min(1, Math.max(0, (rowFrac - 0.35) / 0.4));
       ctx.fillStyle = colors.dim;
       ctx.fillText(dim, 0, py);
@@ -332,7 +309,6 @@
     }
   }
 
-  // ~25 кадров в секунду: плавно и бережно к батарее
   let raf = 0;
   let last = 0;
   function loop(now) {
@@ -374,7 +350,6 @@
   resize();
   draw(performance.now());
   start();
-  // Когда загрузится шрифт, ширина символа может измениться
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => {
       resize();

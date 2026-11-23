@@ -1,9 +1,3 @@
-/* Раздел «Инфраструктура»: 3D-схема офиса в ASCII, изображение с выбранной камеры и рисунки камер.
- *  - На схеме: стены, окно, дверь, рабочие места, роутер с Wi-Fi, коммутатор, серверная стойка,
- *    кабели с бегущими пакетами, сотрудники и 4 камеры с живыми конусами обзора на полу.
- *  - Камера «видит» сотрудника, когда он попадает в её конус: конус мигает, на изображении — рамка.
- *  - Изображение камеры панорамирует вместе с ней; клик по камере на схеме открывает её изображение.
- * Это демо-схема, не реальный офис. */
 (function () {
   "use strict";
 
@@ -33,15 +27,11 @@
   feedPre.style.setProperty("--cols", FEED.w);
   modelsPre.style.setProperty("--cols", MODELS.w);
 
-  /* =====================================================================
-     ГЕОМЕТРИЯ: пол — параллелограмм (косоугольная проекция)
-     точка пола (fx — вдоль комнаты, fz — вглубь) → экран: (X0 + fx + fz, Y0 − fz)
-     ===================================================================== */
   const X0 = 4;
   const Y0 = 24;
   const FW = 70;
   const FD = 14;
-  const K = 2; // глубина «длиннее» ширины — для честных углов обзора
+  const K = 2;
   const scr = (fx, fz) => [Math.round(X0 + fx + fz), Math.round(Y0 - fz)];
 
   const CAMS = [
@@ -54,7 +44,7 @@
     { id: "CAM-04", name: "HALL", type: "dome", icon: [73, 16], glyph: "(●)", label: [77, 16], floor: [69, 1], base: 2.69, amp: 0.4, speed: 0.4, phase: 3.1,
       features: [{ az: -34, s: "desk" }, { az: -14, s: "desk" }, { az: 6, s: "plant" }, { az: 26, s: "door" }] },
   ];
-  const HALF = 0.32; // половина угла конуса на схеме
+  const HALF = 0.32;
   const RANGE = 36;
 
   const panOf = (cam, t) => cam.base + cam.amp * Math.sin(t * cam.speed + cam.phase);
@@ -102,7 +92,6 @@
     return pts[0];
   }
 
-  // Кабели в координатах экрана: [точки], тип: video (от камеры к коммутатору) или data
   const CABLES = [
     { pts: [[57, 12], [64, 12]], kind: "data", speed: 0.9 },
     { pts: [[64, 13], [33, 13], [29, 17]], kind: "data", speed: 0.35 },
@@ -122,10 +111,6 @@
     });
   });
 
-  /* =====================================================================
-     РИСОВАНИЕ СХЕМЫ
-     ===================================================================== */
-  // 3D-коробка: передняя грань, верх (уходит вглубь «/») и правый бок.
   function box3d(g, fx, fz, w, d, h, c = 0) {
     const [c0, r0] = scr(fx, fz);
     for (let i = 1; i <= d; i++) {
@@ -152,20 +137,17 @@
     g.put(18, 10, "└" + "─".repeat(69) + "┘", 2);
     g.put(4, 24, "└" + "─".repeat(69), 2);
     for (let i = 0; i <= 13; i++) g.put(74 + i, 24 - i, "/", 2);
-    // плитка пола
     for (let fz = 2; fz <= 12; fz += 2) {
       for (let fx = 3; fx <= 66; fx += 6) {
         const [c, r] = scr(fx, fz);
         g.put(c, r, "·", 2);
       }
     }
-    // окно на задней стене
     g.put(26, 4, "┌───────┬───────┐", 2);
     g.put(26, 5, "│░░░░░░░│░░░░░░░│", 2);
     g.put(26, 6, "│░░░░░░░│░░░░░░░│", 2);
     g.put(26, 7, "└───────┴───────┘", 2);
     g.put(44, 4, "OFFICE · 2F", 2);
-    // дверь на задней стене
     g.put(59, 4, "┌─────┐", 2);
     for (let r = 5; r <= 9; r++) g.put(59, r, "│     │", 2);
     g.put(64, 7, "o", 2);
@@ -202,7 +184,6 @@
       for (let k = 0; k < 4; k++) g.put(c0 + 1 + k, r0 - 1, "■", hash(tick + k * 11) > 0.4 ? 1 : 2);
     } else if (o.kind === "router") {
       for (let k = 0; k < 4; k++) g.put(c0 + 1 + k, r0 - 1, k === 3 ? "○" : "●", hash(tick + k * 5) > 0.3 ? 1 : 2);
-      // антенны и волны Wi-Fi
       const ax1 = c0 + 2;
       const ax2 = c0 + 5;
       for (let r = r0 - 4; r <= r0 - 3; r++) {
@@ -222,7 +203,6 @@
         }
       }
     } else if (o.kind === "desk") {
-      // монитор с мерцающим экраном
       const mx = c0 + 4;
       const my = r0 - o.h - 3;
       g.put(mx, my, "┌──┐", 0);
@@ -230,7 +210,7 @@
       g.put(mx + 1, my + 1, ["▒▓", "▓▒", "▒▒", "▓▓"][Math.floor(hash(Math.floor(t * 3) + c0) * 4)], 5);
       g.put(mx + 3, my + 1, "│", 0);
       g.put(mx, my + 2, "└┬─┘", 0);
-      g.put(mx + 6, my + 2, "▄", 2); // клавиатура/кружка
+      g.put(mx + 6, my + 2, "▄", 2);
     }
   }
 
@@ -256,7 +236,6 @@
     g.clear();
     drawRoom(g);
 
-    // конусы обзора на полу
     CAMS.forEach((cam, i) => {
       const theta = st.thetas[i];
       const isSel = i === st.selected;
@@ -276,7 +255,6 @@
       }
     });
 
-    // кабели и пакеты
     CABLES.forEach((cable, i) => {
       cable.cells.forEach(([c, r], k) => g.put(c, r, cable.chars[k], 2));
       const n = cable.cells.length;
@@ -289,19 +267,16 @@
       }
     });
 
-    // предметы и люди — от дальних к ближним
     const drawables = OBJECTS.map((o) => ({ fz: o.fz, fx: o.fx, draw: () => drawObject(g, o, t) }));
     st.people.forEach((p, i) =>
       drawables.push({ fz: p[1], fx: p[0], draw: () => drawPerson(g, p[0], p[1], t + i, st.personSeen[i]) })
     );
     drawables.sort((a, b) => b.fz - a.fz || a.fx - b.fx).forEach((d) => d.draw());
 
-    // стойка с камерой у входа
     for (let r = 17; r <= 23; r++) g.put(74, r, "│", 2);
     g.put(74, 23, "┴", 2);
     drawLabels(g);
 
-    // камеры
     CAMS.forEach((cam, i) => {
       const isSel = i === st.selected;
       const alert = st.camSees[i];
@@ -311,9 +286,6 @@
     });
   }
 
-  /* =====================================================================
-     ИЗОБРАЖЕНИЕ С КАМЕРЫ
-     ===================================================================== */
   const SPRITES = {
     desk: { rows: [" ┌──┐ ", " │**│ ", " └┬─┘ ", "▄▄▄▄▄▄", "█    █"], bottom: 12, screen: true },
     window: { rows: ["┌──┬──┐", "│░░│░░│", "│░░│░░│", "└──┴──┘"], bottom: 7 },
@@ -365,7 +337,6 @@
     const shift = theta - cam.base;
     const xOf = (azRad) => cx + ((azRad + shift) / HFOV) * half;
 
-    // потолок со светильниками, линия стены, перспектива пола
     g.hline(0, 1, W, 2, "─");
     for (let k = -8; k <= 8; k++) {
       const x = Math.round(xOf(k * 0.16));
@@ -382,7 +353,6 @@
 
     cam.features.forEach((f, i) => drawSprite(g, SPRITES[f.s], xOf((f.az * Math.PI) / 180), t, i * 13 + st.selected * 31));
 
-    // сотрудники в кадре
     let motion = false;
     st.people.forEach(([fx, fz], i) => {
       const { rel, dist } = view(cam, fx, fz, theta);
@@ -404,7 +374,6 @@
       }
     });
 
-    // помехи
     for (let n = 0; n < 2; n++) {
       const r = 2 + Math.floor(hash(Math.floor(t * 8) + n * 17) * 14);
       for (let k = 0; k < 6; k++) {
@@ -413,7 +382,6 @@
       }
     }
 
-    // служебная строка сверху и снизу
     g.put(0, 0, ` ${cam.id} · ${cam.name}`, 3);
     g.put(W - 7, 0, blink(t, 1) ? "●" : " ", 1);
     g.put(W - 5, 0, "REC", 3);
@@ -423,14 +391,10 @@
     if (motion && blink(t, 0.5)) g.put(24, 17, "[ MOTION ]", 1);
   }
 
-  /* =====================================================================
-     РИСУНКИ КАМЕР
-     ===================================================================== */
   function drawModels(g, t, st) {
     g.clear();
     const type = CAMS[st.selected].type;
 
-    // уличная «цилиндрическая» камера на кронштейне
     const hb = type === "bullet";
     const border = hb ? 1 : 2;
     const body = hb ? 3 : 0;
@@ -460,7 +424,6 @@
       g.put(bx + bw + 3, 2, "·", 1);
       g.put(bx + bw + 3, 4, "·", 1);
     }
-    // луч обзора с наклоном
     const lensX = bx + bw + 3;
     const tilt = Math.sin(t * 0.8) * 1.2;
     for (let x = lensX + 1; x < MODELS.w; x++) {
@@ -475,7 +438,6 @@
     }
     g.put(0, 7, "cam-01, cam-02 · bullet · 4MP · IR 30 m", hb ? 3 : 2);
 
-    // купольная камера на потолке
     const hd = type === "dome";
     const db = hd ? 1 : 2;
     const cx = 22;
@@ -497,14 +459,11 @@
     g.put(0, 16, "cam-03, cam-04 · dome · 360° · IR", hd ? 3 : 2);
   }
 
-  /* =====================================================================
-     СОСТОЯНИЕ, ЦИКЛ, УПРАВЛЕНИЕ
-     ===================================================================== */
   let selected = 1;
   let autoCycle = true;
-  let paused = reduceMotion; // при «уменьшении движения» — только по кнопке
+  let paused = reduceMotion;
   let visible = false;
-  let clock = 4; // секунды «внутреннего времени» сцены
+  let clock = 4;
   let resumedAt = 0;
   let raf = 0;
   let last = 0;
@@ -603,7 +562,6 @@
     sync();
   });
 
-  // Клик по камере на схеме открывает её изображение
   mapPre.addEventListener("click", (event) => {
     const rect = mapPre.getBoundingClientRect();
     const col = (event.clientX - rect.left) / (rect.width / MAP.w);

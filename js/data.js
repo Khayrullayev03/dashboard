@@ -1,22 +1,7 @@
-/*
- * ВСЁ СОДЕРЖИМОЕ ПОРТФОЛИО — ЗДЕСЬ.
- * Вёрстку и скрипты трогать не нужно: поменяйте данные, и страница обновится.
- *
- * Текст можно писать двумя способами:
- *   "одна строка"                      — одинаково на всех языках;
- *   { ru: "...", uz: "...", en: "..." } — свой текст для каждого языка.
- *
- * Структура разделов навыков (порядок важен):
- *   веб:            HTML → JavaScript → CSS → SQL → Node.js → Git
- *   администрирование: Linux → Windows Server → Сети → Серверы → Видеонаблюдение → Мониторинг
- * У каждого навыка своя ASCII-анимация (js/scenes.js) — по его id.
- * Новая технология = новый объект в массиве skills (см. шаблон в README.md).
- */
 window.PORTFOLIO = {
   profile: {
     name: { ru: "Хайруллаев Анваржон", uz: "Xayrullayev Anvarjon", en: "Anvarjon Khayrullayev" },
-    handle: "anvarjon", // ник в шапке и терминале: anvarjon@portfolio:~$
-    // Откуда «идёт сигнал» на карте мира в терминале (команда whereami). Поставьте свой город.
+    handle: "anvarjon",
     location: { city: "Tashkent", lat: 41.3, lon: 69.3 },
     role: { ru: "Системный администратор", uz: "Tizim administratori", en: "System administrator" },
     country: { ru: "Узбекистан", uz: "O‘zbekiston", en: "Uzbekistan" },
@@ -92,8 +77,6 @@ window.PORTFOLIO = {
     },
   ],
 
-  // Навыки из резюме — по уровням. Показываются на странице «О себе» (блок «Навыки») и в терминале (skills).
-  // Уровень: basic · intermediate · confident · advanced · expert.
   skillLevels: [
     {
       level: "advanced",
@@ -132,8 +115,6 @@ window.PORTFOLIO = {
     },
   ],
 
-  // level: basic · intermediate · confident · advanced · expert (влияет на шкалу [████░░])
-  // group: web — веб-разработка, admin — администрирование
   skills: [
     {
       id: "html",
@@ -298,7 +279,6 @@ window.PORTFOLIO = {
       snippet: ["git checkout -b feature/contact-form", "git add .", 'git commit -m "Add contact form"', "git push -u origin feature/contact-form"].join("\n"),
     },
 
-    /* ---------- администрирование ---------- */
     {
       id: "linux",
       group: "admin",
@@ -442,8 +422,6 @@ window.PORTFOLIO = {
     },
   ],
 
-  // Услуги — порядок в массиве = порядок на странице «Услуги».
-  // scene — ASCII-анимация из js/scenes.js; feature: "office" — вместо картинки 3D-схема офиса с камерами.
   services: [
     {
       id: "servers",
@@ -566,8 +544,6 @@ window.PORTFOLIO = {
       },
     },
   ],
-
-  // ПРИМЕРЫ — замените своим опытом (сверху — самое свежее).
 
   experience: [],
 

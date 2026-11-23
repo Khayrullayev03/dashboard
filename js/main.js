@@ -1,6 +1,3 @@
-/* Портфолио: главная — только логотип с глитчем на фоне луны; разделы открываются отдельными страницами
- * (#services, #about, #info, #contact) с переходом «печати».
- * Здесь же: услуги с анимациями, навыки-плитки с ASCII-сценами, опыт, контакты, язык, тема, звук, пасхалка. */
 (function () {
   "use strict";
 
@@ -17,7 +14,6 @@
   const skillById = new Map(skills.map((s) => [s.id, s]));
   const LEVELS = { basic: 3, intermediate: 6, confident: 8, advanced: 9, expert: 10 };
   const PAGES = ["home", "services", "about", "info", "contact"];
-  // Старые адреса разделов ведут на новые страницы
   const ALIASES = { office: "services", skills: "about", experience: "about", projects: "about", terminal: "info" };
   const resolvePage = (id) => (PAGES.includes(id) ? id : ALIASES[id] || null);
   const $ = (selector, scope = document) => scope.querySelector(selector);
@@ -43,9 +39,6 @@
     return node;
   }
 
-  /* =====================================================================
-     ПОДСКАЗКИ, ТЕМА, ГЛИТЧ, МАТРИЦА
-     ===================================================================== */
   const toastEl = $("[data-toast]");
   let toastTimer = 0;
   function toast(message) {
@@ -85,9 +78,6 @@
     return mode;
   }
 
-  /* =====================================================================
-     ШАПКА: язык, тема, звук
-     ===================================================================== */
   const langButtons = $$("[data-lang]");
   const themeBtn = $("[data-theme-btn]");
   const soundBtn = $("[data-sound-btn]");
@@ -118,14 +108,10 @@
   });
   document.addEventListener("soundchange", syncControls);
 
-  /* =====================================================================
-     ГЛАВНАЯ: только логотип
-     ===================================================================== */
   const logoBox = $("[data-home-logo]");
   const logo = window.ASCII_LOGO ? createAsciiArt(logoBox, window.ASCII_LOGO) : null;
   if (logo) logo.show();
 
-  // Логотип не вращается — по нему постоянно проходят глитч-сбои; наведение или клик — сильный сбой
   const hardGlitch = () => logo && logo.glitch(2.4);
   logoBox.addEventListener("pointerenter", hardGlitch);
   logoBox.addEventListener("click", hardGlitch);
@@ -217,9 +203,6 @@
     });
   }
 
-  /* =====================================================================
-     НАВЫКИ ИЗ РЕЗЮМЕ: по уровням, каждый навык — «чип»; при наведении текст «расшифровывается»
-     ===================================================================== */
   function renderSkillLevels() {
     const root = $("[data-skill-levels]");
     const groups = data.skillLevels || [];
@@ -259,9 +242,6 @@
     $("[data-skill-count]").textContent = `${total} ${t("skills.total")}`;
   }
 
-  /* =====================================================================
-     УСЛУГИ: большие блоки с анимированными картинками, по очереди слева и справа
-     ===================================================================== */
   const servicesRoot = $("[data-services]");
   const officeBlock = $("[data-office]");
   const servicePlayers = new Map();
@@ -269,7 +249,7 @@
   function renderServices() {
     servicePlayers.forEach((p) => p.stop());
     servicePlayers.clear();
-    if (officeBlock) officeBlock.remove(); // схему офиса переносим, а не пересоздаём
+    if (officeBlock) officeBlock.remove();
     servicesRoot.textContent = "";
     (data.services || []).forEach((service, i) => {
       const num = String(i + 1).padStart(2, "0");
@@ -316,7 +296,6 @@
     observeServices();
   }
 
-  // Играют только сцены услуг, которые сейчас видно на экране
   const visibleServices = new Set();
   let servicesObserver = null;
   function observeServices() {
@@ -341,9 +320,6 @@
   }
   document.addEventListener("visibilitychange", syncServiceScenes);
 
-  /* =====================================================================
-     НАВЫКИ: вкладки по группам, у каждой — ASCII-сцена
-     ===================================================================== */
   const tabsRoot = $("[data-tabs]");
   const panelsRoot = $("[data-panels]");
   let tabs = [];
@@ -454,7 +430,6 @@
       if (!items.length) return;
       const row = el("div", { class: "tab-group", role: "presentation" }, el("span", { class: "tab-group-label", text: t(key), "aria-hidden": "true" }));
       items.forEach((skill) => {
-        // Плитка навыка: анимированный значок, название и шкала уровня
         const score = LEVELS[skill.level] || 5;
         const icon = window.ICONS && window.ICONS.has("skill", skill.id) ? el("pre", { class: "asc skill-icon", "aria-hidden": "true" }) : null;
         const tab = el(
@@ -504,14 +479,13 @@
   function animatePanel(panel) {
     if (reduceMotion || !panel) return;
     panel.classList.remove("is-drawing");
-    void panel.offsetWidth; // перезапуск CSS-анимации
+    void panel.offsetWidth;
     panel.classList.add("is-drawing");
     const title = $("h3", panel);
     scramble(title, title.getAttribute("aria-label"), 450);
     animateMeter(panel);
   }
 
-  // Играет только сцена открытой вкладки и только когда её видно.
   function syncScenes() {
     players.forEach((player, id) => {
       if (id === state.skill && panelsVisible && !document.hidden) player.start();
@@ -534,7 +508,6 @@
     syncScenes();
   }
 
-  // Стрелки, Home и End переключают вкладки.
   tabsRoot.addEventListener("keydown", (event) => {
     const current = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
     const last = tabs.length - 1;
@@ -558,9 +531,6 @@
   }
   document.addEventListener("visibilitychange", syncScenes);
 
-  /* =====================================================================
-     ОПЫТ И СЕРТИФИКАТЫ
-     ===================================================================== */
   function renderExperience() {
     const section = $("[data-exp-section]");
     if (section) {
@@ -607,15 +577,11 @@
     );
   }
 
-  /* =====================================================================
-     КОНТАКТЫ
-     ===================================================================== */
   function renderContacts() {
     const list = $("[data-contacts]");
     list.textContent = "";
     contacts.forEach((c) => {
       const external = c.href.startsWith("http");
-      // Анимированная картинка: github — кот и вклады, telegram — самолётик, phone — звонок, email — конверт
       const art = window.ICONS && window.ICONS.has("contact", c.label) ? el("pre", { class: "asc contact-icon", "aria-hidden": "true" }) : null;
       list.append(
         el(
@@ -635,13 +601,9 @@
     });
   }
 
-  /* =====================================================================
-     СТРАНИЦЫ: показ по адресу #раздел, переход «печати»
-     ===================================================================== */
   const navLinks = $$(".nav a");
   const brandPath = $("[data-brand-path]");
 
-  // Полоса из символов проходит сверху вниз и «печатает» страницу.
   function scanReveal(page) {
     const band = el("div", { class: "scan-band", "aria-hidden": "true" });
     const bandRows = [0, 1, 2].map(() => band.appendChild(document.createElement("div")));
@@ -716,9 +678,6 @@
     if (id === "" || resolvePage(id)) showPage(id || "home");
   });
 
-  /* =====================================================================
-     ПАСХАЛКА: ↑↑↓↓←→←→ B A — режим матрицы
-     ===================================================================== */
   const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
   let konami = 0;
   document.addEventListener("keydown", (event) => {
@@ -732,9 +691,6 @@
     }
   });
 
-  /* =====================================================================
-     ОТРИСОВКА ВСЕГО И СМЕНА ЯЗЫКА
-     ===================================================================== */
   function renderAll() {
     renderProfile();
     renderFocus();
@@ -752,7 +708,6 @@
     toast(I18N.lang.toUpperCase());
   });
 
-  // Для терминала и других модулей
   window.APP = {
     selectSkill(id) {
       goTo("about");

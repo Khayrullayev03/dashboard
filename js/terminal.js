@@ -1,5 +1,3 @@
-/* Интерактивный терминал: help, whereami, whoami, neofetch, services, skills, experience, certs, contact,
- * ls/cat/cd, theme, lang, sound, matrix, reboot, clear, history, date, echo, sudo, exit. */
 (function () {
   "use strict";
 
@@ -23,7 +21,6 @@
   const LEVELS = { basic: 3, intermediate: 6, confident: 8, advanced: 9, expert: 10 };
   const SECTIONS = { services: "services", office: "services", cams: "services", about: "about", skills: "about", experience: "about", exp: "about", info: "info", terminal: "info", contact: "contact", contacts: "contact", "~": "home", home: "home", "/": "home" };
 
-  /* ---------- вывод ---------- */
   function parts(list) {
     const frag = document.createDocumentFragment();
     list.forEach((item) => {
@@ -64,7 +61,6 @@
     return [["[", "dim"], ["█".repeat(n), "ps1"], ["░".repeat(10 - n), "dim"], ["] ", "dim"], [t("level." + level)]];
   }
 
-  /* ---------- команды ---------- */
   const HELP = [
     ["help", "term.cmd.help"],
     ["whereami · myip", "term.cmd.whereami"],
@@ -93,7 +89,6 @@
     "experience.log": () => COMMANDS.experience(),
   };
 
-  /* ---------- карта мира с точкой посетителя ---------- */
   let mapTimer = 0;
 
   function drawWorldMap(block, loc, frame) {
@@ -113,7 +108,6 @@
     };
 
     const [vx, vy] = toCell(loc.lat, loc.lon);
-    // «сервер» портфолио и бегущий к посетителю пакет
     const home = data.profile.location;
     if (home && Number.isFinite(home.lat)) {
       const [sx, sy] = toCell(home.lat, home.lon);
@@ -129,7 +123,6 @@
       }
       put(sx, sy, "+", "wm-srv");
     }
-    // точка посетителя с расходящимся «пингом»
     const r = frame % 4;
     if (r > 0) {
       put(vx - r * 2, vy, "(", "wm-ring");
@@ -282,13 +275,11 @@
         APP.selectSkill(skill.id);
         return;
       }
-      // навыки из резюме по уровням
       (data.skillLevels || []).forEach((group) => {
         print([[t("skills.levelTitle", { level: t("level." + group.level) }) + " ", "bright"], ...levelBar(group.level).slice(0, 4)]);
         print("  " + group.items.map((item) => L(item)).join(" · "));
       });
       blank();
-      // подробные карточки с анимациями
       print(t("skills.detail") + ":", "dim");
       print("  " + list.map((s) => s.id).join("  "), "ps1");
       print([["skills <id>", "ps1"], ["  →  " + t("term.cmd.skills").split(";")[0], "dim"]]);
@@ -461,7 +452,6 @@
     else print(t("term.notFound", { cmd: name }), "err");
   }
 
-  /* ---------- ввод ---------- */
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     run(input.value);
@@ -493,14 +483,12 @@
     if (event.key.length === 1 || event.key === "Backspace") SOUND.key();
   });
 
-  // Клик по окну — фокус на строку ввода (если пользователь не выделяет текст)
   body.addEventListener("click", (event) => {
     if (event.target.closest("a")) return;
     if (String(window.getSelection())) return;
     input.focus({ preventScroll: true });
   });
 
-  // Быстрые команды — удобно на телефоне
   const quick = document.querySelector("[data-console-quick]");
   if (quick) {
     ["help", "whereami", "neofetch", "cam 1", "skills", "matrix", "reboot"].forEach((cmd) => {
@@ -516,7 +504,6 @@
     });
   }
 
-  /* ---------- приветствие ---------- */
   print([["Last login: ", "dim"], [new Date().toLocaleString(I18N.locale), "dim"], [" from 127.0.0.1", "dim"]]);
   print(t("term.welcome"), "ps1");
   blank();

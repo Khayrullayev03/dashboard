@@ -1,7 +1,3 @@
-/* Страница «Инфо»: анимированная ASCII-карта мира (радар, перекрестие, «пинг») с точкой посетителя
- * и панель сведений: внешний и локальный IP, место, координаты, провайдер, часовой пояс, время,
- * браузер, система, экран, язык. Всё показывается только самому посетителю.
- * Запрос внешнего IP (js/geo.js) уходит, только когда посетитель открыл эту страницу. */
 (function () {
   "use strict";
 
@@ -34,10 +30,8 @@
   const fmt = (v, pos, neg) => `${Math.abs(v).toFixed(2)}° ${v >= 0 ? pos : neg}`;
   const coords = (l) => `${fmt(l.lat, "N", "S")}, ${fmt(l.lon, "E", "W")}`;
 
-  /* ---------- карта ---------- */
   function draw(time) {
     g.clear();
-    // сетка параллелей и меридианов (каждые 30°)
     for (let lon = -150; lon <= 150; lon += 30) {
       const [x] = cell(0, lon);
       for (let y = 0; y < H; y += 2) g.put(x, y, "·", 2);
@@ -46,7 +40,6 @@
       const [, y] = cell(lat, 0);
       for (let x = 0; x < W; x += 3) g.put(x, y, "·", 2);
     }
-    // суша; полоса радара подсвечивает её на ходу
     const sweep = reduceMotion ? -99 : ((time * 14) % (W + 24)) - 12;
     MAP.lines.forEach((line, y) =>
       [...line].forEach((ch, x) => {
@@ -66,10 +59,8 @@
     }
 
     const [vx, vy] = cell(loc.lat, loc.lon);
-    // перекрестие через точку посетителя
     for (let x = 0; x < W; x++) if (Math.abs(x - vx) > 2 && (g.get(x, vy) === " " || g.get(x, vy) === "·")) g.put(x, vy, "─", 5);
     for (let y = 0; y < H; y++) if (Math.abs(y - vy) > 1 && (g.get(vx, y) === " " || g.get(vx, y) === "·")) g.put(vx, y, "│", 5);
-    // сигнал от «сервера» (город владельца) к посетителю
     const home = data.profile && data.profile.location;
     if (home && Number.isFinite(home.lat)) {
       const [sx, sy] = cell(home.lat, home.lon);
@@ -82,7 +73,6 @@
       g.put(sx, sy, "+", 3);
       g.put(sx + 1, sy, "srv", 2);
     }
-    // точка и расходящиеся кольца «пинга»
     const r = reduceMotion ? 2 : Math.floor(time * 3) % 4;
     if (r > 0) {
       g.put(vx - r * 2, vy, "(", 1);
@@ -95,19 +85,17 @@
       }
     }
     g.put(vx, vy, blink(time, 0.6) ? "●" : "•", 1);
-    // табличка с координатами
     const lines = [`${t("geo.you")}`, coords(loc)];
     if (loc.ip) lines.push(loc.ip);
     const width = Math.max(...lines.map((l) => l.length)) + 2;
     const left = vx + 4 + width + 2 < W ? vx + 4 : vx - 4 - width - 2;
     const top = clamp(vy - 4, 0, H - lines.length - 2);
-    for (let r = 1; r <= lines.length; r++) g.put(left + 1, top + r, " ".repeat(width), 0); // чистый фон таблички
+    for (let r = 1; r <= lines.length; r++) g.put(left + 1, top + r, " ".repeat(width), 0);
     g.box(left, top, width + 2, lines.length + 2, 1);
     lines.forEach((l, i) => g.put(left + 2, top + 1 + i, l, i === 0 ? 1 : 3));
     pre.innerHTML = g.html();
   }
 
-  /* ---------- сведения ---------- */
   function browserName() {
     const ua = navigator.userAgent;
     const rules = [
@@ -190,7 +178,6 @@
     }
   }
 
-  /* ---------- запуск ---------- */
   async function start() {
     if (started) return;
     started = true;
@@ -229,7 +216,6 @@
   }
   document.addEventListener("visibilitychange", sync);
   document.addEventListener("langchange", () => renderFacts(false));
-  // часы на панели
   setInterval(() => {
     if (!visible) return;
     const clockEl = factsRoot.querySelector(".clock");

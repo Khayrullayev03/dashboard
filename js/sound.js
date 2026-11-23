@@ -1,5 +1,3 @@
-/* Звуки интерфейса (щелчки клавиш, сигналы) синтезируются Web Audio — без файлов.
- * По умолчанию выключены. Браузер даёт играть звук только после первого клика или клавиши. */
 (function () {
   "use strict";
 
@@ -32,7 +30,6 @@
     osc.stop(c.currentTime + duration);
   }
 
-  // Первое действие пользователя «будит» звук, если он был включён раньше.
   const unlock = () => {
     if (enabled) context();
     window.removeEventListener("pointerdown", unlock);

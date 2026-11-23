@@ -1,16 +1,14 @@
-/* Общие ASCII-эффекты: расшифровка текста и вращающийся ASCII-логотип. */
 (function () {
   "use strict";
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const GLYPHS = "!<>-_\\/[]{}=+*^?#%@$&01";
-  const RAMP = " .:-=+*#%@"; // от тёмного к светлому
+  const RAMP = " .:-=+*#%@";
   const randomGlyph = () => GLYPHS[(Math.random() * GLYPHS.length) | 0];
   const randomFrom = (set) => set[(Math.random() * set.length) | 0];
   const easeOutCubic = (p) => 1 - Math.pow(1 - p, 3);
   const easeInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
 
-  // Цикл анимации: frame(t, p) вызывается каждый кадр; вернуть false — остановить.
   function animate(duration, frame) {
     return new Promise((resolve) => {
       const start = performance.now();
@@ -23,7 +21,6 @@
     });
   }
 
-  // «Расшифровка»: случайные символы слева направо превращаются в нужный текст.
   function scramble(node, text, duration = 700) {
     if (reduceMotion) {
       node.textContent = text;
@@ -45,10 +42,6 @@
     });
   }
 
-  /* ---------------------------------------------------------------------
-     ASCII-логотип: из сетки яркости рисуется под любым углом.
-     Два слоя <pre>: серебро (.ascii-silver) и красные камни (.ascii-red).
-     --------------------------------------------------------------------- */
   function createAsciiArt(container, art) {
     const silverPre = container.querySelector(".ascii-silver");
     const redPre = container.querySelector(".ascii-red");
@@ -79,7 +72,6 @@
 
     const SX = [0.3, 0.7];
     const SY = [0.2, 0.5, 0.8];
-    // Заполняет chars/reds для угла поворота angle (радианы).
     function sample(angle) {
       const c = Math.cos(angle);
       const s = Math.sin(angle);
@@ -131,7 +123,6 @@
       redPre.textContent = redText;
     }
 
-    // Кадр глитча: строки из shiftOf сдвинуты вбок, в них часть символов «бьётся» (noise — доля).
     function renderShifted(shiftOf, noise) {
       let silver = "";
       let redText = "";
@@ -156,7 +147,6 @@
       redPre.textContent = redText;
     }
 
-    // Каждая новая анимация отменяет предыдущую.
     let job = 0;
     let busy = false;
     let visible = false;
@@ -171,7 +161,7 @@
 
     sample(0);
 
-    let current = 0; // текущий угол поворота логотипа
+    let current = 0;
     const api = {
       get busy() {
         return busy;
@@ -186,7 +176,6 @@
         sample(current);
         render();
       },
-      // Повернуть логотип на угол (для непрерывного медленного вращения)
       setAngle(angle) {
         if (busy) return;
         current = angle;
@@ -200,7 +189,6 @@
         visible = false;
         render(() => " ");
       },
-      // Логотип собирается из символов от центра наружу.
       decode(duration = 1200) {
         if (reduceMotion) {
           api.show();
@@ -213,7 +201,6 @@
           (done) => done && render()
         );
       },
-      // Рассыпается от краёв к центру.
       vanish(duration = 450) {
         if (!visible || reduceMotion) {
           api.clear();
@@ -224,7 +211,6 @@
           () => api.clear()
         );
       },
-      // Поворот на turns оборотов с замедлением в конце.
       spin(turns = 1, duration = 1600) {
         if (reduceMotion) return Promise.resolve();
         visible = true;
@@ -239,8 +225,6 @@
           }
         });
       },
-      // Глитч: полосы строк дёргаются вбок, символы «бьются», цвета расслаиваются.
-      // strength 1 — лёгкий сбой, 2 и больше — сильный.
       glitch(strength = 1) {
         if (reduceMotion || busy || !visible) return Promise.resolve();
         const hard = strength > 1.4;
@@ -274,7 +258,6 @@
     return api;
   }
 
-  // Логотип строками заданного размера (для neofetch в терминале): { silver: [...], red: [...] }.
   function logoLines(art, cols, rows) {
     const ALPHA = "0123456789abcdefghijklmnopqrstuv";
     const N = art.size;

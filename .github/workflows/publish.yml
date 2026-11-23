@@ -1,5 +1,3 @@
-# Публикация сайта: каждое изменение в ветке main копируется в ветку gh-pages,
-# из которой GitHub Pages показывает сайт https://khayrullayev03.github.io/dashboard/
 name: publish
 
 on:

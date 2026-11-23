@@ -1,5 +1,3 @@
-/* Переводы интерфейса: русский, узбекский (латиница), английский.
- * Тексты содержимого (навыки, проекты, опыт) лежат в js/data.js. */
 (function () {
   "use strict";
 
@@ -53,7 +51,6 @@
       "ctrl.soundOn": "Включить звук",
       "ctrl.soundOff": "Выключить звук",
 
-
       "office.legend": ":·: зона обзора камеры   ■ видео на сервер   ● данные   o сотрудник (! — замечен камерой)",
       "office.feed": "Камеры",
       "office.models": "модели камер",
@@ -77,7 +74,6 @@
       "exp.title": "Опыт",
       "exp.certs": "Сертификаты",
 
-
       "terminal.title": "Терминал",
       "terminal.input": "Команда",
       "terminal.hint": "быстрые команды:",
@@ -90,7 +86,6 @@
       "toast.dark": "тема: тёмная",
       "toast.soundOn": "звук: вкл",
       "toast.soundOff": "звук: выкл",
-
 
       "term.welcome": "anvar-os 1.0 · введите help, чтобы увидеть команды",
       "term.helpTitle": "доступные команды:",
@@ -198,7 +193,6 @@
       "ctrl.soundOn": "Ovozni yoqish",
       "ctrl.soundOff": "Ovozni o‘chirish",
 
-
       "office.legend": ":·: kamera ko‘rish zonasi   ■ serverga video   ● ma’lumotlar   o xodim (! — kamera payqadi)",
       "office.feed": "Kameralar",
       "office.models": "kamera modellari",
@@ -222,7 +216,6 @@
       "exp.title": "Tajriba",
       "exp.certs": "Sertifikatlar",
 
-
       "terminal.title": "Terminal",
       "terminal.input": "Buyruq",
       "terminal.hint": "tezkor buyruqlar:",
@@ -235,7 +228,6 @@
       "toast.dark": "mavzu: qorong‘i",
       "toast.soundOn": "ovoz: yoqildi",
       "toast.soundOff": "ovoz: o‘chirildi",
-
 
       "term.welcome": "anvar-os 1.0 · buyruqlarni ko‘rish uchun help ni kiriting",
       "term.helpTitle": "mavjud buyruqlar:",
@@ -343,7 +335,6 @@
       "ctrl.soundOn": "Turn sound on",
       "ctrl.soundOff": "Turn sound off",
 
-
       "office.legend": ":·: camera field of view   ■ video to server   ● data   o person (! — seen by a camera)",
       "office.feed": "Cameras",
       "office.models": "camera models",
@@ -367,7 +358,6 @@
       "exp.title": "Experience",
       "exp.certs": "Certificates",
 
-
       "terminal.title": "Terminal",
       "terminal.input": "Command",
       "terminal.hint": "quick commands:",
@@ -380,7 +370,6 @@
       "toast.dark": "theme: dark",
       "toast.soundOn": "sound: on",
       "toast.soundOff": "sound: off",
-
 
       "term.welcome": "anvar-os 1.0 · type help to see the commands",
       "term.helpTitle": "available commands:",
@@ -454,7 +443,6 @@
     return text;
   }
 
-  // Поле из data.js: строка (одна на все языки) или объект { ru, uz, en }.
   function pick(value) {
     if (value == null) return "";
     if (typeof value === "string" || typeof value === "number" || Array.isArray(value)) return value;

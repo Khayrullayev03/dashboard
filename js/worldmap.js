@@ -1,6 +1,3 @@
-/* ASCII-карты мира: равнопромежуточная проекция, широта от 82° до −56°.
- * Сгенерированы из Natural Earth (через пакет world-atlas, ISC). Руками не править.
- * WORLD_MAP — для терминала (whereami), WORLD_MAP_LARGE — для страницы «Инфо». */
 window.WORLD_MAP = {
   cols: 84,
   rows: 22,

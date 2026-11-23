@@ -1,6 +1,3 @@
-/* Живые ASCII-анимации для разделов навыков: камера, серверная стойка, сеть, htop и т.д.
- * Каждая сцена — функция (g, t): рисует кадр в сетке 46×14 символов, t — секунды с начала.
- * Цвета: 0 — обычный, 1 — красный акцент, 2 — тусклый, 3 — яркий, 4 — инверсия, 5 — бледно-красный. */
 (function () {
   "use strict";
 
@@ -96,7 +93,6 @@
     return g;
   }
 
-  // Клетки прямой (горизонтальной или вертикальной) линии от (x0,y0) до (x1,y1).
   function path(...points) {
     const cells = [];
     for (let i = 0; i < points.length - 1; i++) {
@@ -111,7 +107,6 @@
   }
 
   const SCENES = {
-    /* HTML: страница собирается из блоков-тегов */
     html(g, t) {
       const p = t % 8;
       g.box(0, 0, W, H, 2, "index.html", 3);
@@ -144,7 +139,6 @@
       if (latest >= 0 && p < 5 && blink(t, 0.6)) g.put(44, 1, "▋", 1);
     },
 
-    /* JavaScript: курсор нажимает кнопку, срабатывает обработчик */
     js(g, t) {
       const T = 5;
       const p = t % T;
@@ -177,7 +171,6 @@
       g.put(25, 11, "> _", blink(t, 0.8) ? 2 : 0);
     },
 
-    /* CSS: три блока перестраиваются под разные правила раскладки */
     css(g, t) {
       const layouts = [
         { rule: "display: flex;", pos: [[3, 3], [13, 3], [23, 3]] },
@@ -204,7 +197,6 @@
       g.put(2 + cur.rule.length + 1, 13, "}", 2);
     },
 
-    /* SQL: запрос проходит по строкам таблицы и отбирает подходящие */
     sql(g, t) {
       const p = t % 7.5;
       const query = "SELECT name FROM users WHERE active=1;";
@@ -239,7 +231,6 @@
       if (scan >= rows.length) g.put(0, 13, `-> ${found} rows in set (0.01 sec)`, 3);
     },
 
-    /* Node.js: запрос идёт от клиента к серверу и базе и возвращается */
     node(g, t) {
       const T = 2.6;
       const cycle = Math.floor(t / T);
@@ -279,7 +270,6 @@
       }
     },
 
-    /* Git: растёт граф коммитов, ветка сливается в main */
     git(g, t) {
       const p = t % 9;
       const commits = [
@@ -314,7 +304,6 @@
         });
     },
 
-    /* Linux: htop с живыми нагрузками и процессами */
     linux(g, t) {
       const cpu = (k) => clamp(0.4 + 0.25 * Math.sin(t * 1.7 + k * 2) + 0.15 * Math.sin(t * 4.3 + k) + 0.1 * (hash(Math.floor(t * 4) + k) - 0.5), 0.03, 0.98);
       const meter = (y, label, frac, text) => {
@@ -357,7 +346,6 @@
       });
     },
 
-    /* Windows Server: в Active Directory появляется новый пользователь */
     windows(g, t) {
       const p = t % 9;
       const cmd = 'New-ADUser i.petrov -Path "OU=Office"';
@@ -395,7 +383,6 @@
       g.put(32, 8, "groups 5", 0);
     },
 
-    /* Сети: пакеты бегут по топологии интернет → роутер → коммутатор → устройства */
     network(g, t) {
       g.put(16, 0, "( internet )", 2);
       g.vline(22, 1, 1);
@@ -437,7 +424,6 @@
       }
     },
 
-    /* Серверы: стойка с мигающими индикаторами и загрузка виртуальных машин */
     servers(g, t) {
       g.box(0, 0, 19, H, 2, "rack-01", 3);
       const fans = "|/-\\";
@@ -485,7 +471,6 @@
       });
     },
 
-    /* Видеонаблюдение: камера поворачивается, замечает человека и пишет тревогу */
     cctv(g, t) {
       const lx = 9;
       const ly = 4;
@@ -537,7 +522,6 @@
       }
     },
 
-    /* Мониторинг: живой график нагрузки, тревога и ночной бэкап */
     monitoring(g, t) {
       const shift = Math.floor(t * 5);
       const value = (i) => {
@@ -588,10 +572,8 @@
       g.put(0, 13, "next run 02:00 · keep 14 days", 2);
     },
 
-    /* Обслуживание ПК: системный блок с вентиляторами и чек-лист на мониторе, температура падает */
     pc(g, t) {
       const p = t % 10;
-      // системный блок
       g.box(0, 1, 12, 12, 2, "PC-07", 3);
       const fans = "|/-\\";
       for (let k = 0; k < 2; k++) {
@@ -601,7 +583,6 @@
       }
       g.put(2, 10, "●", blink(t, 0.6) ? 1 : 2);
       g.put(4, 10, "■■■", hash(Math.floor(t * 6)) > 0.5 ? 0 : 2);
-      // монитор с чек-листом
       g.box(14, 1, 32, 10, 2, "service · PC-07", 3);
       const tasks = ["dust cleaning", "thermal paste", "drivers update", "windows updates", "printer setup"];
       tasks.forEach((task, i) => {
@@ -621,7 +602,6 @@
     },
   };
 
-  // Для навыков без своей сцены — универсальная «загрузка».
   function fallback(id) {
     return (g, t) => {
       const spin = "|/-\\";
@@ -631,7 +611,6 @@
     };
   }
 
-  // Кадр для режима без анимации — момент, где видно суть.
   const STILL = { html: 6.5, js: 2.6, css: 1.4, sql: 5.6, node: 1.0, git: 6.2, linux: 1, windows: 6, network: 2.2, servers: 7, cctv: 4.4, monitoring: 3.2, pc: 5 };
 
   function createPlayer(pre, id) {
@@ -640,7 +619,7 @@
     let raf = 0;
     let started = 0;
     let last = 0;
-    let paused = reduceMotion; // при «уменьшении движения» — только по кнопке
+    let paused = reduceMotion;
     pre.style.setProperty("--cols", W);
 
     function draw(t) {
