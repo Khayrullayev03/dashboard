@@ -38,6 +38,7 @@
           <a href="#services" data-i18n="nav.services">услуги</a>
           <a href="#about" data-i18n="nav.about">о себе</a>
           <a href="#info" data-i18n="nav.info">инфо</a>
+          <a href="#who" data-i18n="nav.who">кто</a>
           <a href="#contact" data-i18n="nav.contact">контакты</a>
         </nav>
         <div class="controls">
@@ -135,6 +136,7 @@
                   ><span class="cursor" aria-hidden="true">▋</span>
                 </p>
                 <p class="about-text" data-about></p>
+                <div class="about-cta" data-about-cta></div>
               </div>
             </div>
             <dl class="about-specs" data-about-specs></dl>
@@ -207,18 +209,47 @@
         </div>
       </section>
 
+      <section class="page" data-page="who" aria-labelledby="who-title" hidden>
+        <div class="container container-wide">
+          <div class="page-head">
+            <a class="back" href="#home" data-i18n="nav.back">← меню</a>
+            <h2 class="section-title" id="who-title" data-title>
+              <span class="num">04.</span><span class="title-text" data-i18n="who.title">Кто заходил</span>
+            </h2>
+          </div>
+          <div class="who" data-who></div>
+        </div>
+      </section>
+
       <section class="page" data-page="contact" aria-labelledby="contact-title" hidden>
         <div class="container">
           <div class="page-head">
             <a class="back" href="#home" data-i18n="nav.back">← меню</a>
             <h2 class="section-title" id="contact-title" data-title>
-              <span class="num">04.</span><span class="title-text" data-i18n="contact.title">Контакты</span>
+              <span class="num">05.</span><span class="title-text" data-i18n="contact.title">Контакты</span>
             </h2>
           </div>
           <ul class="contacts" data-contacts></ul>
         </div>
       </section>
     </main>
+
+    <section class="rating" data-rating hidden>
+      <div class="term rating-card">
+        <div class="term-bar"><span>~/rating</span><span data-rating-count></span></div>
+        <div class="rating-body">
+          <p class="rating-score">
+            <span class="rating-avg" data-rating-avg>—</span><span class="rating-of">/ 5</span>
+          </p>
+          <div class="rating-main">
+            <h2 class="rating-title" data-i18n="rate.title">Оцените мою работу</h2>
+            <div class="stars" role="radiogroup" data-i18n-aria="rate.title" data-stars></div>
+            <p class="rating-msg" data-rating-msg role="status"></p>
+          </div>
+          <ul class="rating-dist" data-rating-dist></ul>
+        </div>
+      </div>
+    </section>
 
     <footer class="site-footer">
       <div class="footer-inner">
@@ -243,6 +274,8 @@
     <script src="assets/js/scenes.js"></script>
     <script src="assets/js/icons.js"></script>
     <script src="assets/js/voip.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/stats.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/office.js"></script>
     <script src="assets/js/worldmap.js"></script>

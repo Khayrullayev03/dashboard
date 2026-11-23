@@ -24,6 +24,7 @@ assets/
   fonts/          JetBrains Mono (OFL)
   img/logo.png
   js/
+    config.js     ключи Supabase для статистики и оценок
     data.js       контент: профиль, услуги, навыки, контакты
     i18n.js       тексты интерфейса
     main.js       страницы, навигация, рендер
@@ -36,10 +37,24 @@ assets/
     background.js фон
     fx.js         эффекты логотипа и текста
     sound.js      звуки
+    stats.js      раздел «Кто заходил» и оценка сайта
     ascii-logo.js, worldmap.js   данные для ASCII-логотипа и карты
+supabase/schema.sql   таблицы и функции для статистики и оценок
 ```
 
 Контент меняется в `assets/js/data.js`, переводы интерфейса — в `assets/js/i18n.js`.
+
+## Статистика и оценки
+
+Раздел «Кто заходил» и блок оценки работают через [Supabase](https://supabase.com) (бесплатный тариф).
+Пока ключи не заданы, раздел и оценка скрыты.
+
+1. Создать проект в Supabase.
+2. SQL Editor → вставить `supabase/schema.sql` → Run.
+3. Project Settings → API: скопировать Project URL и публичный ключ (anon / publishable) в `assets/js/config.js`.
+
+Хранится анонимно: источник перехода, город по часовому поясу, тип устройства, раздел. IP не сохраняется.
+Ссылки с меткой источника: `https://khayrullayev03.github.io/dashboard/?from=telegram`.
 
 ## Деплой
 

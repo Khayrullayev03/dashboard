@@ -13,7 +13,7 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const skillById = new Map(skills.map((s) => [s.id, s]));
   const LEVELS = { basic: 3, intermediate: 6, confident: 8, advanced: 9, expert: 10 };
-  const PAGES = ["home", "services", "about", "info", "contact"];
+  const PAGES = ["home", "services", "about", "info", "who", "contact"];
   const ALIASES = { office: "services", skills: "about", experience: "about", projects: "about", terminal: "info" };
   const resolvePage = (id) => (PAGES.includes(id) ? id : ALIASES[id] || null);
   const $ = (selector, scope = document) => scope.querySelector(selector);
@@ -109,6 +109,26 @@
     $("[data-name]").textContent = L(profile.name);
     $("[data-role]").textContent = L(profile.role);
     $("[data-about]").textContent = L(profile.about);
+
+    const cta = $("[data-about-cta]");
+    cta.textContent = "";
+    [
+      ["telegram", "about.cta.tg", "cta-btn is-primary"],
+      ["email", "about.cta.mail", "cta-btn"],
+    ].forEach(([label, key, cls]) => {
+      const contact = contacts.find((c) => c.label === label);
+      if (!contact) return;
+      const external = contact.href.startsWith("http");
+      cta.append(
+        el("a", {
+          class: cls,
+          href: contact.href,
+          target: external ? "_blank" : null,
+          rel: external ? "noopener" : null,
+          text: t(key),
+        })
+      );
+    });
 
     const levels = data.skillLevels || [];
     const total = levels.reduce((n, g) => n + g.items.length, 0);

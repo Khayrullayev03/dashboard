@@ -11,9 +11,9 @@ window.PORTFOLIO = {
       en: "Windows Server · AD · networks · cabling",
     },
     about: {
-      ru: "Отвечаю за то, чтобы серверы, сеть и рабочие места работали без сбоев. Администрирую Windows Server и Active Directory, настраиваю сетевое оборудование, DHCP и VPN, проектирую СКС и ставлю видеонаблюдение. Помогаю пользователям, слежу за безопасностью и веду учёт техники.",
-      uz: "Serverlar, tarmoq va ish joylari uzluksiz ishlashi uchun javob beraman. Windows Server va Active Directory’ni boshqaraman, tarmoq uskunalari, DHCP va VPN’ni sozlayman, SKS loyihalayman va videokuzatuv o‘rnataman. Foydalanuvchilarga yordam beraman, xavfsizlikni nazorat qilaman va texnikani hisobga olaman.",
-      en: "I keep servers, the network and workstations running smoothly. I manage Windows Server and Active Directory, configure network equipment, DHCP and VPN, design structured cabling and install CCTV. I support users, look after security and keep track of IT assets.",
+      ru: "Я — системный администратор, к которому обращаются, когда IT должно просто работать. Больше 30 компаний доверили мне свою инфраструктуру: серверы Windows и Active Directory, сети и VPN, СКС и видеонаблюдение, IP-телефонию и облачные АТС. Я не латаю дыры — я выстраиваю систему так, чтобы поломок не было: резервные копии, мониторинг, права доступа и порядок в технике. Вы занимаетесь своим делом, а я отвечаю за то, чтобы связь, почта, камеры и компьютеры работали каждый день. Напишите мне — разберу вашу задачу и предложу решение.",
+      uz: "Men — IT shunchaki ishlashi kerak bo‘lganda murojaat qilinadigan tizim administratoriman. 30 dan ortiq kompaniya o‘z infratuzilmasini menga ishonib topshirgan: Windows serverlari va Active Directory, tarmoqlar va VPN, SKS va videokuzatuv, IP-telefoniya va bulutli ATS. Men teshiklarni yamamayman — tizimni buzilishlar bo‘lmaydigan qilib quraman: zaxira nusxalar, monitoring, kirish huquqlari va texnikada tartib. Siz o‘z ishingiz bilan shug‘ullanasiz, men esa aloqa, pochta, kameralar va kompyuterlar har kuni ishlashi uchun javob beraman. Menga yozing — vazifangizni ko‘rib chiqib, yechim taklif qilaman.",
+      en: "I'm the system administrator people call when IT just has to work. More than 30 companies trust me with their infrastructure: Windows servers and Active Directory, networks and VPN, structured cabling and CCTV, IP telephony and cloud PBX. I don't patch holes — I build systems that don't break: backups, monitoring, access rights and order in the hardware. You run your business, and I make sure phones, mail, cameras and computers work every single day. Message me — I'll look at your task and propose a solution.",
     },
   },
 
@@ -773,6 +773,40 @@ window.PORTFOLIO = {
           "IVR, queues, ring groups, forwarding",
           "Softphones, mobile apps and IP phones",
           "Number porting and CRM integration",
+        ],
+      },
+    },
+    {
+      id: "military",
+      scene: "military",
+      title: {
+        ru: "IT для военных и силовых структур",
+        uz: "Harbiy va kuch tuzilmalari uchun IT",
+        en: "IT for military and security agencies",
+      },
+      desc: {
+        ru: "Инфраструктура для объектов с повышенными требованиями к безопасности: закрытые сети без выхода в интернет, шифрованные каналы между подразделениями, контроль доступа, видеонаблюдение периметра и строгий учёт техники.",
+        uz: "Xavfsizlik talablari yuqori bo‘lgan obyektlar uchun infratuzilma: internetga chiqishsiz yopiq tarmoqlar, bo‘linmalar orasida shifrlangan kanallar, kirishni nazorat qilish, perimetr videokuzatuvi va texnikani qat’iy hisobga olish.",
+        en: "Infrastructure for sites with strict security requirements: closed networks with no internet access, encrypted links between units, access control, perimeter CCTV and strict asset accounting.",
+      },
+      points: {
+        ru: [
+          "Изолированные закрытые сети (air-gap)",
+          "Шифрованные VPN-каналы между объектами",
+          "СКУД, видеонаблюдение и охрана периметра",
+          "Разграничение прав в Active Directory, аудит и учёт техники",
+        ],
+        uz: [
+          "Izolyatsiyalangan yopiq tarmoqlar (air-gap)",
+          "Obyektlar orasida shifrlangan VPN kanallar",
+          "SKUD, videokuzatuv va perimetr qo‘riqlash",
+          "Active Directory’da huquqlarni ajratish, audit va texnika hisobi",
+        ],
+        en: [
+          "Isolated closed networks (air-gap)",
+          "Encrypted VPN links between sites",
+          "Access control, CCTV and perimeter security",
+          "Active Directory rights separation, audit and asset accounting",
         ],
       },
     },
