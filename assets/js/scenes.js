@@ -762,68 +762,6 @@
             : "› waiting for calls";
       g.put(0, 13, status, active ? 1 : 2);
     },
-    military(g, t) {
-      g.box(0, 0, 22, 6, 1, "SECURE ZONE", 3);
-      g.box(24, 0, 22, 6, 2, "OUTSIDE", 0);
-      for (let y = 0; y < 6; y++) g.put(22, y, "║║", blink(t + y * 0.1, 1.4) ? 1 : 5);
-      g.put(19, 6, "AIR-GAP", 1);
-
-      g.put(2, 1, "[SRV]──[WS1]──[WS2]", 0);
-      g.put(4, 2, "│", 2);
-      g.put(11, 2, "│", 2);
-      g.put(18, 2, "│", 2);
-      g.put(2, 3, "[NVR]──[ACS]──[LOG]", 0);
-      g.put(2, 4, "isolated · no WAN", 2);
-      const loop = [
-        [7, 1],
-        [8, 1],
-        [14, 1],
-        [15, 1],
-        [18, 2],
-        [15, 3],
-        [14, 3],
-        [8, 3],
-        [7, 3],
-        [4, 2],
-      ];
-      const [lx, ly] = loop[Math.floor(t * 6) % loop.length];
-      g.put(lx, ly, "•", 1);
-
-      g.put(26, 1, "internet", 2);
-      g.put(26, 2, "◇  ◇   ◇  ◇", 2);
-      const hits = Math.floor(t / 1.6);
-      const p = (t / 1.6) % 1;
-      const ax = Math.round(44 - p * 19);
-      if (ax > 25) g.put(ax, 3, "«", 1);
-      else g.put(25, 3, "✕", 1);
-      g.put(26, 4, `blocked ${String(hits).padStart(3, "0")}`, 1);
-
-      g.put(0, 8, "HQ", 3);
-      g.put(2, 8, "╞" + "═".repeat(38) + "╡", 2);
-      g.put(42, 8, "POST", 3);
-      const fwd = 3 + (Math.floor(t * 10) % 36);
-      const back = 40 - (Math.floor(t * 7) % 36);
-      g.put(fwd, 8, "▓▒░", 1);
-      g.put(back - 2, 8, "░▒▓", 3);
-      g.put(3, 9, "VPN · AES-256 · IPsec", 2);
-      g.put(36, 9, "secure ✓", 1);
-
-      const cards = [
-        ["#0417", true],
-        ["#2290", true],
-        ["#????", false],
-      ];
-      const [card, ok] = cards[Math.floor(t / 2.2) % cards.length];
-      g.put(0, 11, `[ACS] card ${card} → gate-2`, 0);
-      g.put(0, 12, ok ? "ACCESS GRANTED ✓" : blink(t, 0.4) ? "ACCESS DENIED  ✕" : "", ok ? 3 : 1);
-      g.put(30, 11, "CAM-P1", 0);
-      g.put(37, 11, blink(t, 1) ? "● REC" : "  REC", 1);
-      const sweep = Math.floor(t * 5) % 12;
-      for (let k = 0; k < 12; k++)
-        g.put(30 + k, 12, Math.abs(k - sweep) < 2 ? "▓" : "░", Math.abs(k - sweep) < 2 ? 1 : 2);
-
-      g.put(0, 13, `› audit: ${String(120 + hits * 3).padStart(4, "0")} events · zone SECURE`, 2);
-    },
   };
 
   function fallback(id) {
@@ -850,7 +788,6 @@
     monitoring: 3.2,
     pc: 5,
     cloudpbx: 5,
-    military: 3.5,
   };
 
   function createPlayer(pre, id) {

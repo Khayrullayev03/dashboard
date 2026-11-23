@@ -343,6 +343,7 @@
       );
       if (service.feature === "office" && officeBlock) row.append(officeBlock);
       if (service.feature === "voip" && window.VOIP) row.append(window.VOIP.create());
+      if (service.feature === "secure" && window.SECURE) row.append(window.SECURE.create());
       servicesRoot.append(row);
     });
     observeServices();

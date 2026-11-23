@@ -2326,3 +2326,43 @@ main {
   overflow-wrap: anywhere;
   font-size: clamp(1.9rem, 2.6vw + 1rem, 3.2rem);
 }
+
+.secure-principles {
+  margin-bottom: 4px;
+}
+
+.secure-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+  gap: 22px;
+}
+
+.secure-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+}
+
+.secure-card .office-screen {
+  padding: 16px 16px 14px;
+}
+
+.secure-info {
+  padding: 14px 18px 12px;
+}
+
+.secure-title {
+  margin: 0 0 4px;
+  color: var(--bright);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.secure-info .points li {
+  padding: 5px 0 5px 2.2ch;
+  font-size: 13px;
+}
+
+.secure-card .live {
+  color: var(--accent);
+  animation: blink 1.6s steps(1) infinite;
+}
