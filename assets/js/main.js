@@ -966,7 +966,87 @@
   syncPerf();
   watchFrames();
 
+  const brandImg = $(".brand img");
+  const flashEl = document.createElement("div");
+  flashEl.className = "beat-flash";
+  flashEl.setAttribute("aria-hidden", "true");
+  document.body.append(flashEl);
+  const kicks = new WeakMap();
+  const lights = new WeakMap();
+
+  function play(store, node, frames, options) {
+    if (!node || !node.animate) return;
+    const prev = store.get(node);
+    if (prev) prev.cancel();
+    store.set(node, node.animate(frames, options));
+  }
+
+  function shakeFrames(power, px, deg, punch) {
+    const rest = "translate(0px, 0px) rotate(0deg) scale(1)";
+    const frames = [{ transform: rest, offset: 0 }];
+    const steps = 6;
+    for (let i = 0; i < steps; i++) {
+      const k = Math.pow(1 - i / steps, 1.5) * power;
+      const x = (Math.random() * 2 - 1) * px * k;
+      const y = (Math.random() * 2 - 1) * px * 0.55 * k;
+      const r = (Math.random() * 2 - 1) * deg * k;
+      frames.push({
+        transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${r.toFixed(2)}deg) scale(${(1 + punch * k).toFixed(3)})`,
+        offset: 0.06 + (i / steps) * 0.7,
+      });
+    }
+    frames.push({ transform: rest, offset: 1 });
+    return frames;
+  }
+
+  function beat({ strength, ms, strong, power }) {
+    if (document.hidden || reduceMotion) return;
+    const home = state.page === "home";
+    const full = !isLite();
+    if (home && logo) {
+      logo.glitch(strength, ms);
+      play(kicks, logoBox, shakeFrames(strong ? 1 : 0.45 + power * 0.3, 16, 2.6, 0.085), {
+        duration: strong ? 360 : 220,
+        easing: "linear",
+      });
+      if (strong && full)
+        play(
+          lights,
+          logoBox,
+          [
+            {
+              filter:
+                "brightness(2.1) drop-shadow(0 0 26px rgba(255, 90, 110, 0.95)) drop-shadow(-7px 0 0 rgba(242, 51, 74, 0.9)) drop-shadow(7px 0 0 rgba(90, 210, 255, 0.65))",
+            },
+            {
+              filter:
+                "brightness(1) drop-shadow(0 0 0 rgba(255, 90, 110, 0)) drop-shadow(0 0 0 rgba(242, 51, 74, 0)) drop-shadow(0 0 0 rgba(90, 210, 255, 0))",
+            },
+          ],
+          { duration: 420, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)" }
+        );
+    } else if (window.BG && window.BG.glitch) window.BG.glitch(strength, ms);
+    play(kicks, brandImg, shakeFrames(strong ? 1 : 0.5, 3, 8, 0.22), { duration: 300, easing: "linear" });
+    if (window.BG && window.BG.flash) window.BG.flash(strong ? 1 : 0.25 + power * 0.25);
+    if (strong && full) {
+      let x = "78%";
+      let y = "18%";
+      if (home) {
+        const r = logoBox.getBoundingClientRect();
+        x = `${Math.round(r.left + r.width / 2)}px`;
+        y = `${Math.round(r.top + r.height / 2)}px`;
+      }
+      flashEl.style.setProperty("--fx", x);
+      flashEl.style.setProperty("--fy", y);
+      play(lights, flashEl, [{ opacity: Math.min(1, 0.55 + power * 0.45) }, { opacity: 0 }], {
+        duration: 460,
+        easing: "cubic-bezier(0.1, 0.7, 0.3, 1)",
+      });
+    }
+  }
+
   window.APP = {
+    beat,
     logoGlitch(strength, ms) {
       if (logo && state.page === "home" && !document.hidden) logo.glitch(strength, ms);
     },

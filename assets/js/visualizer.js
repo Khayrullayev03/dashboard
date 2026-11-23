@@ -26,6 +26,12 @@
   let player = null;
   let playerSource = null;
   let spec = null;
+  let low = null;
+  let bassTap = null;
+  let wave = null;
+  let peakRef = 0.05;
+  let recentPeak = 0;
+  let pending = null;
   let mode = "idle";
   let raf = 0;
   let last = 0;
@@ -45,6 +51,7 @@
   let bassEnv = 0;
   let kick = 0;
   let kickTarget = 0;
+  let scoreAvg = 0;
   let fluxAvg = 0;
   let armed = true;
   let prevDb = null;
@@ -88,6 +95,13 @@
       analyser.fftSize = 4096;
       analyser.smoothingTimeConstant = 0.45;
       spec = new Float32Array(analyser.frequencyBinCount);
+      low = audio.createBiquadFilter();
+      low.type = "lowpass";
+      low.frequency.value = 160;
+      bassTap = audio.createAnalyser();
+      bassTap.fftSize = 1024;
+      low.connect(bassTap);
+      wave = new Float32Array(bassTap.fftSize);
     }
     if (audio.state === "suspended") audio.resume().catch(() => {});
     return audio;
@@ -143,6 +157,7 @@
       stream = s;
       source = audio.createMediaStreamSource(stream);
       source.connect(analyser);
+      source.connect(low);
       reset(0.55);
       setMode("mic");
       toast(t("viz.micOn"));
@@ -166,6 +181,7 @@
     player.src = URL.createObjectURL(file);
     playerSource.disconnect();
     playerSource.connect(analyser);
+    playerSource.connect(low);
     analyser.disconnect();
     analyser.connect(audio.destination);
     source = null;
@@ -189,6 +205,10 @@
     bassEnv = 0;
     kick = 0;
     kickTarget = 0;
+    scoreAvg = 0;
+    peakRef = 0.05;
+    recentPeak = 0;
+    pending = null;
     fluxAvg = 0;
     armed = true;
     prevDb = null;
@@ -264,6 +284,14 @@
 
     const bass = Math.pow(Math.min(1, Math.max(0, (bassRaw - (bassRef - 0.42)) / 0.42)), 1.6);
     bassEnv += (bass - bassEnv) * (bass > bassEnv ? 1 - Math.exp(-dt / 18) : 1 - Math.exp(-dt / 220));
+    bassTap.getFloatTimeDomainData(wave);
+    let peak = 0;
+    for (let k = 0; k < wave.length; k++) {
+      const v = wave[k] < 0 ? -wave[k] : wave[k];
+      if (v > peak) peak = v;
+    }
+    recentPeak = Math.max(peak, recentPeak * Math.exp(-dt / 80));
+    peakRef = Math.max(recentPeak, peakRef * Math.exp(-dt / 4000), 0.02);
     const threshold = Math.max(1.6, fluxAvg * 2.4);
     if (flux < threshold * 0.5) armed = true;
     const onset = armed && flux > threshold && bass > 0.2 && now - lastGlitch > 120;
@@ -274,16 +302,33 @@
       armed = false;
       const punch = Math.min(1, (flux / threshold - 1) * 0.4 + bass * 0.6);
       kickTarget = Math.max(kickTarget, punch);
-      const strength = 0.6 + bass * 1.2 + punch * 0.6;
-      const ms = 110 + bass * 160 + punch * 80;
-      if (document.documentElement.dataset.view === "home") {
-        if (window.APP && window.APP.logoGlitch) window.APP.logoGlitch(strength, ms);
-      } else if (window.BG && window.BG.glitch) window.BG.glitch(strength, ms);
+      const loud = Math.min(1, recentPeak / peakRef);
+      const score = loud * 0.7 + bass * 0.3;
+      const strong = loud >= 0.72 && score >= Math.max(0.55, scoreAvg * 0.85);
+      scoreAvg = scoreAvg ? scoreAvg * 0.8 + score * 0.2 : score;
+      fire(strong, score, punch, bass);
+      pending = strong ? null : { at: now, punch };
+    } else if (pending) {
+      const loud = Math.min(1, recentPeak / peakRef);
+      if (loud >= 0.72 && bass > 0.3) {
+        fire(true, loud * 0.7 + bass * 0.3, pending.punch, bass);
+        pending = null;
+      } else if (now - pending.at > 90) pending = null;
     }
     kick += (kickTarget - kick) * (1 - Math.exp(-dt / 30));
     const pulse = Math.min(1, Math.max(kick, bassEnv * 0.8));
     if (window.BG && window.BG.setPulse) window.BG.setPulse(pulse);
     if (logo && document.documentElement.dataset.view === "home") logo.style.setProperty("--beat", pulse.toFixed(3));
+  }
+
+  function fire(strong, score, punch, bass) {
+    if (!window.APP || !window.APP.beat) return;
+    window.APP.beat({
+      strong,
+      power: Math.min(1, score),
+      strength: strong ? 2.2 + punch * 0.4 : 0.7 + bass * 0.7 + punch * 0.3,
+      ms: strong ? 240 + punch * 120 : 110 + bass * 100,
+    });
   }
 
   function idle(now) {

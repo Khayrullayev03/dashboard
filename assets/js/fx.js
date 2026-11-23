@@ -149,12 +149,17 @@
 
     let job = 0;
     let busy = false;
+    let running = "";
     let visible = false;
-    function run(duration, frame) {
+    function run(duration, frame, kind = "anim") {
       const id = ++job;
       busy = true;
+      running = kind;
       return animate(duration, (t, p) => (id !== job ? false : frame(t, p))).then((done) => {
-        if (id === job) busy = false;
+        if (id === job) {
+          busy = false;
+          running = "";
+        }
         return done;
       });
     }
@@ -226,30 +231,37 @@
         });
       },
       glitch(strength = 1, ms) {
-        if (reduceMotion || busy || !visible) return Promise.resolve();
+        if (reduceMotion || !visible || (busy && running !== "glitch")) return Promise.resolve();
         const hard = strength > 1.4;
+        container.classList.remove("is-glitching", "is-glitching-hard");
         container.classList.add(hard ? "is-glitching-hard" : "is-glitching");
         let lastSwap = -1000;
         let shiftOf = [];
         let noise = [];
-        return run(ms || 140 + 240 * strength, (t) => {
-          if (t - lastSwap > 45) {
-            lastSwap = t;
-            shiftOf = [];
-            noise = [];
-            const bands = 1 + Math.floor(Math.random() * (2 + strength * 2));
-            for (let b = 0; b < bands; b++) {
-              const from = Math.floor(Math.random() * rows);
-              const height = 1 + Math.floor(Math.random() * (2 + strength * 4));
-              const shift = Math.round((Math.random() * 2 - 1) * (3 + strength * 6));
-              for (let y = from; y < Math.min(rows, from + height); y++) {
-                shiftOf[y] = shift;
-                noise[y] = 0.1 + 0.25 * strength * Math.random();
+        const swap = document.documentElement.dataset.perf === "lite" ? 75 : 45;
+        return run(
+          ms || 140 + 240 * strength,
+          (t) => {
+            if (t - lastSwap > swap) {
+              lastSwap = t;
+              shiftOf = [];
+              noise = [];
+              const bands = 1 + Math.floor(Math.random() * (2 + strength * 2));
+              for (let b = 0; b < bands; b++) {
+                const from = Math.floor(Math.random() * rows);
+                const height = 1 + Math.floor(Math.random() * (2 + strength * 4));
+                const shift = Math.round((Math.random() * 2 - 1) * (3 + strength * 6));
+                for (let y = from; y < Math.min(rows, from + height); y++) {
+                  shiftOf[y] = shift;
+                  noise[y] = 0.1 + 0.25 * strength * Math.random();
+                }
               }
             }
-          }
-          renderShifted(shiftOf, noise);
-        }).then(() => {
+            renderShifted(shiftOf, noise);
+          },
+          "glitch"
+        ).then((done) => {
+          if (!done) return;
           container.classList.remove("is-glitching", "is-glitching-hard");
           render();
         });

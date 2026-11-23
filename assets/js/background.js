@@ -200,7 +200,20 @@
   }
 
   const layer = document.createElement("canvas");
+  layer.className = "ascii-bg ascii-moon";
+  layer.setAttribute("aria-hidden", "true");
+  canvas.before(layer);
   const lctx = layer.getContext("2d");
+  const light = document.createElement("div");
+  light.className = "moon-light";
+  light.setAttribute("aria-hidden", "true");
+  layer.after(light);
+  let lightR = 0;
+  let lightX = 0;
+  let lightY = 0;
+  let lightScale = -1;
+  let lightAlpha = -1;
+  let moonScale = 1;
   let layerAt = -1e9;
   let layerGeo = null;
 
@@ -217,6 +230,39 @@
     layerAt = -1e9;
   }
 
+  let flashAt = -1e9;
+  let flashPower = 0;
+
+  function placeLight(moon, grow, flash) {
+    if (Math.abs(moon.R - lightR) > 0.5 || Math.abs(moon.cx - lightX) > 0.5 || Math.abs(moon.cy - lightY) > 0.5) {
+      lightR = moon.R;
+      lightX = moon.cx;
+      lightY = moon.cy;
+      light.style.width = light.style.height = `${Math.round(moon.R * 2)}px`;
+      light.style.left = `${Math.round(moon.cx - moon.R)}px`;
+      light.style.top = `${Math.round(moon.cy - moon.R)}px`;
+      layer.style.transformOrigin = `${Math.round(moon.cx)}px ${Math.round(moon.cy)}px`;
+    }
+    const k = grow * (1 + flash * 0.3);
+    if (Math.abs(k - lightScale) > 0.004) {
+      lightScale = k;
+      light.style.transform = `scale(${k.toFixed(3)})`;
+    }
+    const alpha = Math.min(1, Math.max(flash, pulse * 0.22));
+    if (Math.abs(alpha - lightAlpha) > 0.01) {
+      lightAlpha = alpha;
+      light.style.opacity = alpha.toFixed(3);
+    }
+    if (Math.abs(grow - moonScale) > 0.002) {
+      moonScale = grow;
+      layer.style.scale = grow === 1 ? "" : grow.toFixed(3);
+    }
+  }
+
+  function flashLevel(now) {
+    return flashPower * Math.exp(-(now - flashAt) / 190);
+  }
+
   function cloudAt(x, y, rowFrac, now) {
     const band = Math.sin(y * 0.55 + 1.3) * Math.sin(x * 0.045 + now * 0.00006 + y * 0.9);
     return band > 0.82 && rowFrac < 0.75 ? band : 0;
@@ -231,7 +277,7 @@
     const moonAlpha = home ? 1 : 0.45;
     const rot = now * 0.000012;
     lctx.clearRect(0, 0, width, height);
-    lctx.globalAlpha = Math.min(1, moonAlpha * (0.82 + 0.18 * Math.sin(now * 0.0012) + pulse * 0.6));
+    lctx.globalAlpha = Math.min(1, moonAlpha * (0.82 + 0.18 * Math.sin(now * 0.0012)));
     const gr = moon.R * 2.4;
     lctx.drawImage(art.glow, moon.cx - gr, moon.cy - gr, gr * 2, gr * 2);
     lctx.globalAlpha = moonAlpha * (home ? 0.75 : 0.5) * (home ? 0.42 : 0.3);
@@ -312,7 +358,7 @@
     const scroll = window.scrollY * 0.004;
     const moon = moonGeometry();
     const art = moonSprites(moon.R);
-    if (pulse > 0.001) moon.R *= 1 + pulse * 0.06;
+    const grow = pulse > 0.001 ? 1 + pulse * 0.06 : 1;
     const tick = Math.floor(now / 120);
     const matrix = mode === "matrix";
 
@@ -336,8 +382,9 @@
       layerGeo = moon;
     }
 
+    placeLight(moon, grow, flashLevel(now));
     ctx.clearRect(0, 0, width, height);
-    ctx.drawImage(layer, 0, 0, width, height);
+    const R = moon.R * grow;
 
     for (let y = 0; y < rows; y++) {
       const py = y * LINE_PX;
@@ -351,8 +398,8 @@
 
       for (let x = 0; x < cols; x++) {
         const px = x * cellW + cellW / 2;
-        const dx = (px - moon.cx) / moon.R;
-        const dy = (py + LINE_PX / 2 - moon.cy) / moon.R;
+        const dx = (px - moon.cx) / R;
+        const dy = (py + LINE_PX / 2 - moon.cy) / R;
         const d2 = dx * dx + dy * dy;
         let sc = " ";
         let fd = " ";
@@ -639,10 +686,16 @@
       if (reduceMotion) return;
       glitchUntil = performance.now() + ms;
       glitchPower = strength;
-      canvas.classList.remove("is-glitching", "is-glitching-hard");
-      canvas.classList.add(strength > 1.4 ? "is-glitching-hard" : "is-glitching");
+      const cls = strength > 1.4 ? "is-glitching-hard" : "is-glitching";
+      [canvas, layer].forEach((c) => {
+        c.classList.remove("is-glitching", "is-glitching-hard");
+        c.classList.add(cls);
+      });
       clearTimeout(glitchTimer);
-      glitchTimer = setTimeout(() => canvas.classList.remove("is-glitching", "is-glitching-hard"), ms);
+      glitchTimer = setTimeout(
+        () => [canvas, layer].forEach((c) => c.classList.remove("is-glitching", "is-glitching-hard")),
+        ms
+      );
       draw(performance.now());
     },
     setLive(on) {
@@ -651,6 +704,13 @@
     },
     setPulse(value) {
       pulse = Math.max(0, Math.min(1, value || 0));
+    },
+    flash(power = 1) {
+      if (reduceMotion) return;
+      const now = performance.now();
+      flashPower = Math.min(1.2, Math.max(flashLevel(now), power));
+      flashAt = now;
+      draw(now);
     },
     pause(on) {
       paused = Boolean(on);

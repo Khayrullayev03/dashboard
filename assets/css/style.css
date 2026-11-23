@@ -3737,3 +3737,44 @@ main {
 :root[data-perf="lite"] .ping-bar.is-wait::before {
   animation: none;
 }
+
+.beat-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    70vmax circle at var(--fx, 50%) var(--fy, 40%),
+    rgba(255, 215, 222, 0.32),
+    rgba(242, 51, 74, 0.16) 28%,
+    rgba(242, 51, 74, 0.05) 50%,
+    transparent 72%
+  );
+}
+
+:root[data-perf="lite"] .beat-flash {
+  display: none;
+}
+
+.ascii-moon {
+  will-change: transform;
+}
+
+.moon-light {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(255, 245, 248, 0.9) 0,
+    rgba(255, 150, 165, 0.55) 13%,
+    rgba(242, 51, 74, 0.26) 32%,
+    rgba(242, 51, 74, 0) 70%
+  );
+  will-change: opacity, transform;
+}
