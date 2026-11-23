@@ -41,6 +41,7 @@
             >$</span
           >
         </a>
+        <div class="viz" data-viz aria-hidden="true"><canvas></canvas></div>
         <nav class="nav" aria-label="Menu">
           <a href="#home" data-i18n="nav.main">главная</a>
           <a href="#services" data-i18n="nav.services">услуги</a>
@@ -54,6 +55,33 @@
             <button type="button" data-lang="ru">ru</button><span aria-hidden="true">|</span
             ><button type="button" data-lang="uz">uz</button><span aria-hidden="true">|</span
             ><button type="button" data-lang="en">en</button>
+          </div>
+          <div class="viz-ctl">
+            <button
+              class="icon-btn"
+              type="button"
+              data-viz-btn
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-pressed="false"
+              data-i18n-aria="viz.open"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 18V5l11-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="17" cy="16" r="3" />
+              </svg>
+            </button>
+            <div class="viz-menu" data-viz-menu hidden>
+              <p class="viz-title" data-i18n="viz.open">Аудиовизуализатор</p>
+              <button type="button" data-viz-mic data-i18n="viz.mic">Слушать музыку рядом</button>
+              <button type="button" data-viz-file data-i18n="viz.file">Открыть свой трек</button>
+              <button type="button" data-viz-toggle hidden></button>
+              <button type="button" data-viz-stop data-i18n="viz.stop" hidden>Выключить</button>
+              <p class="viz-track" data-viz-track hidden></p>
+              <p class="viz-note" data-i18n="viz.note"></p>
+              <input type="file" accept="audio/*" data-viz-input hidden />
+            </div>
           </div>
           <button class="icon-btn" type="button" data-sound-btn aria-pressed="false">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -301,6 +329,7 @@
     <script src="assets/js/config.js?v=dev"></script>
     <script src="assets/js/stats.js?v=dev"></script>
     <script src="assets/js/main.js?v=dev"></script>
+    <script src="assets/js/visualizer.js?v=dev"></script>
     <script src="assets/js/office.js?v=dev"></script>
     <script src="assets/js/worldmap.js?v=dev"></script>
     <script src="assets/js/geo.js?v=dev"></script>

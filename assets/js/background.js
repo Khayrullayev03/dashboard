@@ -141,6 +141,7 @@
     const t = now * 0.00045;
     const scroll = window.scrollY * 0.004;
     const moon = moonGeometry();
+    if (pulse > 0.001) moon.R *= 1 + pulse * 0.06;
     const rot = now * 0.000012;
     const moonAlpha = scene === "home" ? 1 : 0.45;
     const tick = Math.floor(now / 120);
@@ -159,7 +160,7 @@
 
     ctx.clearRect(0, 0, width, height);
 
-    ctx.globalAlpha = moonAlpha * (0.82 + 0.18 * Math.sin(now * 0.0012));
+    ctx.globalAlpha = Math.min(1, moonAlpha * (0.82 + 0.18 * Math.sin(now * 0.0012) + pulse * 0.6));
     const glow = ctx.createRadialGradient(moon.cx, moon.cy, moon.R * 0.6, moon.cx, moon.cy, moon.R * 2.4);
     glow.addColorStop(0, colors.glow);
     glow.addColorStop(1, "rgba(0,0,0,0)");
@@ -343,7 +344,10 @@
   let last = 0;
   let cost = 0;
   let paused = false;
+  let pulse = 0;
+  let live = false;
   function interval() {
+    if (live) return lowPower ? 50 : 33;
     const base = scene === "home" ? (lowPower ? 55 : 40) : lowPower ? 110 : 70;
     return cost > 14 ? Math.min(160, base * 1.8) : base;
   }
@@ -514,6 +518,13 @@
     setScene(next) {
       scene = next === "home" ? "home" : "page";
       draw(performance.now());
+    },
+    setLive(on) {
+      live = Boolean(on);
+      if (!live) pulse = 0;
+    },
+    setPulse(value) {
+      pulse = Math.max(0, Math.min(1, value || 0));
     },
     pause(on) {
       paused = Boolean(on);
