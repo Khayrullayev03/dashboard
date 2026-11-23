@@ -4,6 +4,11 @@ window.PORTFOLIO = {
     handle: "anvarjon",
     location: { city: "Tashkent", lat: 41.3, lon: 69.3 },
     role: { ru: "Системный администратор", uz: "Tizim administratori", en: "System administrator" },
+    tags: {
+      ru: ["Windows Server · AD", "Сети · VPN", "СКС · CCTV", "IP-телефония"],
+      uz: ["Windows Server · AD", "Tarmoqlar · VPN", "SKS · CCTV", "IP-telefoniya"],
+      en: ["Windows Server · AD", "Networks · VPN", "Cabling · CCTV", "IP telephony"],
+    },
     country: { ru: "Узбекистан", uz: "O‘zbekiston", en: "Uzbekistan" },
     focusLine: {
       ru: "Windows Server · AD · сети · СКС",

@@ -82,6 +82,82 @@
   const logo = window.ASCII_LOGO ? createAsciiArt(logoBox, window.ASCII_LOGO) : null;
   if (logo) logo.show();
 
+  const homePage = $('[data-page="home"]');
+  let heroShown = false;
+
+  function renderHero() {
+    const [last, ...first] = L(profile.name).split(" ");
+    $("[data-hero-name]").replaceChildren(el("span", { text: last }), el("span", { text: first.join(" ") }));
+    $("[data-hero-role]").textContent = L(profile.role);
+    $("[data-hero-tags]").replaceChildren(...(L(profile.tags) || []).map((tag) => el("li", { text: tag })));
+    $("[data-hero-stat]").replaceChildren(
+      el("span", {
+        class: "stat-num",
+        "data-count": data.clients || 0,
+        "data-suffix": "+",
+        text: `${data.clients || 0}+`,
+      }),
+      el("span", { class: "hero-stat-label", text: t("services.clients") })
+    );
+    const telegram = contacts.find((c) => c.label === "telegram");
+    $("[data-hero-cta]").replaceChildren(
+      ...[
+        telegram &&
+          el("a", {
+            class: "cta-btn is-primary",
+            href: telegram.href,
+            target: "_blank",
+            rel: "noopener",
+            text: t("about.cta.tg"),
+          }),
+        el("a", { class: "cta-btn", href: "#services", text: t("hero.services") }),
+      ].filter(Boolean)
+    );
+  }
+
+  function playHeroText() {
+    if (reduceMotion) return;
+    $$("[data-hero-name] span").forEach((line, i) => {
+      const text = line.textContent;
+      line.textContent = "";
+      setTimeout(() => scramble(line, text, 700), 520 + i * 160);
+    });
+    setTimeout(() => countUp(homePage), 900);
+  }
+
+  function showHero({ animate: withAnimation = true } = {}) {
+    if (heroShown) return;
+    heroShown = true;
+    if (!withAnimation || reduceMotion) {
+      homePage.classList.replace("is-intro", "is-hero");
+      if (logo) logo.show();
+      return;
+    }
+    if (logo) logo.show();
+    const from = logoBox.getBoundingClientRect();
+    homePage.classList.replace("is-intro", "is-hero");
+    const to = logoBox.getBoundingClientRect();
+    if (logo) logo.glitch(2.4);
+    if (to.width > 0 && logoBox.animate) {
+      logoBox.animate(
+        [
+          {
+            transformOrigin: "top left",
+            transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width})`,
+          },
+          { transformOrigin: "top left", transform: "none" },
+        ],
+        { duration: 1050, easing: "cubic-bezier(0.76, 0, 0.24, 1)" }
+      );
+    }
+    SOUND.tick();
+    playHeroText();
+  }
+
+  ["click", "keydown", "wheel", "touchstart"].forEach((type) =>
+    window.addEventListener(type, () => state.page === "home" && showHero(), { passive: true })
+  );
+
   const hardGlitch = () => logo && logo.glitch(2.4);
   logoBox.addEventListener("pointerenter", hardGlitch);
   logoBox.addEventListener("click", hardGlitch);
@@ -748,6 +824,7 @@
 
     if (id === "home") {
       if (logo && withAnimation) logo.decode(1000);
+      if (heroShown && withAnimation) playHeroText();
     } else if (withAnimation && !reduceMotion) {
       SOUND.tick();
       enterAnimations(next);
@@ -793,6 +870,7 @@
 
   function renderAll() {
     renderProfile();
+    renderHero();
     renderFocus();
     renderSkillLevels();
     renderSkills();
@@ -848,6 +926,15 @@
   showPage(resolvePage(startId) || "home", { animate: false });
   if (state.page === "home" && logo && !reduceMotion) {
     logo.clear();
-    setTimeout(() => logo.decode(1600), 200);
+    setTimeout(
+      () =>
+        logo
+          .decode(1600)
+          .then(() => new Promise((done) => setTimeout(done, 700)))
+          .then(() => showHero()),
+      200
+    );
+  } else {
+    showHero({ animate: false });
   }
 })();
