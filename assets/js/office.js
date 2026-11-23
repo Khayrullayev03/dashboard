@@ -35,14 +35,83 @@
   const scr = (fx, fz) => [Math.round(X0 + fx + fz), Math.round(Y0 - fz)];
 
   const CAMS = [
-    { id: "CAM-01", name: "OPEN SPACE", type: "bullet", icon: [20, 3], glyph: "[■>", label: [17, 1], floor: [3, 14], base: -0.76, amp: 0.5, speed: 0.42, phase: 0,
-      features: [{ az: -34, s: "plant" }, { az: -16, s: "desk" }, { az: 2, s: "desk" }, { az: 20, s: "desk" }, { az: 40, s: "window" }] },
-    { id: "CAM-02", name: "SERVER", type: "bullet", icon: [83, 3], glyph: "<■]", label: [80, 1], floor: [66, 14], base: -2.3, amp: 0.45, speed: 0.5, phase: 1.3,
-      features: [{ az: -36, s: "door" }, { az: -14, s: "switch" }, { az: 6, s: "rack" }, { az: 28, s: "router" }] },
-    { id: "CAM-03", name: "ENTRANCE", type: "dome", icon: [6, 15], glyph: "(●)", label: [0, 13], floor: [0, 2], base: 0.2, amp: 0.45, speed: 0.36, phase: 2.2,
-      features: [{ az: -30, s: "window" }, { az: -10, s: "desk" }, { az: 10, s: "door" }, { az: 32, s: "rack" }] },
-    { id: "CAM-04", name: "HALL", type: "dome", icon: [73, 16], glyph: "(●)", label: [77, 16], floor: [69, 1], base: 2.69, amp: 0.4, speed: 0.4, phase: 3.1,
-      features: [{ az: -34, s: "desk" }, { az: -14, s: "desk" }, { az: 6, s: "plant" }, { az: 26, s: "door" }] },
+    {
+      id: "CAM-01",
+      name: "OPEN SPACE",
+      type: "bullet",
+      icon: [20, 3],
+      glyph: "[■>",
+      label: [17, 1],
+      floor: [3, 14],
+      base: -0.76,
+      amp: 0.5,
+      speed: 0.42,
+      phase: 0,
+      features: [
+        { az: -34, s: "plant" },
+        { az: -16, s: "desk" },
+        { az: 2, s: "desk" },
+        { az: 20, s: "desk" },
+        { az: 40, s: "window" },
+      ],
+    },
+    {
+      id: "CAM-02",
+      name: "SERVER",
+      type: "bullet",
+      icon: [83, 3],
+      glyph: "<■]",
+      label: [80, 1],
+      floor: [66, 14],
+      base: -2.3,
+      amp: 0.45,
+      speed: 0.5,
+      phase: 1.3,
+      features: [
+        { az: -36, s: "door" },
+        { az: -14, s: "switch" },
+        { az: 6, s: "rack" },
+        { az: 28, s: "router" },
+      ],
+    },
+    {
+      id: "CAM-03",
+      name: "ENTRANCE",
+      type: "dome",
+      icon: [6, 15],
+      glyph: "(●)",
+      label: [0, 13],
+      floor: [0, 2],
+      base: 0.2,
+      amp: 0.45,
+      speed: 0.36,
+      phase: 2.2,
+      features: [
+        { az: -30, s: "window" },
+        { az: -10, s: "desk" },
+        { az: 10, s: "door" },
+        { az: 32, s: "rack" },
+      ],
+    },
+    {
+      id: "CAM-04",
+      name: "HALL",
+      type: "dome",
+      icon: [73, 16],
+      glyph: "(●)",
+      label: [77, 16],
+      floor: [69, 1],
+      base: 2.69,
+      amp: 0.4,
+      speed: 0.4,
+      phase: 3.1,
+      features: [
+        { az: -34, s: "desk" },
+        { az: -14, s: "desk" },
+        { az: 6, s: "plant" },
+        { az: 26, s: "door" },
+      ],
+    },
   ];
   const HALF = 0.32;
   const RANGE = 36;
@@ -70,8 +139,27 @@
   ];
 
   const PEOPLE = [
-    { path: [[4, 10.5], [48, 10.5], [48, 5], [22, 5], [22, 10.5]], speed: 4.2, offset: 0 },
-    { path: [[66, 6], [42, 6], [42, 0.4], [62, 0.4]], speed: 3.2, offset: 20 },
+    {
+      path: [
+        [4, 10.5],
+        [48, 10.5],
+        [48, 5],
+        [22, 5],
+        [22, 10.5],
+      ],
+      speed: 4.2,
+      offset: 0,
+    },
+    {
+      path: [
+        [66, 6],
+        [42, 6],
+        [42, 0.4],
+        [62, 0.4],
+      ],
+      speed: 3.2,
+      offset: 20,
+    },
   ];
 
   function walk(person, t) {
@@ -93,12 +181,60 @@
   }
 
   const CABLES = [
-    { pts: [[57, 12], [64, 12]], kind: "data", speed: 0.9 },
-    { pts: [[64, 13], [33, 13], [29, 17]], kind: "data", speed: 0.35 },
-    { pts: [[21, 4], [21, 9], [58, 9]], kind: "video", speed: 0.28 },
-    { pts: [[84, 4], [84, 9], [82, 9]], kind: "video", speed: 0.6 },
-    { pts: [[7, 16], [7, 21], [60, 21], [66, 15]], kind: "video", speed: 0.22 },
-    { pts: [[74, 17], [74, 22], [68, 16]], kind: "video", speed: 0.45 },
+    {
+      pts: [
+        [57, 12],
+        [64, 12],
+      ],
+      kind: "data",
+      speed: 0.9,
+    },
+    {
+      pts: [
+        [64, 13],
+        [33, 13],
+        [29, 17],
+      ],
+      kind: "data",
+      speed: 0.35,
+    },
+    {
+      pts: [
+        [21, 4],
+        [21, 9],
+        [58, 9],
+      ],
+      kind: "video",
+      speed: 0.28,
+    },
+    {
+      pts: [
+        [84, 4],
+        [84, 9],
+        [82, 9],
+      ],
+      kind: "video",
+      speed: 0.6,
+    },
+    {
+      pts: [
+        [7, 16],
+        [7, 21],
+        [60, 21],
+        [66, 15],
+      ],
+      kind: "video",
+      speed: 0.22,
+    },
+    {
+      pts: [
+        [74, 17],
+        [74, 22],
+        [68, 16],
+      ],
+      kind: "video",
+      speed: 0.45,
+    },
   ];
   CABLES.forEach((cable) => {
     cable.cells = S.path(...cable.pts);
@@ -160,14 +296,23 @@
       g.put(c - 1, r - 1, "(_)", 2);
       return;
     }
-    const [c0, r0] = box3d(g, o.fx, o.fz, o.w, o.d, o.h, o.kind === "desk" || o.kind === "sofa" || o.kind === "printer" ? 2 : 0);
+    const [c0, r0] = box3d(
+      g,
+      o.fx,
+      o.fz,
+      o.w,
+      o.d,
+      o.h,
+      o.kind === "desk" || o.kind === "sofa" || o.kind === "printer" ? 2 : 0
+    );
     const tick = Math.floor(t * 6);
     if (o.kind === "rack") {
       for (let r = r0 - o.h + 1; r < r0; r++) {
         const unit = r - (r0 - o.h + 1);
         if (unit % 2 === 0) {
           g.put(c0 + 1, r, "══", 2);
-          for (let k = 0; k < 3; k++) g.put(c0 + 4 + k, r, hash(tick + unit * 7 + k * 3) > 0.45 ? "●" : "◦", k === 0 ? 3 : 1);
+          for (let k = 0; k < 3; k++)
+            g.put(c0 + 4 + k, r, hash(tick + unit * 7 + k * 3) > 0.45 ? "●" : "◦", k === 0 ? 3 : 1);
         } else {
           g.put(c0 + 1, r, "─────", 2);
         }
@@ -290,7 +435,10 @@
     desk: { rows: [" ┌──┐ ", " │**│ ", " └┬─┘ ", "▄▄▄▄▄▄", "█    █"], bottom: 12, screen: true },
     window: { rows: ["┌──┬──┐", "│░░│░░│", "│░░│░░│", "└──┴──┘"], bottom: 7 },
     door: { rows: ["┌─────┐", "│     │", "│    o│", "│     │", "│     │", "│     │"], bottom: 10 },
-    rack: { rows: ["┌─────┐", "│*  * │", "│═════│", "│ * * │", "│═════│", "│*  * │", "│═════│", "└─────┘"], bottom: 11 },
+    rack: {
+      rows: ["┌─────┐", "│*  * │", "│═════│", "│ * * │", "│═════│", "│*  * │", "│═════│", "└─────┘"],
+      bottom: 11,
+    },
     switch: { rows: ["┌──────┐", "│******│", "└┬────┬┘", " │    │ "], bottom: 11 },
     router: { rows: [" │  │ ", "┌────┐", "│****│", "└────┘"], bottom: 9 },
     plant: { rows: ["\\|/", " Y ", "[_]"], bottom: 12 },
@@ -351,7 +499,9 @@
       }
     }
 
-    cam.features.forEach((f, i) => drawSprite(g, SPRITES[f.s], xOf((f.az * Math.PI) / 180), t, i * 13 + st.selected * 31));
+    cam.features.forEach((f, i) =>
+      drawSprite(g, SPRITES[f.s], xOf((f.az * Math.PI) / 180), t, i * 13 + st.selected * 31)
+    );
 
     let motion = false;
     st.people.forEach(([fx, fz], i) => {
@@ -472,14 +622,18 @@
   function stateAt(t) {
     const thetas = CAMS.map((cam) => panOf(cam, t));
     const people = PEOPLE.map((p) => walk(p, t));
-    const camSees = CAMS.map((cam, i) => people.some(([fx, fz]) => {
-      const v = view(cam, fx, fz, thetas[i]);
-      return Math.abs(v.rel) < HALF && v.dist < RANGE;
-    }));
-    const personSeen = people.map(([fx, fz]) => CAMS.some((cam, i) => {
-      const v = view(cam, fx, fz, thetas[i]);
-      return Math.abs(v.rel) < HALF && v.dist < RANGE;
-    }));
+    const camSees = CAMS.map((cam, i) =>
+      people.some(([fx, fz]) => {
+        const v = view(cam, fx, fz, thetas[i]);
+        return Math.abs(v.rel) < HALF && v.dist < RANGE;
+      })
+    );
+    const personSeen = people.map(([fx, fz]) =>
+      CAMS.some((cam, i) => {
+        const v = view(cam, fx, fz, thetas[i]);
+        return Math.abs(v.rel) < HALF && v.dist < RANGE;
+      })
+    );
     return { thetas, people, camSees, personSeen, selected };
   }
 

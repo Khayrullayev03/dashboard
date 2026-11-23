@@ -173,11 +173,46 @@
 
     css(g, t) {
       const layouts = [
-        { rule: "display: flex;", pos: [[3, 3], [13, 3], [23, 3]] },
-        { rule: "justify-content: space-between;", pos: [[3, 3], [19, 3], [35, 3]] },
-        { rule: "flex-direction: column;", pos: [[3, 1], [3, 4], [3, 7]] },
-        { rule: "justify-content: center;", pos: [[10, 4], [19, 4], [28, 4]] },
-        { rule: "display: grid; gap: 1ch;", pos: [[3, 1], [14, 1], [3, 5]] },
+        {
+          rule: "display: flex;",
+          pos: [
+            [3, 3],
+            [13, 3],
+            [23, 3],
+          ],
+        },
+        {
+          rule: "justify-content: space-between;",
+          pos: [
+            [3, 3],
+            [19, 3],
+            [35, 3],
+          ],
+        },
+        {
+          rule: "flex-direction: column;",
+          pos: [
+            [3, 1],
+            [3, 4],
+            [3, 7],
+          ],
+        },
+        {
+          rule: "justify-content: center;",
+          pos: [
+            [10, 4],
+            [19, 4],
+            [28, 4],
+          ],
+        },
+        {
+          rule: "display: grid; gap: 1ch;",
+          pos: [
+            [3, 1],
+            [14, 1],
+            [3, 5],
+          ],
+        },
       ];
       const step = 2.4;
       const k = Math.floor(t / step) % layouts.length;
@@ -202,7 +237,14 @@
       const query = "SELECT name FROM users WHERE active=1;";
       g.put(0, 0, "sql> ", 1);
       g.put(5, 0, query.slice(0, Math.floor(p * 28)), 0);
-      const rows = [[1, "anvar", 1], [2, "dilnoza", 0], [3, "sardor", 1], [4, "malika", 1], [5, "jasur", 0], [6, "kamola", 1]];
+      const rows = [
+        [1, "anvar", 1],
+        [2, "dilnoza", 0],
+        [3, "sardor", 1],
+        [4, "malika", 1],
+        [5, "jasur", 0],
+        [6, "kamola", 1],
+      ];
       g.put(0, 2, "┌────┬──────────┬────────┐", 2);
       g.put(0, 3, "│ id │ name     │ active │", 2);
       g.put(0, 4, "├────┼──────────┼────────┤", 2);
@@ -257,7 +299,14 @@
       if (p >= 1.3 && p < 2.3) g.put(10, 4, "200 OK", 1);
 
       g.put(0, 5, "── access.log " + "─".repeat(32), 2);
-      const routes = ["GET  /api/users", "POST /api/login", "GET  /api/posts?page=2", "PUT  /api/users/7", "GET  /health", "DELETE /api/posts/3"];
+      const routes = [
+        "GET  /api/users",
+        "POST /api/login",
+        "GET  /api/posts?page=2",
+        "PUT  /api/users/7",
+        "GET  /health",
+        "DELETE /api/posts/3",
+      ];
       const codes = [200, 201, 200, 200, 200, 204];
       const done = cycle + (p > 1.8 ? 1 : 0);
       for (let row = 0; row < 8; row++) {
@@ -298,14 +347,24 @@
         .slice(-5)
         .reverse()
         .forEach((c, i) => {
-          const sha = Math.floor(hash(c.at) * 0xffffff).toString(16).padStart(6, "0");
+          const sha = Math.floor(hash(c.at) * 0xffffff)
+            .toString(16)
+            .padStart(6, "0");
           g.put(0, 9 + i, sha, i === 0 ? 1 : 2);
           g.put(8, 9 + i, c.msg, i === 0 ? 3 : 0);
         });
     },
 
     linux(g, t) {
-      const cpu = (k) => clamp(0.4 + 0.25 * Math.sin(t * 1.7 + k * 2) + 0.15 * Math.sin(t * 4.3 + k) + 0.1 * (hash(Math.floor(t * 4) + k) - 0.5), 0.03, 0.98);
+      const cpu = (k) =>
+        clamp(
+          0.4 +
+            0.25 * Math.sin(t * 1.7 + k * 2) +
+            0.15 * Math.sin(t * 4.3 + k) +
+            0.1 * (hash(Math.floor(t * 4) + k) - 0.5),
+          0.03,
+          0.98
+        );
       const meter = (y, label, frac, text) => {
         g.put(0, y, label, 3);
         g.put(5, y, "[", 2);
@@ -332,14 +391,26 @@
         [17, "root", "systemd-journal", 0.9],
         [1888, "zabbix", "zabbix_agentd", 1.3],
         [2410, "root", "cron", 0.2],
-      ].map(([pid, user, cmd, mem2], i) => ({ pid, user, cmd, mem: mem2, cpu: Math.max(0, 22 * cpu(i + 2) - (i > 3 ? 10 : 0)) }));
+      ].map(([pid, user, cmd, mem2], i) => ({
+        pid,
+        user,
+        cmd,
+        mem: mem2,
+        cpu: Math.max(0, 22 * cpu(i + 2) - (i > 3 ? 10 : 0)),
+      }));
       procs.sort((a, b) => b.cpu - a.cpu);
       procs.forEach((pr, i) => {
         const line = `${String(pr.pid).padStart(5)} ${pr.user.padEnd(9)} ${pr.cpu.toFixed(1).padStart(5)} ${pr.mem.toFixed(1).padStart(5)}  ${pr.cmd}`;
         g.put(0, 6 + i, line, i === 0 ? 1 : 0);
       });
       let x = 0;
-      [["F1", "Help"], ["F2", "Setup"], ["F6", "Sort"], ["F9", "Kill"], ["F10", "Quit"]].forEach(([k, label]) => {
+      [
+        ["F1", "Help"],
+        ["F2", "Setup"],
+        ["F6", "Sort"],
+        ["F9", "Kill"],
+        ["F10", "Quit"],
+      ].forEach(([k, label]) => {
         g.put(x, 13, k, 4);
         g.put(x + k.length, 13, label + " ", 2);
         x += k.length + label.length + 2;
@@ -374,7 +445,11 @@
         g.put(25, 11, "OK", 1);
       }
       g.box(30, 2, 16, 8, 2, "DC01", 3);
-      [["DNS", 0], ["DHCP", 1], ["AD DS", 2]].forEach(([name, i]) => {
+      [
+        ["DNS", 0],
+        ["DHCP", 1],
+        ["AD DS", 2],
+      ].forEach(([name, i]) => {
         g.put(32, 3 + i, name, 0);
         g.put(39, 3 + i, "●", blink(t + i * 0.3, 2) ? 1 : 3);
         g.put(41, 3 + i, "up", 2);
@@ -444,7 +519,13 @@
 
       g.box(20, 0, 26, H, 2, "proxmox · pve01", 3);
       const p = t % 10;
-      const vms = [[101, "web"], [102, "db"], [103, "files"], [104, "cams"], [105, "zabbix"]];
+      const vms = [
+        [101, "web"],
+        [102, "db"],
+        [103, "files"],
+        [104, "cams"],
+        [105, "zabbix"],
+      ];
       vms.forEach(([id, name], i) => {
         const y = 2 + i;
         const startAt = 0.8 + i * 0.9;
@@ -589,7 +670,12 @@
         const doneAt = 1.2 + i * 1.4;
         const done = p >= doneAt;
         const active = !done && p >= doneAt - 1.4;
-        g.put(16, 2 + i, done ? "[x]" : active ? "[" + "|/-\\"[Math.floor(t * 8) % 4] + "]" : "[ ]", done ? 1 : active ? 3 : 2);
+        g.put(
+          16,
+          2 + i,
+          done ? "[x]" : active ? "[" + "|/-\\"[Math.floor(t * 8) % 4] + "]" : "[ ]",
+          done ? 1 : active ? 3 : 2
+        );
         g.put(20, 2 + i, task, done ? 0 : active ? 3 : 2);
       });
       const temp = Math.round(82 - 30 * clamp((p - 1) / 6));
@@ -651,7 +737,9 @@
         g.put(e.x + Math.max(0, Math.floor((e.w - e.label.length) / 2)), 12, e.label, 2);
       });
 
-      const routes = ends.map((e) => (e.drop === 22 ? path([22, 5], [22, 7]) : path([22, 5], [22, 6], [e.drop, 6], [e.drop, 7])));
+      const routes = ends.map((e) =>
+        e.drop === 22 ? path([22, 5], [22, 7]) : path([22, 5], [22, 6], [e.drop, 6], [e.drop, 7])
+      );
       if (ringing)
         routes.forEach((r) => {
           const k = Math.floor(t * 12) % r.length;
@@ -685,7 +773,22 @@
     };
   }
 
-  const STILL = { html: 6.5, js: 2.6, css: 1.4, sql: 5.6, node: 1.0, git: 6.2, linux: 1, windows: 6, network: 2.2, servers: 7, cctv: 4.4, monitoring: 3.2, pc: 5, cloudpbx: 5 };
+  const STILL = {
+    html: 6.5,
+    js: 2.6,
+    css: 1.4,
+    sql: 5.6,
+    node: 1.0,
+    git: 6.2,
+    linux: 1,
+    windows: 6,
+    network: 2.2,
+    servers: 7,
+    cctv: 4.4,
+    monitoring: 3.2,
+    pc: 5,
+    cloudpbx: 5,
+  };
 
   function createPlayer(pre, id) {
     const scene = SCENES[id] || fallback(id);

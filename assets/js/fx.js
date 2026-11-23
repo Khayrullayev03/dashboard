@@ -197,9 +197,9 @@
         sample(current);
         visible = true;
         const at = Array.from(dist, (d) => d * duration * 0.75 + Math.random() * duration * 0.25);
-        return run(duration, (t) => render((i) => (t >= at[i] ? chars[i] : t >= at[i] - 280 ? randomGlyph() : " "))).then(
-          (done) => done && render()
-        );
+        return run(duration, (t) =>
+          render((i) => (t >= at[i] ? chars[i] : t >= at[i] - 280 ? randomGlyph() : " "))
+        ).then((done) => done && render());
       },
       vanish(duration = 450) {
         if (!visible || reduceMotion) {
@@ -207,9 +207,9 @@
           return Promise.resolve();
         }
         const at = Array.from(dist, (d) => (1 - d) * duration * 0.7 + Math.random() * duration * 0.3);
-        return run(duration, (t) => render((i) => (t >= at[i] ? " " : t >= at[i] - 200 ? randomGlyph() : chars[i]))).then(
-          () => api.clear()
-        );
+        return run(duration, (t) =>
+          render((i) => (t >= at[i] ? " " : t >= at[i] - 200 ? randomGlyph() : chars[i]))
+        ).then(() => api.clear());
       },
       spin(turns = 1, duration = 1600) {
         if (reduceMotion) return Promise.resolve();

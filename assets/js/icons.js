@@ -67,7 +67,14 @@
       const pulse = Math.floor(t * 3) % 3;
       g.put(10, 2, ["·", "•", "●"][pulse], 1);
       g.put(10, 3, ["·", "•", "●"][(pulse + 1) % 3], 5);
-      const v = [[7, 0], [13, 0], [15, 2], [13, 4], [7, 4], [5, 2]];
+      const v = [
+        [7, 0],
+        [13, 0],
+        [15, 2],
+        [13, 4],
+        [7, 4],
+        [5, 2],
+      ];
       const lit = Math.floor(t * 4) % 6;
       v.forEach(([x, y], i) => g.put(x, y, i === lit ? "●" : "·", i === lit ? 1 : 2));
       g.put(2, 6, "node.js · :3000", 2);
@@ -77,7 +84,16 @@
       g.put(5, 2, "╲", 2);
       g.put(6, 3, "●──●──●", 2);
       g.put(13, 2, "╱", 2);
-      const path = [[0, 1], [3, 1], [6, 1], [6, 3], [9, 3], [12, 3], [14, 1], [17, 1]];
+      const path = [
+        [0, 1],
+        [3, 1],
+        [6, 1],
+        [6, 3],
+        [9, 3],
+        [12, 3],
+        [14, 1],
+        [17, 1],
+      ];
       const k = Math.floor(t * 3) % (path.length + 3);
       path.forEach(([x, y], i) => i <= k && g.put(x, y, "●", i === k ? 1 : 3));
       g.put(0, 5, k >= path.length ? "merged · ok" : "commit…", k >= path.length ? 1 : 2);
@@ -85,15 +101,21 @@
     linux(g, t) {
       const blinkEyes = t % 3.2 < 0.18;
       const wave = Math.floor(t * 2) % 2;
-      lines(g, 4, 0, [
-        "    .--.",
-        blinkEyes ? "   |-_- |" : "   |o_o |",
-        "   |:_/ |",
-        wave ? "  //   \\ \\" : " \\\\   / /",
-        " (|     | )",
-        "/'\\_   _/`\\",
-        "\\___)=(___/",
-      ], 3);
+      lines(
+        g,
+        4,
+        0,
+        [
+          "    .--.",
+          blinkEyes ? "   |-_- |" : "   |o_o |",
+          "   |:_/ |",
+          wave ? "  //   \\ \\" : " \\\\   / /",
+          " (|     | )",
+          "/'\\_   _/`\\",
+          "\\___)=(___/",
+        ],
+        3
+      );
       g.put(7, 2, ":_/", 1);
     },
     windows(g, t) {
@@ -101,7 +123,12 @@
       g.put(0, 3, "├────────┼────────┤", 2);
       g.put(0, 6, "└────────┴────────┘", 2);
       const lit = Math.floor(t * 2) % 4;
-      [[1, 1], [10, 1], [10, 4], [1, 4]].forEach(([x, y], i) => {
+      [
+        [1, 1],
+        [10, 1],
+        [10, 4],
+        [1, 4],
+      ].forEach(([x, y], i) => {
         for (let r = 0; r < 2; r++) g.put(x, y + r, (i === lit ? "▓" : "░").repeat(8), i === lit ? 1 : 2);
       });
       for (let r of [1, 2, 4, 5]) {
@@ -136,7 +163,8 @@
         g.put(1, 1 + u, "║", 2);
         g.put(16, 1 + u, "║", 2);
         g.put(3, 1 + u, "═══", 2);
-        for (let k = 0; k < 3; k++) g.put(8 + k, 1 + u, hash(Math.floor(t * 6) + u * 7 + k) > 0.45 ? "●" : "◦", k === 0 ? 3 : 1);
+        for (let k = 0; k < 3; k++)
+          g.put(8 + k, 1 + u, hash(Math.floor(t * 6) + u * 7 + k) > 0.45 ? "●" : "◦", k === 0 ? 3 : 1);
         g.put(13, 1 + u, "|/-\\"[(Math.floor(t * 8) + u) % 4], 2);
       }
       g.put(1, 5, "╚══════════════╝", 2);
@@ -211,7 +239,8 @@
       g.put(13, 1, "access", 2);
       const n = Math.min(6, Math.floor(cyc * 2.5));
       g.put(13, 3, "█".repeat(n) + "░".repeat(6 - n), cyc < 2.4 ? 5 : 1);
-      const status = cyc < 2.4 ? "scan" + ".".repeat((Math.floor(t * 3) % 2) + 1) : cyc < 2.8 ? "✓ ok" : open ? "open" : "lock";
+      const status =
+        cyc < 2.4 ? "scan" + ".".repeat((Math.floor(t * 3) % 2) + 1) : cyc < 2.8 ? "✓ ok" : open ? "open" : "lock";
       g.put(13, 5, status, cyc < 2.4 ? 2 : 1);
     },
     inventory(g, t) {

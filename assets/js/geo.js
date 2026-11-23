@@ -80,7 +80,15 @@
     async () => {
       const d = await fetchJSON("https://ipapi.co/json/", 4500);
       if (!d || d.error) throw new Error("ipapi.co");
-      return { ip: d.ip, city: d.city, region: d.region, country: d.country_name, lat: Number(d.latitude), lon: Number(d.longitude), isp: d.org };
+      return {
+        ip: d.ip,
+        city: d.city,
+        region: d.region,
+        country: d.country_name,
+        lat: Number(d.latitude),
+        lon: Number(d.longitude),
+        isp: d.org,
+      };
     },
   ];
 
@@ -138,7 +146,9 @@
         pc.createDataChannel("probe");
         pc.onicecandidate = (event) => {
           if (!event.candidate) return finish();
-          const m = /\s((?:\d{1,3}\.){3}\d{1,3}|[0-9a-f]{0,4}(?::[0-9a-f]{0,4}){2,7}|[\w-]+\.local)\s/i.exec(event.candidate.candidate + " ");
+          const m = /\s((?:\d{1,3}\.){3}\d{1,3}|[0-9a-f]{0,4}(?::[0-9a-f]{0,4}){2,7}|[\w-]+\.local)\s/i.exec(
+            event.candidate.candidate + " "
+          );
           if (m) found.add(m[1]);
         };
         pc.createOffer()

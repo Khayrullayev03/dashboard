@@ -49,7 +49,10 @@
         g.put(x, y, ch, color);
       })
     );
-    if (sweep >= 0 && sweep < W) for (let y = 0; y < H; y++) if (g.get(Math.round(sweep), y) === " " || g.get(Math.round(sweep), y) === "·") g.put(Math.round(sweep), y, "│", 5);
+    if (sweep >= 0 && sweep < W)
+      for (let y = 0; y < H; y++)
+        if (g.get(Math.round(sweep), y) === " " || g.get(Math.round(sweep), y) === "·")
+          g.put(Math.round(sweep), y, "│", 5);
 
     if (!loc) {
       const msg = `[ ${t("info.locating")} ]`;
@@ -59,13 +62,16 @@
     }
 
     const [vx, vy] = cell(loc.lat, loc.lon);
-    for (let x = 0; x < W; x++) if (Math.abs(x - vx) > 2 && (g.get(x, vy) === " " || g.get(x, vy) === "·")) g.put(x, vy, "─", 5);
-    for (let y = 0; y < H; y++) if (Math.abs(y - vy) > 1 && (g.get(vx, y) === " " || g.get(vx, y) === "·")) g.put(vx, y, "│", 5);
+    for (let x = 0; x < W; x++)
+      if (Math.abs(x - vx) > 2 && (g.get(x, vy) === " " || g.get(x, vy) === "·")) g.put(x, vy, "─", 5);
+    for (let y = 0; y < H; y++)
+      if (Math.abs(y - vy) > 1 && (g.get(vx, y) === " " || g.get(vx, y) === "·")) g.put(vx, y, "│", 5);
     const home = data.profile && data.profile.location;
     if (home && Number.isFinite(home.lat)) {
       const [sx, sy] = cell(home.lat, home.lon);
       const steps = Math.max(Math.abs(vx - sx), Math.abs(vy - sy));
-      for (let i = 1; i < steps; i += 2) g.put(Math.round(sx + ((vx - sx) * i) / steps), Math.round(sy + ((vy - sy) * i) / steps), "·", 1);
+      for (let i = 1; i < steps; i += 2)
+        g.put(Math.round(sx + ((vx - sx) * i) / steps), Math.round(sy + ((vy - sy) * i) / steps), "·", 1);
       if (steps > 3) {
         const k = (time * 0.6) % 1;
         g.put(Math.round(sx + (vx - sx) * k), Math.round(sy + (vy - sy) * k), "■", 1);
@@ -141,12 +147,18 @@
   function localText() {
     if (!local) return "…";
     if (local.status === "ok") return local.values.join(", ");
-    if (local.status === "hidden") return t("info.localHidden") + (local.masked ? ` (${local.masked.slice(0, 13)}…)` : "");
+    if (local.status === "hidden")
+      return t("info.localHidden") + (local.masked ? ` (${local.masked.slice(0, 13)}…)` : "");
     return t("info.localUnsupported");
   }
 
   function facts() {
-    const place = loc ? [loc.city, loc.region, loc.country].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ") : "…";
+    const place = loc
+      ? [loc.city, loc.region, loc.country]
+          .filter(Boolean)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .join(", ")
+      : "…";
     return [
       ["info.externalIp", loc ? loc.ip || t("info.noIp") : "…", loc && loc.ip ? "hot" : ""],
       ["info.localIp", localText(), local && local.status === "ok" ? "hot" : "dim"],

@@ -3,7 +3,7 @@
 
   const DICT = {
     ru: {
-      "skip": "К содержимому",
+      skip: "К содержимому",
       "nav.home": "Главная",
       "nav.back": "← меню",
       "home.logo": "Логотип",
@@ -92,7 +92,7 @@
     },
 
     uz: {
-      "skip": "Asosiy qismga o‘tish",
+      skip: "Asosiy qismga o‘tish",
       "nav.home": "Bosh sahifa",
       "nav.back": "← menyu",
       "home.logo": "Logotip",
@@ -181,7 +181,7 @@
     },
 
     en: {
-      "skip": "Skip to content",
+      skip: "Skip to content",
       "nav.home": "Home",
       "nav.back": "← menu",
       "home.logo": "Logo",

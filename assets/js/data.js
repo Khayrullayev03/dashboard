@@ -5,7 +5,11 @@ window.PORTFOLIO = {
     location: { city: "Tashkent", lat: 41.3, lon: 69.3 },
     role: { ru: "Системный администратор", uz: "Tizim administratori", en: "System administrator" },
     country: { ru: "Узбекистан", uz: "O‘zbekiston", en: "Uzbekistan" },
-    focusLine: { ru: "Windows Server · AD · сети · СКС", uz: "Windows Server · AD · tarmoqlar · SKS", en: "Windows Server · AD · networks · cabling" },
+    focusLine: {
+      ru: "Windows Server · AD · сети · СКС",
+      uz: "Windows Server · AD · tarmoqlar · SKS",
+      en: "Windows Server · AD · networks · cabling",
+    },
     about: {
       ru: "Отвечаю за то, чтобы серверы, сеть и рабочие места работали без сбоев. Администрирую Windows Server и Active Directory, настраиваю сетевое оборудование, DHCP и VPN, проектирую СКС и ставлю видеонаблюдение. Помогаю пользователям, слежу за безопасностью и веду учёт техники.",
       uz: "Serverlar, tarmoq va ish joylari uzluksiz ishlashi uchun javob beraman. Windows Server va Active Directory’ni boshqaraman, tarmoq uskunalari, DHCP va VPN’ni sozlayman, SKS loyihalayman va videokuzatuv o‘rnataman. Foydalanuvchilarga yordam beraman, xavfsizlikni nazorat qilaman va texnikani hisobga olaman.",
@@ -72,7 +76,12 @@ window.PORTFOLIO = {
       title: { ru: "IT-процессы и люди", uz: "IT jarayonlar va odamlar", en: "IT processes & people" },
       items: {
         ru: ["Инвентаризация техники", "Поддержка руководителя", "Деловое общение", "IT Recruitment"],
-        uz: ["Texnikani inventarizatsiya qilish", "Rahbarga ma’muriy yordam", "Ishbilarmonlik muloqoti", "IT Recruitment"],
+        uz: [
+          "Texnikani inventarizatsiya qilish",
+          "Rahbarga ma’muriy yordam",
+          "Ishbilarmonlik muloqoti",
+          "IT Recruitment",
+        ],
         en: ["IT asset inventory", "Executive support", "Business communication", "IT recruitment"],
       },
     },
@@ -83,19 +92,31 @@ window.PORTFOLIO = {
       level: "advanced",
       items: [
         { ru: "Администрирование", uz: "Ma’muriyat", en: "Administration" },
-        { ru: "Администрирование сетевого оборудования", uz: "Tarmoq uskunalarini boshqarish", en: "Network equipment administration" },
+        {
+          ru: "Администрирование сетевого оборудования",
+          uz: "Tarmoq uskunalarini boshqarish",
+          en: "Network equipment administration",
+        },
         "Active Directory",
         { ru: "Деловое общение", uz: "Ishbilarmonlik muloqoti", en: "Business communication" },
         "Helpdesk",
         "DHCP",
         { ru: "Безопасность", uz: "Xavfsizlik", en: "Security" },
         { ru: "Настройка сетевых подключений", uz: "Tarmoq ulanishlarini sozlash", en: "Network connection setup" },
-        { ru: "Администрирование серверов Windows", uz: "Windows serverlarini boshqarish", en: "Windows server administration" },
+        {
+          ru: "Администрирование серверов Windows",
+          uz: "Windows serverlarini boshqarish",
+          en: "Windows server administration",
+        },
         "VPN",
         { ru: "Внутренний контроль", uz: "Ichki nazorat", en: "Internal control" },
         { ru: "Настройка ПО", uz: "Dasturiy ta’minotni sozlash", en: "Software configuration" },
         { ru: "Настройка серверов", uz: "Serverlarni sozlash", en: "Server setup" },
-        { ru: "Административная поддержка руководителя", uz: "Rahbarga ma’muriy yordam", en: "Executive administrative support" },
+        {
+          ru: "Административная поддержка руководителя",
+          uz: "Rahbarga ma’muriy yordam",
+          en: "Executive administrative support",
+        },
         { ru: "Настройка ПК", uz: "Kompyuterlarni sozlash", en: "PC setup" },
         { ru: "Информационные технологии", uz: "Axborot texnologiyalari", en: "Information technology" },
         { ru: "Офисная техника", uz: "Ofis texnikasi", en: "Office equipment" },
@@ -208,11 +229,32 @@ window.PORTFOLIO = {
         en: "Responsive interfaces that look good on any screen.",
       },
       points: {
-        ru: ["Flexbox и Grid", "Адаптивная вёрстка: mobile-first, media queries", "CSS-переменные и темы оформления", "Переходы и анимации"],
-        uz: ["Flexbox va Grid", "Moslashuvchan sahifalash: mobile-first, media queries", "CSS o‘zgaruvchilari va mavzular", "O‘tishlar va animatsiyalar"],
-        en: ["Flexbox and Grid", "Responsive layout: mobile-first, media queries", "CSS variables and themes", "Transitions and animations"],
+        ru: [
+          "Flexbox и Grid",
+          "Адаптивная вёрстка: mobile-first, media queries",
+          "CSS-переменные и темы оформления",
+          "Переходы и анимации",
+        ],
+        uz: [
+          "Flexbox va Grid",
+          "Moslashuvchan sahifalash: mobile-first, media queries",
+          "CSS o‘zgaruvchilari va mavzular",
+          "O‘tishlar va animatsiyalar",
+        ],
+        en: [
+          "Flexbox and Grid",
+          "Responsive layout: mobile-first, media queries",
+          "CSS variables and themes",
+          "Transitions and animations",
+        ],
       },
-      snippet: [".grid {", "  display: grid;", "  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));", "  gap: 16px;", "}"].join("\n"),
+      snippet: [
+        ".grid {",
+        "  display: grid;",
+        "  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));",
+        "  gap: 16px;",
+        "}",
+      ].join("\n"),
     },
     {
       id: "sql",
@@ -226,11 +268,32 @@ window.PORTFOLIO = {
         en: "Table design and queries to relational databases.",
       },
       points: {
-        ru: ["SELECT, WHERE, JOIN, GROUP BY, HAVING", "Проектирование таблиц и связей между ними", "Индексы и базовая оптимизация запросов", "Транзакции и целостность данных"],
-        uz: ["SELECT, WHERE, JOIN, GROUP BY, HAVING", "Jadvallar va ular orasidagi bog‘lanishlarni loyihalash", "Indekslar va so‘rovlarni optimallashtirish asoslari", "Tranzaksiyalar va ma’lumotlar yaxlitligi"],
-        en: ["SELECT, WHERE, JOIN, GROUP BY, HAVING", "Designing tables and relations", "Indexes and basic query optimization", "Transactions and data integrity"],
+        ru: [
+          "SELECT, WHERE, JOIN, GROUP BY, HAVING",
+          "Проектирование таблиц и связей между ними",
+          "Индексы и базовая оптимизация запросов",
+          "Транзакции и целостность данных",
+        ],
+        uz: [
+          "SELECT, WHERE, JOIN, GROUP BY, HAVING",
+          "Jadvallar va ular orasidagi bog‘lanishlarni loyihalash",
+          "Indekslar va so‘rovlarni optimallashtirish asoslari",
+          "Tranzaksiyalar va ma’lumotlar yaxlitligi",
+        ],
+        en: [
+          "SELECT, WHERE, JOIN, GROUP BY, HAVING",
+          "Designing tables and relations",
+          "Indexes and basic query optimization",
+          "Transactions and data integrity",
+        ],
       },
-      snippet: ["SELECT u.name, COUNT(o.id) AS orders", "FROM users u", "LEFT JOIN orders o ON o.user_id = u.id", "GROUP BY u.name", "ORDER BY orders DESC;"].join("\n"),
+      snippet: [
+        "SELECT u.name, COUNT(o.id) AS orders",
+        "FROM users u",
+        "LEFT JOIN orders o ON o.user_id = u.id",
+        "GROUP BY u.name",
+        "ORDER BY orders DESC;",
+      ].join("\n"),
     },
     {
       id: "node",
@@ -244,9 +307,24 @@ window.PORTFOLIO = {
         en: "Back end: REST APIs, databases and environment config.",
       },
       points: {
-        ru: ["Express: маршруты, middleware, обработка ошибок", "REST API: CRUD, статусы ответов, валидация", "MongoDB и Mongoose: схемы и запросы", "Конфигурация через .env"],
-        uz: ["Express: marshrutlar, middleware, xatolarni qayta ishlash", "REST API: CRUD, javob statuslari, validatsiya", "MongoDB va Mongoose: sxemalar va so‘rovlar", ".env orqali sozlash"],
-        en: ["Express: routes, middleware, error handling", "REST API: CRUD, status codes, validation", "MongoDB and Mongoose: schemas and queries", "Configuration with .env"],
+        ru: [
+          "Express: маршруты, middleware, обработка ошибок",
+          "REST API: CRUD, статусы ответов, валидация",
+          "MongoDB и Mongoose: схемы и запросы",
+          "Конфигурация через .env",
+        ],
+        uz: [
+          "Express: marshrutlar, middleware, xatolarni qayta ishlash",
+          "REST API: CRUD, javob statuslari, validatsiya",
+          "MongoDB va Mongoose: sxemalar va so‘rovlar",
+          ".env orqali sozlash",
+        ],
+        en: [
+          "Express: routes, middleware, error handling",
+          "REST API: CRUD, status codes, validation",
+          "MongoDB and Mongoose: schemas and queries",
+          "Configuration with .env",
+        ],
       },
       snippet: [
         'import express from "express";',
@@ -273,11 +351,31 @@ window.PORTFOLIO = {
         en: "Version control and teamwork on GitHub.",
       },
       points: {
-        ru: ["Ветки, merge, разрешение конфликтов", "Pull request и code review на GitHub", "Понятные сообщения коммитов", ".gitignore и хранение секретов вне репозитория"],
-        uz: ["Branchlar, merge, konfliktlarni hal qilish", "GitHub’da pull request va code review", "Tushunarli commit xabarlari", ".gitignore va maxfiy ma’lumotlarni repozitoriydan tashqarida saqlash"],
-        en: ["Branches, merges, resolving conflicts", "Pull requests and code review on GitHub", "Clear commit messages", ".gitignore and keeping secrets out of the repo"],
+        ru: [
+          "Ветки, merge, разрешение конфликтов",
+          "Pull request и code review на GitHub",
+          "Понятные сообщения коммитов",
+          ".gitignore и хранение секретов вне репозитория",
+        ],
+        uz: [
+          "Branchlar, merge, konfliktlarni hal qilish",
+          "GitHub’da pull request va code review",
+          "Tushunarli commit xabarlari",
+          ".gitignore va maxfiy ma’lumotlarni repozitoriydan tashqarida saqlash",
+        ],
+        en: [
+          "Branches, merges, resolving conflicts",
+          "Pull requests and code review on GitHub",
+          "Clear commit messages",
+          ".gitignore and keeping secrets out of the repo",
+        ],
       },
-      snippet: ["git checkout -b feature/contact-form", "git add .", 'git commit -m "Add contact form"', "git push -u origin feature/contact-form"].join("\n"),
+      snippet: [
+        "git checkout -b feature/contact-form",
+        "git add .",
+        'git commit -m "Add contact form"',
+        "git push -u origin feature/contact-form",
+      ].join("\n"),
     },
 
     {
@@ -292,9 +390,24 @@ window.PORTFOLIO = {
         en: "Linux servers: setup, configuration and automation.",
       },
       points: {
-        ru: ["Установка и настройка серверов Ubuntu/Debian", "systemd, cron, журналы и логи", "Bash-скрипты для рутинных задач", "SSH-доступ по ключам, права и пользователи"],
-        uz: ["Ubuntu/Debian serverlarini o‘rnatish va sozlash", "systemd, cron, jurnallar va loglar", "Muntazam vazifalar uchun Bash-skriptlar", "Kalit orqali SSH-kirish, huquqlar va foydalanuvchilar"],
-        en: ["Installing and configuring Ubuntu/Debian servers", "systemd, cron, journals and logs", "Bash scripts for routine tasks", "Key-based SSH, permissions and users"],
+        ru: [
+          "Установка и настройка серверов Ubuntu/Debian",
+          "systemd, cron, журналы и логи",
+          "Bash-скрипты для рутинных задач",
+          "SSH-доступ по ключам, права и пользователи",
+        ],
+        uz: [
+          "Ubuntu/Debian serverlarini o‘rnatish va sozlash",
+          "systemd, cron, jurnallar va loglar",
+          "Muntazam vazifalar uchun Bash-skriptlar",
+          "Kalit orqali SSH-kirish, huquqlar va foydalanuvchilar",
+        ],
+        en: [
+          "Installing and configuring Ubuntu/Debian servers",
+          "systemd, cron, journals and logs",
+          "Bash scripts for routine tasks",
+          "Key-based SSH, permissions and users",
+        ],
       },
       snippet: [
         "# disk usage and the heaviest processes",
@@ -317,9 +430,24 @@ window.PORTFOLIO = {
         en: "Office domain and workstations on Windows Server.",
       },
       points: {
-        ru: ["Active Directory: пользователи, группы, OU", "Групповые политики (GPO)", "DNS и DHCP", "Общие папки и права доступа"],
-        uz: ["Active Directory: foydalanuvchilar, guruhlar, OU", "Guruh siyosatlari (GPO)", "DNS va DHCP", "Umumiy papkalar va kirish huquqlari"],
-        en: ["Active Directory: users, groups, OUs", "Group Policy (GPO)", "DNS and DHCP", "File shares and access rights"],
+        ru: [
+          "Active Directory: пользователи, группы, OU",
+          "Групповые политики (GPO)",
+          "DNS и DHCP",
+          "Общие папки и права доступа",
+        ],
+        uz: [
+          "Active Directory: foydalanuvchilar, guruhlar, OU",
+          "Guruh siyosatlari (GPO)",
+          "DNS va DHCP",
+          "Umumiy papkalar va kirish huquqlari",
+        ],
+        en: [
+          "Active Directory: users, groups, OUs",
+          "Group Policy (GPO)",
+          "DNS and DHCP",
+          "File shares and access rights",
+        ],
       },
       snippet: [
         'New-ADUser -Name "Ivan Petrov" `',
@@ -342,9 +470,24 @@ window.PORTFOLIO = {
         en: "Office network, from cabling to VPN.",
       },
       points: {
-        ru: ["Настройка роутеров и коммутаторов (MikroTik, Cisco)", "VLAN и сегментация сети", "VPN для удалённого доступа", "Wi-Fi, кабельные линии, диагностика: ping, traceroute"],
-        uz: ["Router va kommutatorlarni sozlash (MikroTik, Cisco)", "VLAN va tarmoqni segmentlash", "Masofaviy kirish uchun VPN", "Wi-Fi, kabel liniyalari, diagnostika: ping, traceroute"],
-        en: ["Router and switch setup (MikroTik, Cisco)", "VLANs and network segmentation", "VPN for remote access", "Wi-Fi, cabling, diagnostics: ping, traceroute"],
+        ru: [
+          "Настройка роутеров и коммутаторов (MikroTik, Cisco)",
+          "VLAN и сегментация сети",
+          "VPN для удалённого доступа",
+          "Wi-Fi, кабельные линии, диагностика: ping, traceroute",
+        ],
+        uz: [
+          "Router va kommutatorlarni sozlash (MikroTik, Cisco)",
+          "VLAN va tarmoqni segmentlash",
+          "Masofaviy kirish uchun VPN",
+          "Wi-Fi, kabel liniyalari, diagnostika: ping, traceroute",
+        ],
+        en: [
+          "Router and switch setup (MikroTik, Cisco)",
+          "VLANs and network segmentation",
+          "VPN for remote access",
+          "Wi-Fi, cabling, diagnostics: ping, traceroute",
+        ],
       },
       snippet: [
         "# separate VLAN for cameras, no internet access",
@@ -366,11 +509,32 @@ window.PORTFOLIO = {
         en: "Hardware, virtual machines and containers.",
       },
       points: {
-        ru: ["Виртуализация: Proxmox, Hyper-V", "Docker и docker compose", "Сборка и обслуживание серверов, RAID", "Обновления и резервирование"],
-        uz: ["Virtualizatsiya: Proxmox, Hyper-V", "Docker va docker compose", "Serverlarni yig‘ish va xizmat ko‘rsatish, RAID", "Yangilanishlar va zaxiralash"],
-        en: ["Virtualization: Proxmox, Hyper-V", "Docker and docker compose", "Building and maintaining servers, RAID", "Updates and redundancy"],
+        ru: [
+          "Виртуализация: Proxmox, Hyper-V",
+          "Docker и docker compose",
+          "Сборка и обслуживание серверов, RAID",
+          "Обновления и резервирование",
+        ],
+        uz: [
+          "Virtualizatsiya: Proxmox, Hyper-V",
+          "Docker va docker compose",
+          "Serverlarni yig‘ish va xizmat ko‘rsatish, RAID",
+          "Yangilanishlar va zaxiralash",
+        ],
+        en: [
+          "Virtualization: Proxmox, Hyper-V",
+          "Docker and docker compose",
+          "Building and maintaining servers, RAID",
+          "Updates and redundancy",
+        ],
       },
-      snippet: ["qm start 101          # start the VM", "qm list", "", "docker compose up -d", 'docker ps --format "{{.Names}}: {{.Status}}"'].join("\n"),
+      snippet: [
+        "qm start 101          # start the VM",
+        "qm list",
+        "",
+        "docker compose up -d",
+        'docker ps --format "{{.Names}}: {{.Status}}"',
+      ].join("\n"),
     },
     {
       id: "cctv",
@@ -384,9 +548,24 @@ window.PORTFOLIO = {
         en: "IP cameras, video recorders and recording archives.",
       },
       points: {
-        ru: ["Монтаж и настройка IP-камер", "Видеорегистраторы (NVR) и архив записей", "Детекция движения и уведомления", "Отдельный VLAN для камер, удалённый просмотр"],
-        uz: ["IP-kameralarni o‘rnatish va sozlash", "Videoregistratorlar (NVR) va yozuvlar arxivi", "Harakatni aniqlash va bildirishnomalar", "Kameralar uchun alohida VLAN, masofadan ko‘rish"],
-        en: ["Installing and configuring IP cameras", "Network video recorders (NVR) and archives", "Motion detection and alerts", "Separate VLAN for cameras, remote viewing"],
+        ru: [
+          "Монтаж и настройка IP-камер",
+          "Видеорегистраторы (NVR) и архив записей",
+          "Детекция движения и уведомления",
+          "Отдельный VLAN для камер, удалённый просмотр",
+        ],
+        uz: [
+          "IP-kameralarni o‘rnatish va sozlash",
+          "Videoregistratorlar (NVR) va yozuvlar arxivi",
+          "Harakatni aniqlash va bildirishnomalar",
+          "Kameralar uchun alohida VLAN, masofadan ko‘rish",
+        ],
+        en: [
+          "Installing and configuring IP cameras",
+          "Network video recorders (NVR) and archives",
+          "Motion detection and alerts",
+          "Separate VLAN for cameras, remote viewing",
+        ],
       },
       snippet: [
         "# check that the camera stream is alive (RTSP)",
@@ -408,9 +587,24 @@ window.PORTFOLIO = {
         en: "Watching systems and making backups on time.",
       },
       points: {
-        ru: ["Мониторинг серверов и сети: Zabbix, Grafana", "Оповещения о сбоях в Telegram", "Резервное копирование по расписанию", "Проверка восстановления из бэкапа"],
-        uz: ["Server va tarmoq monitoringi: Zabbix, Grafana", "Nosozliklar haqida Telegram’ga ogohlantirish", "Jadval bo‘yicha zaxira nusxalash", "Zaxira nusxadan tiklashni tekshirish"],
-        en: ["Server and network monitoring: Zabbix, Grafana", "Failure alerts to Telegram", "Scheduled backups", "Testing restores from backup"],
+        ru: [
+          "Мониторинг серверов и сети: Zabbix, Grafana",
+          "Оповещения о сбоях в Telegram",
+          "Резервное копирование по расписанию",
+          "Проверка восстановления из бэкапа",
+        ],
+        uz: [
+          "Server va tarmoq monitoringi: Zabbix, Grafana",
+          "Nosozliklar haqida Telegram’ga ogohlantirish",
+          "Jadval bo‘yicha zaxira nusxalash",
+          "Zaxira nusxadan tiklashni tekshirish",
+        ],
+        en: [
+          "Server and network monitoring: Zabbix, Grafana",
+          "Failure alerts to Telegram",
+          "Scheduled backups",
+          "Testing restores from backup",
+        ],
       },
       snippet: [
         "# /etc/cron.d/backup — every night at 02:00",
@@ -427,31 +621,69 @@ window.PORTFOLIO = {
     {
       id: "servers",
       scene: "servers",
-      title: { ru: "Установка и настройка серверов", uz: "Serverlarni o‘rnatish va sozlash", en: "Server installation and setup" },
+      title: {
+        ru: "Установка и настройка серверов",
+        uz: "Serverlarni o‘rnatish va sozlash",
+        en: "Server installation and setup",
+      },
       desc: {
         ru: "Подберу и соберу сервер, установлю Windows Server или Linux, настрою виртуализацию и резервное копирование.",
         uz: "Serverni tanlab yig‘aman, Windows Server yoki Linux o‘rnataman, virtualizatsiya va zaxira nusxalashni sozlayman.",
         en: "I pick and build the server, install Windows Server or Linux, and set up virtualization and backups.",
       },
       points: {
-        ru: ["Сборка и монтаж в стойку, RAID", "Windows Server, Ubuntu, Debian", "Виртуализация: Proxmox, Hyper-V, Docker", "Удалённый доступ, обновления, бэкапы"],
-        uz: ["Yig‘ish va stoykaga o‘rnatish, RAID", "Windows Server, Ubuntu, Debian", "Virtualizatsiya: Proxmox, Hyper-V, Docker", "Masofaviy kirish, yangilanishlar, zaxira nusxalar"],
-        en: ["Assembly and rack mounting, RAID", "Windows Server, Ubuntu, Debian", "Virtualization: Proxmox, Hyper-V, Docker", "Remote access, updates, backups"],
+        ru: [
+          "Сборка и монтаж в стойку, RAID",
+          "Windows Server, Ubuntu, Debian",
+          "Виртуализация: Proxmox, Hyper-V, Docker",
+          "Удалённый доступ, обновления, бэкапы",
+        ],
+        uz: [
+          "Yig‘ish va stoykaga o‘rnatish, RAID",
+          "Windows Server, Ubuntu, Debian",
+          "Virtualizatsiya: Proxmox, Hyper-V, Docker",
+          "Masofaviy kirish, yangilanishlar, zaxira nusxalar",
+        ],
+        en: [
+          "Assembly and rack mounting, RAID",
+          "Windows Server, Ubuntu, Debian",
+          "Virtualization: Proxmox, Hyper-V, Docker",
+          "Remote access, updates, backups",
+        ],
       },
     },
     {
       id: "scs",
       feature: "office",
-      title: { ru: "Монтаж СКС и видеонаблюдения", uz: "SKT va videokuzatuvni o‘rnatish", en: "Structured cabling and CCTV" },
+      title: {
+        ru: "Монтаж СКС и видеонаблюдения",
+        uz: "SKT va videokuzatuvni o‘rnatish",
+        en: "Structured cabling and CCTV",
+      },
       desc: {
         ru: "Кабельная сеть офиса под ключ: витая пара, розетки, патч-панели, шкаф, Wi-Fi и IP-камеры с записью.",
         uz: "Ofis kabel tarmog‘i to‘liq: o‘ralgan juftlik, rozetkalar, patch-panellar, shkaf, Wi-Fi va yozib oluvchi IP-kameralar.",
         en: "Turnkey office cabling: twisted pair, wall sockets, patch panels, a rack, Wi-Fi and recording IP cameras.",
       },
       points: {
-        ru: ["Прокладка кабеля, розетки, патч-панели", "Коммутационный шкаф и маркировка", "IP-камеры, видеорегистратор, архив", "Просмотр камер с телефона"],
-        uz: ["Kabel tortish, rozetkalar, patch-panellar", "Kommutatsiya shkafi va belgilash", "IP-kameralar, videoregistrator, arxiv", "Kameralarni telefondan ko‘rish"],
-        en: ["Cable runs, sockets, patch panels", "Network rack and labeling", "IP cameras, NVR, recording archive", "Viewing cameras from a phone"],
+        ru: [
+          "Прокладка кабеля, розетки, патч-панели",
+          "Коммутационный шкаф и маркировка",
+          "IP-камеры, видеорегистратор, архив",
+          "Просмотр камер с телефона",
+        ],
+        uz: [
+          "Kabel tortish, rozetkalar, patch-panellar",
+          "Kommutatsiya shkafi va belgilash",
+          "IP-kameralar, videoregistrator, arxiv",
+          "Kameralarni telefondan ko‘rish",
+        ],
+        en: [
+          "Cable runs, sockets, patch panels",
+          "Network rack and labeling",
+          "IP cameras, NVR, recording archive",
+          "Viewing cameras from a phone",
+        ],
       },
     },
     {
@@ -464,9 +696,24 @@ window.PORTFOLIO = {
         en: "I configure routers and switches, segment the network, and set up Wi-Fi and VPN for remote work.",
       },
       points: {
-        ru: ["MikroTik, Cisco, Ubiquiti", "VLAN, гостевой Wi-Fi", "VPN для удалённого доступа", "Диагностика и устранение сбоев"],
-        uz: ["MikroTik, Cisco, Ubiquiti", "VLAN, mehmon Wi-Fi", "Masofaviy kirish uchun VPN", "Diagnostika va nosozliklarni bartaraf etish"],
-        en: ["MikroTik, Cisco, Ubiquiti", "VLANs, guest Wi-Fi", "VPN for remote access", "Diagnostics and troubleshooting"],
+        ru: [
+          "MikroTik, Cisco, Ubiquiti",
+          "VLAN, гостевой Wi-Fi",
+          "VPN для удалённого доступа",
+          "Диагностика и устранение сбоев",
+        ],
+        uz: [
+          "MikroTik, Cisco, Ubiquiti",
+          "VLAN, mehmon Wi-Fi",
+          "Masofaviy kirish uchun VPN",
+          "Diagnostika va nosozliklarni bartaraf etish",
+        ],
+        en: [
+          "MikroTik, Cisco, Ubiquiti",
+          "VLANs, guest Wi-Fi",
+          "VPN for remote access",
+          "Diagnostics and troubleshooting",
+        ],
       },
     },
     {
@@ -479,9 +726,24 @@ window.PORTFOLIO = {
         en: "I connect offices to IP telephony: an IP PBX, a SIP trunk to the carrier and access to local, long-distance and international calls. The diagram shows a call from caller A to callee B abroad.",
       },
       points: {
-        ru: ["IP-АТС IP-PBX: внутренние номера, IVR, очереди", "SIP-транки, Softswitch оператора, медиашлюзы E1", "IP-телефоны и софтфоны, PoE, отдельный VLAN для голоса", "Запись разговоров, переадресация, качество связи (QoS)"],
-        uz: ["IP-PBX IP-ATS: ichki raqamlar, IVR, navbatlar", "SIP-tranklar, operator Softswitch’i, E1 media shlyuzlari", "IP-telefonlar va softfonlar, PoE, ovoz uchun alohida VLAN", "Suhbatlarni yozish, yo‘naltirish, aloqa sifati (QoS)"],
-        en: ["IP-PBX IP PBX: extensions, IVR, queues", "SIP trunks, carrier softswitch, E1 media gateways", "IP phones and softphones, PoE, a dedicated voice VLAN", "Call recording, forwarding, call quality (QoS)"],
+        ru: [
+          "IP-АТС IP-PBX: внутренние номера, IVR, очереди",
+          "SIP-транки, Softswitch оператора, медиашлюзы E1",
+          "IP-телефоны и софтфоны, PoE, отдельный VLAN для голоса",
+          "Запись разговоров, переадресация, качество связи (QoS)",
+        ],
+        uz: [
+          "IP-PBX IP-ATS: ichki raqamlar, IVR, navbatlar",
+          "SIP-tranklar, operator Softswitch’i, E1 media shlyuzlari",
+          "IP-telefonlar va softfonlar, PoE, ovoz uchun alohida VLAN",
+          "Suhbatlarni yozish, yo‘naltirish, aloqa sifati (QoS)",
+        ],
+        en: [
+          "IP-PBX IP PBX: extensions, IVR, queues",
+          "SIP trunks, carrier softswitch, E1 media gateways",
+          "IP phones and softphones, PoE, a dedicated voice VLAN",
+          "Call recording, forwarding, call quality (QoS)",
+        ],
       },
     },
     {
@@ -494,45 +756,97 @@ window.PORTFOLIO = {
         en: "I move offices to cloud telephony: RingCentral, 8x8 and similar. No server of your own: staff call from IP phones, computers and smartphones from anywhere in the world.",
       },
       points: {
-        ru: ["RingCentral, 8x8: номера, пользователи, лицензии", "IVR, очереди, группы вызова, переадресация", "Софтфоны, мобильные приложения и IP-телефоны", "Перенос номеров и интеграция с CRM"],
-        uz: ["RingCentral, 8x8: raqamlar, foydalanuvchilar, litsenziyalar", "IVR, navbatlar, qo‘ng‘iroq guruhlari, yo‘naltirish", "Softfonlar, mobil ilovalar va IP-telefonlar", "Raqamlarni ko‘chirish va CRM bilan integratsiya"],
-        en: ["RingCentral, 8x8: numbers, users, licences", "IVR, queues, ring groups, forwarding", "Softphones, mobile apps and IP phones", "Number porting and CRM integration"],
+        ru: [
+          "RingCentral, 8x8: номера, пользователи, лицензии",
+          "IVR, очереди, группы вызова, переадресация",
+          "Софтфоны, мобильные приложения и IP-телефоны",
+          "Перенос номеров и интеграция с CRM",
+        ],
+        uz: [
+          "RingCentral, 8x8: raqamlar, foydalanuvchilar, litsenziyalar",
+          "IVR, navbatlar, qo‘ng‘iroq guruhlari, yo‘naltirish",
+          "Softfonlar, mobil ilovalar va IP-telefonlar",
+          "Raqamlarni ko‘chirish va CRM bilan integratsiya",
+        ],
+        en: [
+          "RingCentral, 8x8: numbers, users, licences",
+          "IVR, queues, ring groups, forwarding",
+          "Softphones, mobile apps and IP phones",
+          "Number porting and CRM integration",
+        ],
       },
     },
     {
       id: "windows",
       scene: "windows",
-      title: { ru: "Windows Server и Active Directory", uz: "Windows Server va Active Directory", en: "Windows Server and Active Directory" },
+      title: {
+        ru: "Windows Server и Active Directory",
+        uz: "Windows Server va Active Directory",
+        en: "Windows Server and Active Directory",
+      },
       desc: {
         ru: "Домен для офиса: учётные записи, группы, политики, общие папки и принтеры — всё управляется из одного места.",
         uz: "Ofis uchun domen: hisoblar, guruhlar, siyosatlar, umumiy papkalar va printerlar — hammasi bir joydan boshqariladi.",
         en: "An office domain: accounts, groups, policies, shared folders and printers, all managed from one place.",
       },
       points: {
-        ru: ["Домен, пользователи, группы", "Групповые политики (GPO)", "Общие папки и права доступа", "DNS, DHCP, печать"],
-        uz: ["Domen, foydalanuvchilar, guruhlar", "Guruh siyosatlari (GPO)", "Umumiy papkalar va huquqlar", "DNS, DHCP, chop etish"],
+        ru: [
+          "Домен, пользователи, группы",
+          "Групповые политики (GPO)",
+          "Общие папки и права доступа",
+          "DNS, DHCP, печать",
+        ],
+        uz: [
+          "Domen, foydalanuvchilar, guruhlar",
+          "Guruh siyosatlari (GPO)",
+          "Umumiy papkalar va huquqlar",
+          "DNS, DHCP, chop etish",
+        ],
         en: ["Domain, users, groups", "Group Policy (GPO)", "File shares and permissions", "DNS, DHCP, printing"],
       },
     },
     {
       id: "linux",
       scene: "linux",
-      title: { ru: "Linux-серверы и автоматизация", uz: "Linux serverlar va avtomatlashtirish", en: "Linux servers and automation" },
+      title: {
+        ru: "Linux-серверы и автоматизация",
+        uz: "Linux serverlar va avtomatlashtirish",
+        en: "Linux servers and automation",
+      },
       desc: {
         ru: "Подниму веб-сервер, базу данных или файловое хранилище на Linux и автоматизирую рутину скриптами.",
         uz: "Linux’da veb-server, ma’lumotlar bazasi yoki fayl ombori ko‘taraman va muntazam ishlarni skriptlar bilan avtomatlashtiraman.",
         en: "I set up a web server, database or file storage on Linux and automate routine work with scripts.",
       },
       points: {
-        ru: ["nginx, базы данных, файловые серверы", "Bash-скрипты и cron", "SSH по ключам, права, защита", "Логи и диагностика"],
-        uz: ["nginx, ma’lumotlar bazalari, fayl serverlari", "Bash-skriptlar va cron", "Kalit bilan SSH, huquqlar, himoya", "Loglar va diagnostika"],
-        en: ["nginx, databases, file servers", "Bash scripts and cron", "Key-based SSH, permissions, hardening", "Logs and diagnostics"],
+        ru: [
+          "nginx, базы данных, файловые серверы",
+          "Bash-скрипты и cron",
+          "SSH по ключам, права, защита",
+          "Логи и диагностика",
+        ],
+        uz: [
+          "nginx, ma’lumotlar bazalari, fayl serverlari",
+          "Bash-skriptlar va cron",
+          "Kalit bilan SSH, huquqlar, himoya",
+          "Loglar va diagnostika",
+        ],
+        en: [
+          "nginx, databases, file servers",
+          "Bash scripts and cron",
+          "Key-based SSH, permissions, hardening",
+          "Logs and diagnostics",
+        ],
       },
     },
     {
       id: "monitoring",
       scene: "monitoring",
-      title: { ru: "Мониторинг и резервное копирование", uz: "Monitoring va zaxira nusxalash", en: "Monitoring and backups" },
+      title: {
+        ru: "Мониторинг и резервное копирование",
+        uz: "Monitoring va zaxira nusxalash",
+        en: "Monitoring and backups",
+      },
       desc: {
         ru: "Слежу за серверами и сетью круглосуточно, присылаю тревоги в Telegram и каждую ночь делаю бэкапы.",
         uz: "Serverlar va tarmoqni kecha-kunduz kuzataman, ogohlantirishlarni Telegram’ga yuboraman va har kecha zaxira nusxa olaman.",
@@ -540,14 +854,23 @@ window.PORTFOLIO = {
       },
       points: {
         ru: ["Zabbix, Grafana", "Оповещения о сбоях в Telegram", "Бэкапы по расписанию", "Проверка восстановления"],
-        uz: ["Zabbix, Grafana", "Nosozliklar haqida Telegram’ga xabar", "Jadval bo‘yicha zaxira nusxalar", "Tiklashni tekshirish"],
+        uz: [
+          "Zabbix, Grafana",
+          "Nosozliklar haqida Telegram’ga xabar",
+          "Jadval bo‘yicha zaxira nusxalar",
+          "Tiklashni tekshirish",
+        ],
         en: ["Zabbix, Grafana", "Failure alerts to Telegram", "Scheduled backups", "Restore testing"],
       },
     },
     {
       id: "pc",
       scene: "pc",
-      title: { ru: "Обслуживание компьютеров и оргтехники", uz: "Kompyuter va orgtexnikaga xizmat ko‘rsatish", en: "PC and office equipment maintenance" },
+      title: {
+        ru: "Обслуживание компьютеров и оргтехники",
+        uz: "Kompyuter va orgtexnikaga xizmat ko‘rsatish",
+        en: "PC and office equipment maintenance",
+      },
       desc: {
         ru: "Почищу и настрою рабочие места, установлю систему и программы, подключу принтеры и МФУ.",
         uz: "Ish joylarini tozalab sozlayman, tizim va dasturlarni o‘rnataman, printer va MFU ulayman.",
@@ -555,8 +878,18 @@ window.PORTFOLIO = {
       },
       points: {
         ru: ["Чистка, замена термопасты", "Установка Windows и программ", "Принтеры, сканеры, МФУ", "Учёт техники"],
-        uz: ["Tozalash, termopastani almashtirish", "Windows va dasturlarni o‘rnatish", "Printer, skaner, MFU", "Texnikani hisobga olish"],
-        en: ["Cleaning, new thermal paste", "Installing Windows and software", "Printers, scanners, MFPs", "Equipment inventory"],
+        uz: [
+          "Tozalash, termopastani almashtirish",
+          "Windows va dasturlarni o‘rnatish",
+          "Printer, skaner, MFU",
+          "Texnikani hisobga olish",
+        ],
+        en: [
+          "Cleaning, new thermal paste",
+          "Installing Windows and software",
+          "Printers, scanners, MFPs",
+          "Equipment inventory",
+        ],
       },
     },
     {

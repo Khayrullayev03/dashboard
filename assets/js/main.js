@@ -28,8 +28,7 @@
       if (value == null || value === false) continue;
       if (key === "class") node.className = value;
       else if (key === "text") node.textContent = value;
-      else if (key === "vars")
-        for (const [name, v] of Object.entries(value)) node.style.setProperty(name, v);
+      else if (key === "vars") for (const [name, v] of Object.entries(value)) node.style.setProperty(name, v);
       else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
       else node.setAttribute(key, value === true ? "" : value);
     }
@@ -89,23 +88,33 @@
 
   if (logo && !reduceMotion) {
     (function schedule() {
-      setTimeout(() => {
-        if (!document.hidden && state.page === "home") logo.glitch(Math.random() < 0.25 ? 2 : 0.7 + Math.random() * 0.6);
-        schedule();
-      }, 700 + Math.random() * 1500);
+      setTimeout(
+        () => {
+          if (!document.hidden && state.page === "home")
+            logo.glitch(Math.random() < 0.25 ? 2 : 0.7 + Math.random() * 0.6);
+          schedule();
+        },
+        700 + Math.random() * 1500
+      );
     })();
   }
 
   function renderProfile() {
     $$("[data-handle]").forEach((n) => (n.textContent = profile.handle || "user"));
-    $("[data-footer]").textContent = `© ${new Date().getFullYear()} · ${profile.handle || ""}`;
+    $("[data-footer]").replaceChildren(
+      `© ${new Date().getFullYear()}`,
+      el("span", { class: "footer-dot", text: " · " }),
+      el("span", { class: "footer-handle", text: profile.handle || "" })
+    );
     $("[data-name]").textContent = L(profile.name);
     $("[data-role]").textContent = L(profile.role);
     $("[data-about]").textContent = L(profile.about);
 
     const levels = data.skillLevels || [];
     const total = levels.reduce((n, g) => n + g.items.length, 0);
-    const advanced = levels.filter((g) => g.level === "advanced" || g.level === "expert").reduce((n, g) => n + g.items.length, 0);
+    const advanced = levels
+      .filter((g) => g.level === "advanced" || g.level === "expert")
+      .reduce((n, g) => n + g.items.length, 0);
     const telegram = contacts.find((c) => c.label === "telegram");
     const specs = [
       ["about.spec.role", L(profile.role)],
@@ -137,7 +146,12 @@
     statsRoot.textContent = "";
     stats.forEach(([n, key]) =>
       statsRoot.append(
-        el("div", { class: "stat" }, el("span", { class: "stat-num", "data-count": n, text: String(n) }), el("span", { class: "stat-label", text: t(key) }))
+        el(
+          "div",
+          { class: "stat" },
+          el("span", { class: "stat-num", "data-count": n, text: String(n) }),
+          el("span", { class: "stat-label", text: t(key) })
+        )
       )
     );
   }
@@ -176,18 +190,30 @@
     const list = $("[data-focus]");
     list.textContent = "";
     (data.focus || []).forEach((area, i) => {
-      const icon = window.ICONS && window.ICONS.has("skill", area.icon) ? el("pre", { class: "asc focus-icon", "aria-hidden": "true" }) : null;
+      const icon =
+        window.ICONS && window.ICONS.has("skill", area.icon)
+          ? el("pre", { class: "asc focus-icon", "aria-hidden": "true" })
+          : null;
       list.append(
         el(
           "li",
           { class: "focus-card term", "data-reveal": true },
-          el("div", { class: "term-bar", "aria-hidden": "true" }, el("span", { text: `~/focus/${String(i + 1).padStart(2, "0")}` }), el("span", { class: "live", text: "●" })),
+          el(
+            "div",
+            { class: "term-bar", "aria-hidden": "true" },
+            el("span", { text: `~/focus/${String(i + 1).padStart(2, "0")}` }),
+            el("span", { class: "live", text: "●" })
+          ),
           el(
             "div",
             { class: "focus-body" },
             icon && el("div", { class: "focus-art" }, icon),
             el("h4", { class: "focus-title", text: L(area.title) }),
-            el("ul", { class: "points focus-points" }, (L(area.items) || []).map((item) => el("li", { text: item })))
+            el(
+              "ul",
+              { class: "points focus-points" },
+              (L(area.items) || []).map((item) => el("li", { text: item }))
+            )
           )
         )
       );
@@ -251,7 +277,11 @@
         el("span", { class: "service-num", text: num }),
         el("h3", { text: L(service.title) }),
         el("p", { class: "service-desc", text: L(service.desc) }),
-        el("ul", { class: "points" }, (L(service.points) || []).map((p) => el("li", { text: p })))
+        el(
+          "ul",
+          { class: "points" },
+          (L(service.points) || []).map((p) => el("li", { text: p }))
+        )
       );
       let art = null;
       if (service.scene && window.SCENES) {
@@ -278,8 +308,17 @@
       }
       const row = el(
         "article",
-        { class: `service term${service.feature ? " service-feature" : ""}${i % 2 ? " is-flipped" : ""}`, "data-reveal": true, "data-service": service.id },
-        el("div", { class: "term-bar", "aria-hidden": "true" }, el("span", { text: `~/services/${num}-${service.id}` }), el("span", { class: "live", text: "●" })),
+        {
+          class: `service term${service.feature ? " service-feature" : ""}${i % 2 ? " is-flipped" : ""}`,
+          "data-reveal": true,
+          "data-service": service.id,
+        },
+        el(
+          "div",
+          { class: "term-bar", "aria-hidden": "true" },
+          el("span", { text: `~/services/${num}-${service.id}` }),
+          el("span", { class: "live", text: "●" })
+        ),
         el("div", { class: "service-body" }, art, text)
       );
       if (service.feature === "office" && officeBlock) row.append(officeBlock);
@@ -352,7 +391,12 @@
         "data-score": score,
         vars: { "--lines": lines },
       },
-      el("div", { class: "term-bar", "aria-hidden": "true" }, el("span", { text: `~/skills/${skill.id}` }), el("span", { text: "─ □ ×" })),
+      el(
+        "div",
+        { class: "term-bar", "aria-hidden": "true" },
+        el("span", { text: `~/skills/${skill.id}` }),
+        el("span", { text: "─ □ ×" })
+      ),
       el(
         "div",
         { class: "panel-inner" },
@@ -387,7 +431,11 @@
             "div",
             { class: "panel-points" },
             el("h4", { text: t("skills.canDo") }),
-            el("ul", { class: "points" }, (L(skill.points) || []).map((p) => el("li", { text: p })))
+            el(
+              "ul",
+              { class: "points" },
+              (L(skill.points) || []).map((p) => el("li", { text: p }))
+            )
           ),
           el(
             "div",
@@ -416,15 +464,25 @@
     panelsRoot.textContent = "";
     tabsRoot.setAttribute("aria-label", t("skills.title"));
     tabs = [];
-    [["admin", "skills.admin"], ["web", "skills.web"]].forEach(([group, key]) => {
+    [
+      ["admin", "skills.admin"],
+      ["web", "skills.web"],
+    ].forEach(([group, key]) => {
       const items = skills
         .filter((s) => (s.group || "web") === group)
         .sort((a, b) => (LEVELS[b.level] || 5) - (LEVELS[a.level] || 5));
       if (!items.length) return;
-      const row = el("div", { class: "tab-group", role: "presentation" }, el("span", { class: "tab-group-label", text: t(key), "aria-hidden": "true" }));
+      const row = el(
+        "div",
+        { class: "tab-group", role: "presentation" },
+        el("span", { class: "tab-group-label", text: t(key), "aria-hidden": "true" })
+      );
       items.forEach((skill) => {
         const score = LEVELS[skill.level] || 5;
-        const icon = window.ICONS && window.ICONS.has("skill", skill.id) ? el("pre", { class: "asc skill-icon", "aria-hidden": "true" }) : null;
+        const icon =
+          window.ICONS && window.ICONS.has("skill", skill.id)
+            ? el("pre", { class: "asc skill-icon", "aria-hidden": "true" })
+            : null;
         const tab = el(
           "button",
           {
@@ -443,7 +501,12 @@
           },
           icon,
           el("span", { class: "tile-title", text: L(skill.title) }),
-          el("span", { class: "tile-meter", "aria-hidden": "true" }, el("span", { class: "meter-fill", text: "█".repeat(score) }), el("span", { class: "meter-empty", text: "░".repeat(10 - score) }))
+          el(
+            "span",
+            { class: "tile-meter", "aria-hidden": "true" },
+            el("span", { class: "meter-fill", text: "█".repeat(score) }),
+            el("span", { class: "meter-empty", text: "░".repeat(10 - score) })
+          )
         );
         if (icon) window.ICONS.skill(icon, skill.id);
         tabs.push(tab);
@@ -549,7 +612,11 @@
               el("span", { class: "dim", text: " · " }),
               el("span", { class: "log-role", text: L(job.role) })
             ),
-            el("ul", { class: "log-points" }, (L(job.points) || []).map((p) => el("li", { text: p })))
+            el(
+              "ul",
+              { class: "log-points" },
+              (L(job.points) || []).map((p) => el("li", { text: p }))
+            )
           )
         )
       )
@@ -575,12 +642,20 @@
     list.textContent = "";
     contacts.forEach((c) => {
       const external = c.href.startsWith("http");
-      const art = window.ICONS && window.ICONS.has("contact", c.label) ? el("pre", { class: "asc contact-icon", "aria-hidden": "true" }) : null;
+      const art =
+        window.ICONS && window.ICONS.has("contact", c.label)
+          ? el("pre", { class: "asc contact-icon", "aria-hidden": "true" })
+          : null;
       list.append(
         el(
           "li",
           { class: "contact-card term", "data-reveal": true },
-          el("div", { class: "term-bar", "aria-hidden": "true" }, el("span", { text: `~/contacts/${c.label}` }), el("span", { class: "live", text: "●" })),
+          el(
+            "div",
+            { class: "term-bar", "aria-hidden": "true" },
+            el("span", { text: `~/contacts/${c.label}` }),
+            el("span", { class: "live", text: "●" })
+          ),
           el(
             "a",
             { class: "contact", href: c.href, target: external ? "_blank" : null, rel: external ? "noopener" : null },
@@ -672,7 +747,18 @@
     if (id === "" || resolvePage(id)) showPage(id || "home");
   });
 
-  const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+  const KONAMI = [
+    "ArrowUp",
+    "ArrowUp",
+    "ArrowDown",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowLeft",
+    "ArrowRight",
+    "b",
+    "a",
+  ];
   let konami = 0;
   document.addEventListener("keydown", (event) => {
     if (event.target.closest && event.target.closest("input, textarea")) return;

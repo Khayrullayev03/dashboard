@@ -121,7 +121,13 @@ body::after {
   inset: 0;
   z-index: 300;
   pointer-events: none;
-  background: repeating-linear-gradient(to bottom, var(--scanline) 0, var(--scanline) 1px, transparent 1px, transparent 3px);
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--scanline) 0,
+    var(--scanline) 1px,
+    transparent 1px,
+    transparent 3px
+  );
 }
 
 body::before {
@@ -292,10 +298,8 @@ main {
   overflow: hidden;
   border: 1px solid var(--lg-edge);
   border-radius: var(--lg-radius);
-  background:
-    radial-gradient(520px circle at var(--mx, 12%) var(--my, -10%), var(--lg-light), transparent 62%),
-    linear-gradient(180deg, var(--lg-sheen), transparent 38%),
-    var(--lg-tint);
+  background: radial-gradient(520px circle at var(--mx, 12%) var(--my, -10%), var(--lg-light), transparent 62%),
+    linear-gradient(180deg, var(--lg-sheen), transparent 38%), var(--lg-tint);
   backdrop-filter: var(--lg-blur);
   -webkit-backdrop-filter: var(--lg-blur);
   box-shadow:
@@ -313,7 +317,14 @@ main {
   padding: 1px;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.05) 26%, transparent 48%, rgba(242, 51, 74, 0.12) 70%, var(--lg-rim));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.42),
+    rgba(255, 255, 255, 0.05) 26%,
+    transparent 48%,
+    rgba(242, 51, 74, 0.12) 70%,
+    var(--lg-rim)
+  );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -326,10 +337,12 @@ main {
 
 .term .term {
   border-radius: var(--lg-radius-sm);
-  background:
-    radial-gradient(420px circle at var(--mx, 12%) var(--my, -10%), rgba(255, 255, 255, 0.06), transparent 62%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 36%),
-    var(--lg-tint-inset);
+  background: radial-gradient(
+      420px circle at var(--mx, 12%) var(--my, -10%),
+      rgba(255, 255, 255, 0.06),
+      transparent 62%
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 36%), var(--lg-tint-inset);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow:
@@ -1284,7 +1297,8 @@ main {
 .avatar-scan {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 42%, rgba(242, 51, 74, 0.42) 50%, transparent 58%) 0 0 / 100% 240%,
+  background:
+    linear-gradient(180deg, transparent 42%, rgba(242, 51, 74, 0.42) 50%, transparent 58%) 0 0 / 100% 240%,
     repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px);
   animation: avatar-scan 3.4s linear infinite;
   pointer-events: none;
@@ -1633,10 +1647,8 @@ main {
   padding: 12px;
   border: 1px solid var(--lg-edge);
   border-radius: 16px;
-  background:
-    radial-gradient(260px circle at var(--mx, 20%) var(--my, -10%), var(--lg-light), transparent 62%),
-    linear-gradient(180deg, var(--lg-sheen), transparent 42%),
-    var(--lg-tint);
+  background: radial-gradient(260px circle at var(--mx, 20%) var(--my, -10%), var(--lg-light), transparent 62%),
+    linear-gradient(180deg, var(--lg-sheen), transparent 42%), var(--lg-tint);
   backdrop-filter: var(--lg-blur);
   -webkit-backdrop-filter: var(--lg-blur);
   box-shadow:
@@ -1672,10 +1684,8 @@ main {
 
 .skill-tile[aria-selected="true"] {
   border-color: rgba(242, 51, 74, 0.7);
-  background:
-    radial-gradient(260px circle at var(--mx, 20%) var(--my, -10%), rgba(255, 255, 255, 0.1), transparent 62%),
-    linear-gradient(180deg, rgba(242, 51, 74, 0.16), transparent 58%),
-    var(--lg-tint);
+  background: radial-gradient(260px circle at var(--mx, 20%) var(--my, -10%), rgba(255, 255, 255, 0.1), transparent 62%),
+    linear-gradient(180deg, rgba(242, 51, 74, 0.16), transparent 58%), var(--lg-tint);
   color: var(--bright);
   box-shadow:
     inset 0 1px 0 var(--lg-spec),
@@ -1848,25 +1858,85 @@ main {
 }
 
 .site-footer {
-  border-top: 1px solid var(--line);
-  background: var(--header-bg);
-  color: var(--muted);
-  font-size: 12.5px;
+  padding: 34px max(16px, env(safe-area-inset-right, 0px)) calc(30px + env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
 }
 
 .footer-inner {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 6px 24px;
-  max-width: 1500px;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 2vw, 22px);
+  max-width: 1100px;
   margin-inline: auto;
-  padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
 }
 
-@media (min-width: 640px) {
-  .footer-inner {
-    padding-inline: 28px;
+.footer-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(242, 51, 74, 0.6));
+  box-shadow: 0 0 12px rgba(242, 51, 74, 0.35);
+}
+
+.footer-line:last-child {
+  background: linear-gradient(270deg, transparent, rgba(242, 51, 74, 0.6));
+}
+
+.footer-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  padding: 9px 20px 9px 12px;
+  border: 1px solid var(--lg-edge);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent), rgba(16, 10, 14, 0.5);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
+  box-shadow:
+    inset 0 1px 0 var(--lg-spec),
+    0 0 46px -14px var(--accent-glow),
+    0 18px 40px -26px rgba(0, 0, 0, 0.9);
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.footer-badge img {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  box-shadow: 0 0 14px var(--accent-glow);
+}
+
+.footer-dot {
+  color: var(--accent);
+}
+
+.footer-handle {
+  color: var(--bright);
+  font-weight: 700;
+}
+
+.footer-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.16) 50%, transparent 65%);
+  translate: -120% 0;
+  animation: footer-shine 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes footer-shine {
+  0%,
+  70% {
+    translate: -120% 0;
+  }
+  100% {
+    translate: 120% 0;
   }
 }
 

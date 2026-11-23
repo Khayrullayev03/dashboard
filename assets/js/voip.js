@@ -41,57 +41,97 @@
     ready: { ru: "101 готов", uz: "101 tayyor", en: "101 ready" },
     voice: { ru: "RTP · голос G.711", uz: "RTP · ovoz G.711", en: "RTP · voice G.711" },
     cdr: { ru: "разговор {d} · CDR записан", uz: "suhbat {d} · CDR yozildi", en: "call {d} · CDR saved" },
-    legend: { ru: "━ сигнализация  • голос RTP  ═ E1", uz: "━ signalizatsiya  • ovoz RTP  ═ E1", en: "━ signalling  • RTP voice  ═ E1" },
+    legend: {
+      ru: "━ сигнализация  • голос RTP  ═ E1",
+      uz: "━ signalizatsiya  • ovoz RTP  ═ E1",
+      en: "━ signalling  • RTP voice  ═ E1",
+    },
     sDial: { ru: "A набирает " + NUMBER, uz: "A raqam teryapti: " + NUMBER, en: "A dials " + NUMBER },
-    sInvite: { ru: "INVITE → IAM: вызов идёт к абоненту B", uz: "INVITE → IAM: chaqiruv B abonentga ketmoqda", en: "INVITE → IAM: the call travels to B" },
-    sRing: { ru: "180 Ringing ← ACM: у абонента B звонит телефон", uz: "180 Ringing ← ACM: B abonentda telefon jiringlayapti", en: "180 Ringing ← ACM: B's phone is ringing" },
-    sOk: { ru: "200 OK ← ANM: абонент B ответил", uz: "200 OK ← ANM: B abonent javob berdi", en: "200 OK ← ANM: B answered" },
+    sInvite: {
+      ru: "INVITE → IAM: вызов идёт к абоненту B",
+      uz: "INVITE → IAM: chaqiruv B abonentga ketmoqda",
+      en: "INVITE → IAM: the call travels to B",
+    },
+    sRing: {
+      ru: "180 Ringing ← ACM: у абонента B звонит телефон",
+      uz: "180 Ringing ← ACM: B abonentda telefon jiringlayapti",
+      en: "180 Ringing ← ACM: B's phone is ringing",
+    },
+    sOk: {
+      ru: "200 OK ← ANM: абонент B ответил",
+      uz: "200 OK ← ANM: B abonent javob berdi",
+      en: "200 OK ← ANM: B answered",
+    },
     sTalk: { ru: "RTP ↔ разговор ", uz: "RTP ↔ suhbat ", en: "RTP ↔ talking " },
     sBye: { ru: "BYE → REL: отбой", uz: "BYE → REL: aloqa tugadi", en: "BYE → REL: hang up" },
     sIdle: { ru: "линия свободна", uz: "liniya bo‘sh", en: "line is free" },
   };
 
   const TERMS = [
-    ["Softswitch", {
-      ru: "программный коммутатор оператора: SIP-сигнализация, маршрутизация вызовов, биллинг, управление медиашлюзами (H.248)",
-      uz: "operatorning dasturiy kommutatori: SIP signalizatsiyasi, qo‘ng‘iroqlarni marshrutlash, billing, media shlyuzlarni boshqarish (H.248)",
-      en: "the carrier's software switch: SIP signalling, call routing, billing, media gateway control (H.248)",
-    }],
-    ["MGW", {
-      ru: "медиашлюз: переводит голос из IP (SIP/RTP) в каналы E1 и сигнализацию SS7 телефонной сети",
-      uz: "media shlyuz: ovozni IP (SIP/RTP) dan E1 kanallariga va telefon tarmog‘ining SS7 signalizatsiyasiga o‘tkazadi",
-      en: "media gateway: turns IP voice (SIP/RTP) into E1 channels and SS7 signalling of the phone network",
-    }],
-    [TXT.pbx, {
-      ru: "офисная станция (IP-PBX): внутренние номера, IVR, очереди, запись разговоров",
-      uz: "ofis stansiyasi (IP-PBX): ichki raqamlar, IVR, navbatlar, suhbatlarni yozish",
-      en: "office phone system (IP-PBX): extensions, IVR, queues, call recording",
-    }],
-    [TXT.rats, {
-      ru: "районная АТС городской телефонной сети (ТфОП)",
-      uz: "shahar telefon tarmog‘ining tuman ATS’i",
-      en: "local exchange of the city phone network (PSTN)",
-    }],
-    [TXT.amts, {
-      ru: "автоматическая междугородная телефонная станция",
-      uz: "avtomatik shaharlararo telefon stansiyasi",
-      en: "long-distance (toll) exchange",
-    }],
-    [TXT.mck, {
-      ru: "международный центр коммутации: выход на сети других стран",
-      uz: "xalqaro kommutatsiya markazi: boshqa davlatlar tarmoqlariga chiqish",
-      en: "international switching centre: the gateway to other countries' networks",
-    }],
-    ["SIP / ISUP", {
-      ru: "сигнализация вызова: INVITE→IAM, 180→ACM, 200 OK→ANM, BYE→REL",
-      uz: "qo‘ng‘iroq signalizatsiyasi: INVITE→IAM, 180→ACM, 200 OK→ANM, BYE→REL",
-      en: "call signalling: INVITE→IAM, 180→ACM, 200 OK→ANM, BYE→REL",
-    }],
-    ["RTP", {
-      ru: "сам голос: пакеты по 20 мс, кодек G.711",
-      uz: "ovozning o‘zi: 20 ms li paketlar, G.711 kodeki",
-      en: "the voice itself: 20 ms packets, G.711 codec",
-    }],
+    [
+      "Softswitch",
+      {
+        ru: "программный коммутатор оператора: SIP-сигнализация, маршрутизация вызовов, биллинг, управление медиашлюзами (H.248)",
+        uz: "operatorning dasturiy kommutatori: SIP signalizatsiyasi, qo‘ng‘iroqlarni marshrutlash, billing, media shlyuzlarni boshqarish (H.248)",
+        en: "the carrier's software switch: SIP signalling, call routing, billing, media gateway control (H.248)",
+      },
+    ],
+    [
+      "MGW",
+      {
+        ru: "медиашлюз: переводит голос из IP (SIP/RTP) в каналы E1 и сигнализацию SS7 телефонной сети",
+        uz: "media shlyuz: ovozni IP (SIP/RTP) dan E1 kanallariga va telefon tarmog‘ining SS7 signalizatsiyasiga o‘tkazadi",
+        en: "media gateway: turns IP voice (SIP/RTP) into E1 channels and SS7 signalling of the phone network",
+      },
+    ],
+    [
+      TXT.pbx,
+      {
+        ru: "офисная станция (IP-PBX): внутренние номера, IVR, очереди, запись разговоров",
+        uz: "ofis stansiyasi (IP-PBX): ichki raqamlar, IVR, navbatlar, suhbatlarni yozish",
+        en: "office phone system (IP-PBX): extensions, IVR, queues, call recording",
+      },
+    ],
+    [
+      TXT.rats,
+      {
+        ru: "районная АТС городской телефонной сети (ТфОП)",
+        uz: "shahar telefon tarmog‘ining tuman ATS’i",
+        en: "local exchange of the city phone network (PSTN)",
+      },
+    ],
+    [
+      TXT.amts,
+      {
+        ru: "автоматическая междугородная телефонная станция",
+        uz: "avtomatik shaharlararo telefon stansiyasi",
+        en: "long-distance (toll) exchange",
+      },
+    ],
+    [
+      TXT.mck,
+      {
+        ru: "международный центр коммутации: выход на сети других стран",
+        uz: "xalqaro kommutatsiya markazi: boshqa davlatlar tarmoqlariga chiqish",
+        en: "international switching centre: the gateway to other countries' networks",
+      },
+    ],
+    [
+      "SIP / ISUP",
+      {
+        ru: "сигнализация вызова: INVITE→IAM, 180→ACM, 200 OK→ANM, BYE→REL",
+        uz: "qo‘ng‘iroq signalizatsiyasi: INVITE→IAM, 180→ACM, 200 OK→ANM, BYE→REL",
+        en: "call signalling: INVITE→IAM, 180→ACM, 200 OK→ANM, BYE→REL",
+      },
+    ],
+    [
+      "RTP",
+      {
+        ru: "сам голос: пакеты по 20 мс, кодек G.711",
+        uz: "ovozning o‘zi: 20 ms li paketlar, G.711 kodeki",
+        en: "the voice itself: 20 ms packets, G.711 codec",
+      },
+    ],
   ];
 
   const NODES = [
@@ -121,9 +161,24 @@
   ];
   const NODE_AFTER = [1, 2, 3, 4, 5, 6, 7, 8, 8, 9];
   const JOINTS = [
-    [15, 4, "├"], [22, 4, "┤"], [35, 4, "├"], [42, 4, "┤"], [56, 4, "├"], [70, 4, "┤"],
-    [85, 6, "┬"], [85, 10, "┴"], [74, 12, "┤"], [66, 12, "├"], [50, 12, "┤"], [42, 12, "├"],
-    [26, 12, "┤"], [18, 12, "├"], [9, 14, "┬"], [22, 21, "┤"], [61, 21, "├"], [78, 21, "┤"],
+    [15, 4, "├"],
+    [22, 4, "┤"],
+    [35, 4, "├"],
+    [42, 4, "┤"],
+    [56, 4, "├"],
+    [70, 4, "┤"],
+    [85, 6, "┬"],
+    [85, 10, "┴"],
+    [74, 12, "┤"],
+    [66, 12, "├"],
+    [50, 12, "┤"],
+    [42, 12, "├"],
+    [26, 12, "┤"],
+    [18, 12, "├"],
+    [9, 14, "┬"],
+    [22, 21, "┤"],
+    [61, 21, "├"],
+    [78, 21, "┤"],
   ];
 
   const CELLS = [];
@@ -140,7 +195,18 @@
       const set = dirs.sort().join("");
       const heavy = si === 8;
       const ch =
-        { lr: heavy ? "═" : "─", du: "│", ru: "└", lu: "┘", dr: "┌", dl: "┐", l: heavy ? "═" : "─", r: heavy ? "═" : "─", u: "│", d: "│" }[set] || "─";
+        {
+          lr: heavy ? "═" : "─",
+          du: "│",
+          ru: "└",
+          lu: "┘",
+          dr: "┌",
+          dl: "┐",
+          l: heavy ? "═" : "─",
+          r: heavy ? "═" : "─",
+          u: "│",
+          d: "│",
+        }[set] || "─";
       CELLS.push({ x, y, ch, seg: si });
     });
   });
@@ -330,7 +396,16 @@
         for (let i = -1; i <= label.length; i++) if (g.get(x + i, y) !== " ") return false;
         return true;
       };
-      const spots = c.ch === "│" ? [[c.x + 2, c.y], [c.x - label.length - 1, c.y]] : [[c.x - Math.floor(label.length / 2), c.y - 1], [c.x - Math.floor(label.length / 2), c.y + 1]];
+      const spots =
+        c.ch === "│"
+          ? [
+              [c.x + 2, c.y],
+              [c.x - label.length - 1, c.y],
+            ]
+          : [
+              [c.x - Math.floor(label.length / 2), c.y - 1],
+              [c.x - Math.floor(label.length / 2), c.y + 1],
+            ];
       const spot = spots.find(([x, y]) => fits(x, y));
       if (spot) g.put(spot[0], spot[1], label, 1);
     }
@@ -375,12 +450,56 @@
     Object.values(COL).forEach((x) => g.vline(x, 1, LH - 2, 2));
 
     const events = [
-      { at: 1.5, y: 2, hops: [["a", "pbx", "INVITE"], ["pbx", "ss", "INVITE"], ["ss", "b", "IAM", "═"]], span: 4 },
-      { at: 6.5, y: 4, hops: [["b", "ss", "ACM", "═"], ["ss", "pbx", "180"], ["pbx", "a", "180"]], span: 1.2 },
-      { at: 8.0, y: 6, hops: [["b", "ss", "ANM", "═"], ["ss", "pbx", "200 OK"], ["pbx", "a", "200 OK"]], span: 0.8 },
-      { at: 8.7, y: 8, hops: [["a", "pbx", "ACK"], ["pbx", "ss", "ACK"]], span: 0.4 },
+      {
+        at: 1.5,
+        y: 2,
+        hops: [
+          ["a", "pbx", "INVITE"],
+          ["pbx", "ss", "INVITE"],
+          ["ss", "b", "IAM", "═"],
+        ],
+        span: 4,
+      },
+      {
+        at: 6.5,
+        y: 4,
+        hops: [
+          ["b", "ss", "ACM", "═"],
+          ["ss", "pbx", "180"],
+          ["pbx", "a", "180"],
+        ],
+        span: 1.2,
+      },
+      {
+        at: 8.0,
+        y: 6,
+        hops: [
+          ["b", "ss", "ANM", "═"],
+          ["ss", "pbx", "200 OK"],
+          ["pbx", "a", "200 OK"],
+        ],
+        span: 0.8,
+      },
+      {
+        at: 8.7,
+        y: 8,
+        hops: [
+          ["a", "pbx", "ACK"],
+          ["pbx", "ss", "ACK"],
+        ],
+        span: 0.4,
+      },
       { at: 9.2, y: 10, rtp: true },
-      { at: 15.0, y: 12, hops: [["a", "pbx", "BYE"], ["pbx", "ss", "BYE"], ["ss", "b", "REL", "═"]], span: 1.5 },
+      {
+        at: 15.0,
+        y: 12,
+        hops: [
+          ["a", "pbx", "BYE"],
+          ["pbx", "ss", "BYE"],
+          ["ss", "b", "REL", "═"],
+        ],
+        span: 1.5,
+      },
     ];
     const current = events.filter((e) => tt >= e.at).pop();
     events.forEach((e) => {
@@ -444,7 +563,9 @@
 
     const terms = el("div", "term voip-terms");
     const dl = el("dl", "facts");
-    TERMS.forEach(([name, desc]) => dl.append(el("dt", null, typeof name === "string" ? name : L(name)), el("dd", null, L(desc))));
+    TERMS.forEach(([name, desc]) =>
+      dl.append(el("dt", null, typeof name === "string" ? name : L(name)), el("dd", null, L(desc)))
+    );
     terms.append(bar("~/voip/README"), dl);
 
     const grid = el("div", "office-grid");

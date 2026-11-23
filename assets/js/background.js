@@ -41,7 +41,8 @@
       for (let x = 0; x < TEX_W; x++) {
         const u = (x / TEX_W) * Math.PI * 2;
         const v = (y / TEX_H) * Math.PI;
-        tex[y * TEX_W + x] = 0.72 + 0.08 * Math.sin(u * 3 + v * 2) + 0.06 * Math.sin(u * 7 - v * 5) + 0.05 * Math.sin(u * 13 + v * 11);
+        tex[y * TEX_W + x] =
+          0.72 + 0.08 * Math.sin(u * 3 + v * 2) + 0.06 * Math.sin(u * 7 - v * 5) + 0.05 * Math.sin(u * 13 + v * 11);
       }
     }
     const stamp = (cu, cv, r, depth, rim) => {
@@ -55,7 +56,13 @@
         }
       }
     };
-    [[0.18, 0.38, 0.2], [0.32, 0.55, 0.16], [0.62, 0.42, 0.22], [0.78, 0.6, 0.14], [0.47, 0.3, 0.12]].forEach(([u, v, r]) => stamp(u, v, r, 0.38, 0));
+    [
+      [0.18, 0.38, 0.2],
+      [0.32, 0.55, 0.16],
+      [0.62, 0.42, 0.22],
+      [0.78, 0.6, 0.14],
+      [0.47, 0.3, 0.12],
+    ].forEach(([u, v, r]) => stamp(u, v, r, 0.38, 0));
     for (let i = 0; i < 40; i++) stamp(rand(), 0.15 + rand() * 0.7, 0.03 + rand() * 0.07, 0.34, 0.2);
     for (let i = 0; i < tex.length; i++) tex[i] = Math.min(1, Math.max(0.05, tex[i]));
   })();
@@ -156,7 +163,14 @@
     ctx.fillRect(0, 0, width, height);
     const home = scene === "home";
     ctx.globalAlpha = moonAlpha * (home ? 0.75 : 0.5);
-    const disc = ctx.createRadialGradient(moon.cx - moon.R * 0.35, moon.cy - moon.R * 0.35, moon.R * 0.05, moon.cx, moon.cy, moon.R);
+    const disc = ctx.createRadialGradient(
+      moon.cx - moon.R * 0.35,
+      moon.cy - moon.R * 0.35,
+      moon.R * 0.05,
+      moon.cx,
+      moon.cy,
+      moon.R
+    );
     disc.addColorStop(0, colors.moon3);
     disc.addColorStop(0.45, colors.moon2);
     disc.addColorStop(1, colors.edge);
@@ -167,9 +181,21 @@
     ctx.globalAlpha *= home ? 0.42 : 0.3;
     ctx.fillStyle = disc;
     ctx.fillRect(moon.cx - moon.R, moon.cy - moon.R, moon.R * 2, moon.R * 2);
-    [[-0.28, -0.12, 0.34], [0.22, 0.18, 0.28], [0.05, -0.42, 0.18], [-0.1, 0.45, 0.22]].forEach(([bx, by, br], i) => {
+    [
+      [-0.28, -0.12, 0.34],
+      [0.22, 0.18, 0.28],
+      [0.05, -0.42, 0.18],
+      [-0.1, 0.45, 0.22],
+    ].forEach(([bx, by, br], i) => {
       const ox = Math.cos(rot * 6.2832 + i) * 0.04;
-      const sea = ctx.createRadialGradient(moon.cx + moon.R * (bx + ox), moon.cy + moon.R * by, 0, moon.cx + moon.R * (bx + ox), moon.cy + moon.R * by, moon.R * br);
+      const sea = ctx.createRadialGradient(
+        moon.cx + moon.R * (bx + ox),
+        moon.cy + moon.R * by,
+        0,
+        moon.cx + moon.R * (bx + ox),
+        moon.cy + moon.R * by,
+        moon.R * br
+      );
       sea.addColorStop(0, colors.sea);
       sea.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = sea;
