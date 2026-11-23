@@ -62,14 +62,6 @@
     },
   };
 
-  function glitch() {
-    if (reduceMotion) return;
-    root.classList.remove("is-glitching");
-    void root.offsetWidth;
-    root.classList.add("is-glitching");
-    setTimeout(() => root.classList.remove("is-glitching"), 650);
-  }
-
   function toggleMatrix() {
     if (!window.BG) return "contour";
     const mode = window.BG.toggleMatrix();
@@ -291,6 +283,7 @@
         el("div", { class: "service-body" }, art, text)
       );
       if (service.feature === "office" && officeBlock) row.append(officeBlock);
+      if (service.feature === "voip" && window.VOIP) row.append(window.VOIP.create());
       servicesRoot.append(row);
     });
     observeServices();
@@ -686,7 +679,6 @@
     konami = key === KONAMI[konami] ? konami + 1 : key === KONAMI[0] ? 1 : 0;
     if (konami === KONAMI.length) {
       konami = 0;
-      glitch();
       toggleMatrix();
     }
   });
@@ -716,7 +708,6 @@
     goTo,
     theme: THEME,
     toast,
-    glitch,
     toggleMatrix,
     home() {
       goTo("home");

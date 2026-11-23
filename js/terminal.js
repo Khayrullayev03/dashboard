@@ -413,14 +413,12 @@
     async sudo(args, raw) {
       if (/rm\s+-rf/.test(raw)) {
         print(t("term.rmStart"), "err");
-        APP.glitch();
         for (const dir of ["/bin", "/etc", "/var/www", `/home/${user}/portfolio`]) {
           await wait(350);
           print([["rm: ", "dim"], ["removing " + dir + " … ", ""], ["ok", "ps1"]]);
           SOUND.tick();
         }
         await wait(600);
-        APP.glitch();
         print(t("term.rmJoke"), "bright");
         return;
       }

@@ -469,6 +469,21 @@ window.PORTFOLIO = {
       },
     },
     {
+      id: "voip",
+      feature: "voip",
+      title: { ru: "IP-телефония (VoIP)", uz: "IP-telefoniya (VoIP)", en: "IP telephony (VoIP)" },
+      desc: {
+        ru: "Подключу офис к IP-телефонии: IP-АТС, SIP-транк к оператору и выход на городскую, междугородную и международную связь. На схеме — путь звонка от абонента A до абонента B за рубежом.",
+        uz: "Ofisni IP-telefoniyaga ulayman: IP-ATS, operatorga SIP-trank va shahar, shaharlararo hamda xalqaro aloqaga chiqish. Sxemada — A abonentdan xorijdagi B abonentgacha qo‘ng‘iroq yo‘li.",
+        en: "I connect offices to IP telephony: an IP PBX, a SIP trunk to the carrier and access to local, long-distance and international calls. The diagram shows a call from caller A to callee B abroad.",
+      },
+      points: {
+        ru: ["IP-АТС IP-PBX: внутренние номера, IVR, очереди", "SIP-транки, Softswitch оператора, медиашлюзы E1", "IP-телефоны и софтфоны, PoE, отдельный VLAN для голоса", "Запись разговоров, переадресация, качество связи (QoS)"],
+        uz: ["IP-PBX IP-ATS: ichki raqamlar, IVR, navbatlar", "SIP-tranklar, operator Softswitch’i, E1 media shlyuzlari", "IP-telefonlar va softfonlar, PoE, ovoz uchun alohida VLAN", "Suhbatlarni yozish, yo‘naltirish, aloqa sifati (QoS)"],
+        en: ["IP-PBX IP PBX: extensions, IVR, queues", "SIP trunks, carrier softswitch, E1 media gateways", "IP phones and softphones, PoE, a dedicated voice VLAN", "Call recording, forwarding, call quality (QoS)"],
+      },
+    },
+    {
       id: "windows",
       scene: "windows",
       title: { ru: "Windows Server и Active Directory", uz: "Windows Server va Active Directory", en: "Windows Server and Active Directory" },
