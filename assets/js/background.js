@@ -84,6 +84,8 @@
       cloud: v("--cloud", "rgba(90,24,34,0.5)"),
       edge: v("--moon-edge", "rgba(40,0,8,0.6)"),
       sea: v("--moon-sea", "rgba(20,0,4,0.55)"),
+      head: "#fff4f5",
+      trail: v("--accent", "#f2334a"),
     };
   }
 
@@ -382,10 +384,114 @@
     });
   }
 
+  const sky = document.createElement("canvas");
+  sky.className = "ascii-bg";
+  sky.setAttribute("aria-hidden", "true");
+  canvas.after(sky);
+  const sctx = sky.getContext("2d");
+  let meteors = [];
+  let skyRaf = 0;
+  const TRAIL = ["@", "*", "*", "=", "=", "=", "=", "=", "-", "-", "-", "-", "-", "-", "·"];
+
+  function sizeSky() {
+    const dpr = lowPower ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+    sky.width = Math.round(window.innerWidth * dpr);
+    sky.height = Math.round(window.innerHeight * dpr);
+    sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function spawnMeteor() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    const angle = 0.32 + Math.random() * 0.28;
+    const speed = 720 + Math.random() * 520;
+    meteors.push({
+      x: dir > 0 ? Math.random() * w * 0.55 : w * 0.45 + Math.random() * w * 0.55,
+      y: -30 + Math.random() * h * 0.35,
+      vx: Math.cos(angle) * speed * dir,
+      vy: Math.sin(angle) * speed,
+      born: performance.now(),
+      life: 1000 + Math.random() * 600,
+      len: 22 + Math.floor(Math.random() * 14),
+      size: 16 + Math.random() * 4,
+    });
+    if (!skyRaf) skyRaf = requestAnimationFrame(flySky);
+  }
+
+  function drawMeteor(m, now) {
+    const t = now - m.born;
+    const fade = Math.min(1, t / 70) * Math.min(1, (m.life - t) / 320);
+    const hx = m.x + (m.vx * t) / 1000;
+    const hy = m.y + (m.vy * t) / 1000;
+    const v = Math.hypot(m.vx, m.vy);
+    const ux = m.vx / v;
+    const uy = m.vy / v;
+    const step = m.size * 0.62;
+    const tailX = hx - ux * m.len * step;
+    const tailY = hy - uy * m.len * step;
+    const streak = sctx.createLinearGradient(tailX, tailY, hx, hy);
+    streak.addColorStop(0, "rgba(242,51,74,0)");
+    streak.addColorStop(0.7, "rgba(242,51,74,0.35)");
+    streak.addColorStop(1, "rgba(255,230,235,0.9)");
+    sctx.globalAlpha = fade;
+    sctx.strokeStyle = streak;
+    sctx.lineWidth = 2;
+    sctx.beginPath();
+    sctx.moveTo(tailX, tailY);
+    sctx.lineTo(hx, hy);
+    sctx.stroke();
+    sctx.font = `700 ${m.size.toFixed(1)}px "JetBrains Mono", monospace`;
+    sctx.textAlign = "center";
+    sctx.textBaseline = "middle";
+    for (let i = m.len; i >= 0; i--) {
+      const k = i / m.len;
+      sctx.globalAlpha = Math.max(0, (1 - k) * fade);
+      sctx.fillStyle = i < 2 ? colors.head : i < 6 ? "rgba(255,150,165,1)" : colors.trail;
+      sctx.fillText(
+        TRAIL[Math.min(TRAIL.length - 1, Math.floor(k * TRAIL.length))],
+        hx - ux * i * step,
+        hy - uy * i * step
+      );
+    }
+    sctx.globalAlpha = fade;
+    sctx.shadowColor = colors.head;
+    sctx.shadowBlur = 28;
+    sctx.fillStyle = colors.head;
+    sctx.beginPath();
+    sctx.arc(hx + ux * 4, hy + uy * 4, 3.6, 0, Math.PI * 2);
+    sctx.fill();
+    sctx.shadowBlur = 0;
+    sctx.globalAlpha = 1;
+  }
+
+  function flySky(now) {
+    sctx.clearRect(0, 0, sky.width, sky.height);
+    meteors = meteors.filter((m) => now - m.born < m.life);
+    meteors.forEach((m) => drawMeteor(m, now));
+    skyRaf = meteors.length ? requestAnimationFrame(flySky) : 0;
+  }
+
+  function scheduleMeteor() {
+    setTimeout(
+      () => {
+        if (!reduceMotion && !paused && !document.hidden && mode !== "matrix") {
+          spawnMeteor();
+          if (Math.random() < 0.2) setTimeout(spawnMeteor, 220 + Math.random() * 300);
+        }
+        scheduleMeteor();
+      },
+      2600 + Math.random() * 4400
+    );
+  }
+
   readColors();
   resize();
+  sizeSky();
+  window.addEventListener("resize", sizeSky);
   draw(performance.now());
   start();
+  if (!reduceMotion) setTimeout(scheduleMeteor, 1500);
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => {
       resize();
