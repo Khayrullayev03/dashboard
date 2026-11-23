@@ -56,5 +56,6 @@
     key: () => tone(1700 + Math.random() * 700, 0.022, "square", 0.018),
     tick: () => tone(950, 0.04, "triangle", 0.04),
     beep: () => tone(520, 0.12, "square", 0.025),
+    tone: (freq, duration = 0.1, type = "triangle", volume = 0.03) => tone(freq, duration, type, volume),
   };
 })();

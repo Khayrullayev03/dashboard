@@ -802,7 +802,7 @@
       const origin = lastPointer || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
       lastPointer = null;
       SOUND.tick();
-      window.TRANSITION.run(origin, id === "home" ? "cd ~" : `cd ~/${id}`, () => applyPage(id, true));
+      window.TRANSITION.run(origin, id, () => applyPage(id, true));
       return;
     }
     applyPage(id, withAnimation);
