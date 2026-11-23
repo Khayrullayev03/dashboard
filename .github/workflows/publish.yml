@@ -19,6 +19,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Minify
+        run: |
+          npx --yes esbuild@0.24.0 assets/js/*.js --minify --outdir=assets/js --allow-overwrite --log-level=warning
+          npx --yes esbuild@0.24.0 assets/css/style.css --minify --outfile=assets/css/style.css --allow-overwrite --log-level=warning
       - name: main → gh-pages
         run: |
           v="${GITHUB_SHA::7}"

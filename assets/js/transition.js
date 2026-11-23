@@ -866,9 +866,13 @@
     canvas.hidden = false;
     if (fx.onStart) fx.onStart(st);
     current.done = play(fx.cover, (p) => fx.drawCover(st, p))
-      .then(() => play(fx.hold, (p) => fx.drawHold(st, p)))
+      .then(() => {
+        if (window.BG && window.BG.pause) window.BG.pause(true);
+        return play(fx.hold, (p) => fx.drawHold(st, p));
+      })
       .then(() => {
         current.phase = "reveal";
+        if (window.BG && window.BG.pause) window.BG.pause(false);
         current.swap();
         if (fx.onSwap) fx.onSwap(st);
         return play(fx.reveal, (p) => fx.drawReveal(st, p));

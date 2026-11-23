@@ -810,6 +810,7 @@
 
   function applyPage(id, withAnimation) {
     if (id === state.page) return;
+    ensurePage(id);
     const next = $(`[data-page="${id}"]`);
     $$("main [data-page]").forEach((page) => (page.hidden = page !== next));
     state.page = id;
@@ -871,19 +872,32 @@
     }
   });
 
+  const PAGE_RENDER = {
+    services: [renderServicesStats, renderServices],
+    about: [renderFocus, renderSkillLevels, renderSkills, renderExperience],
+    contact: [renderContacts],
+  };
+  const rendered = new Set();
+
+  function ensurePage(id) {
+    if (rendered.has(id)) return;
+    rendered.add(id);
+    (PAGE_RENDER[id] || []).forEach((render) => render());
+  }
+
   function renderAll() {
     renderProfile();
     renderHero();
-    renderFocus();
-    renderSkillLevels();
-    renderSkills();
-    renderExperience();
-    renderServicesStats();
-    renderServices();
-    renderContacts();
+    rendered.forEach((id) => (PAGE_RENDER[id] || []).forEach((render) => render()));
     syncControls();
   }
   renderAll();
+
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 200));
+  setTimeout(
+    () => ["services", "about", "contact"].forEach((id, i) => setTimeout(() => idle(() => ensurePage(id)), i * 800)),
+    6000
+  );
   document.addEventListener("langchange", () => {
     renderAll();
     if (window.ICONS) window.ICONS.prune();

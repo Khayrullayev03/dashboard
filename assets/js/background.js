@@ -2,6 +2,8 @@
   "use strict";
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const lowPower =
+    window.matchMedia("(max-width: 820px), (pointer: coarse)").matches || (navigator.hardwareConcurrency || 8) <= 4;
   const canvas = document.createElement("canvas");
   canvas.className = "ascii-bg";
   canvas.setAttribute("aria-hidden", "true");
@@ -86,7 +88,7 @@
   }
 
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = lowPower ? 1 : Math.min(window.devicePixelRatio || 1, 2);
     width = window.innerWidth;
     height = window.innerHeight;
     canvas.width = Math.round(width * dpr);
@@ -337,14 +339,22 @@
 
   let raf = 0;
   let last = 0;
+  let cost = 0;
+  let paused = false;
+  function interval() {
+    const base = scene === "home" ? (lowPower ? 55 : 40) : lowPower ? 110 : 70;
+    return cost > 14 ? Math.min(160, base * 1.8) : base;
+  }
   function loop(now) {
     raf = requestAnimationFrame(loop);
-    if (now - last < 40) return;
+    if (now - last < interval()) return;
     last = now;
+    const t0 = performance.now();
     draw(now);
+    cost = cost * 0.9 + (performance.now() - t0) * 0.1;
   }
   function start() {
-    if (!raf && !reduceMotion) raf = requestAnimationFrame(loop);
+    if (!raf && !reduceMotion && !paused && !document.hidden) raf = requestAnimationFrame(loop);
   }
   function stop() {
     cancelAnimationFrame(raf);
@@ -398,6 +408,11 @@
     setScene(next) {
       scene = next === "home" ? "home" : "page";
       draw(performance.now());
+    },
+    pause(on) {
+      paused = Boolean(on);
+      if (paused) stop();
+      else start();
     },
     refreshColors() {
       readColors();
