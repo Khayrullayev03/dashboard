@@ -33,6 +33,7 @@ assets/
     office.js     схема офиса и камеры
     voip.js       схема IP-телефонии
     info.js       карта мира и данные посетителя
+    netwatch.js   «Инфо»: живая карта атак Kaspersky, сводка атак SANS ISC, пинг до серверов
     geo.js        определение IP
     background.js фон
     fx.js         эффекты логотипа и текста

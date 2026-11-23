@@ -256,6 +256,42 @@
               <dl class="facts" data-geo-facts></dl>
             </div>
           </div>
+
+          <h3 class="sub-title" data-reveal>
+            <span class="sub-mark" aria-hidden="true">▸</span
+            ><span class="sub-text" data-i18n="net.mapTitle">Атаки в интернете — прямо сейчас</span>
+          </h3>
+          <div class="term net-map" data-reveal>
+            <div class="term-bar"><span>~/info/cyberthreats</span><span class="live">● live · Kaspersky</span></div>
+            <div class="net-frame" data-net-frame>
+              <p class="net-loading" data-i18n="net.loading">Загружаю карту…</p>
+            </div>
+          </div>
+
+          <h3 class="sub-title" data-reveal>
+            <span class="sub-mark" aria-hidden="true">▸</span
+            ><span class="sub-text" data-i18n="net.todayTitle">Сводка атак за сегодня</span>
+          </h3>
+          <div class="net-grid" data-net-stats></div>
+          <p class="net-source" data-reveal>
+            <span data-i18n="net.source">Данные honeypot-сенсоров</span>
+            <a href="https://isc.sans.edu/" target="_blank" rel="noopener">SANS Internet Storm Center</a>
+          </p>
+
+          <h3 class="sub-title" data-reveal>
+            <span class="sub-mark" aria-hidden="true">▸</span
+            ><span class="sub-text" data-i18n="net.pingTitle">Пинг от вас до серверов</span>
+          </h3>
+          <div class="term net-ping" data-reveal>
+            <div class="term-bar">
+              <span>~/info/ping</span
+              ><button class="anim-toggle" type="button" data-ping-run data-i18n="net.pingAgain">[ повторить ]</button>
+            </div>
+            <ul class="ping-list" data-ping-list></ul>
+            <p class="net-note" data-i18n="net.pingNote">
+              Время отклика HTTP из вашего браузера, лучшее из трёх попыток.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -334,5 +370,6 @@
     <script src="assets/js/worldmap.js?v=dev"></script>
     <script src="assets/js/geo.js?v=dev"></script>
     <script src="assets/js/info.js?v=dev"></script>
+    <script src="assets/js/netwatch.js?v=dev"></script>
   </body>
 </html>
