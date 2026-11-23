@@ -187,7 +187,10 @@
     const now = performance.now();
     if (hit > 0.3 && hit - prevHit > 0.1 && now - lastGlitch > 160 && window.APP && window.APP.logoGlitch) {
       lastGlitch = now;
-      window.APP.logoGlitch(0.8 + hit * 1.6, 150 + hit * 170);
+      const strength = 0.8 + hit * 1.6;
+      const ms = 150 + hit * 170;
+      if (document.documentElement.dataset.view === "home") window.APP.logoGlitch(strength, ms);
+      else if (window.BG && window.BG.glitch) window.BG.glitch(strength, ms);
     }
     prevHit = hit;
     if (window.BG && window.BG.setPulse) window.BG.setPulse(beat);

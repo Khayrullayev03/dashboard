@@ -338,6 +338,33 @@
       ctx.fillStyle = colors.star;
       ctx.fillText(star, 0, py);
     }
+    if (now < glitchUntil) glitchPass();
+  }
+
+  let glitchUntil = 0;
+  let glitchPower = 0;
+  let glitchTimer = 0;
+  const NOISE = "01<>/\\[]{}=+*#%&@$ABCDEFXYZ";
+
+  function glitchPass() {
+    const dpr = canvas.width / width;
+    const bands = 2 + Math.floor(Math.random() * (2 + glitchPower * 3));
+    for (let b = 0; b < bands; b++) {
+      const y = Math.random() * height;
+      const h = 6 + Math.random() * (18 + glitchPower * 40);
+      const shift = (Math.random() * 2 - 1) * (10 + glitchPower * 45);
+      ctx.drawImage(canvas, 0, y * dpr, canvas.width, h * dpr, shift, y, width, h);
+    }
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = colors.trail;
+    const lines = 1 + Math.floor(Math.random() * (1 + glitchPower * 2));
+    for (let k = 0; k < lines; k++) {
+      const py = Math.floor(Math.random() * rows) * LINE_PX;
+      let line = "";
+      for (let x = 0; x < cols; x++) line += Math.random() < 0.35 ? NOISE[(Math.random() * NOISE.length) | 0] : " ";
+      ctx.fillText(line, 0, py);
+    }
+    ctx.globalAlpha = 1;
   }
 
   let raf = 0;
@@ -517,6 +544,16 @@
     },
     setScene(next) {
       scene = next === "home" ? "home" : "page";
+      draw(performance.now());
+    },
+    glitch(strength = 1, ms = 220) {
+      if (reduceMotion) return;
+      glitchUntil = performance.now() + ms;
+      glitchPower = strength;
+      canvas.classList.remove("is-glitching", "is-glitching-hard");
+      canvas.classList.add(strength > 1.4 ? "is-glitching-hard" : "is-glitching");
+      clearTimeout(glitchTimer);
+      glitchTimer = setTimeout(() => canvas.classList.remove("is-glitching", "is-glitching-hard"), ms);
       draw(performance.now());
     },
     setLive(on) {

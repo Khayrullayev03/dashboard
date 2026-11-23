@@ -2661,3 +2661,13 @@ main {
 .page-home .home-logo .ascii-red {
   text-shadow: 0 0 calc(14px + var(--beat, 0) * 26px) var(--accent-glow);
 }
+
+.ascii-bg.is-glitching {
+  translate: 3px 0;
+  filter: drop-shadow(-3px 0 rgba(242, 51, 74, 0.7)) drop-shadow(3px 0 rgba(110, 210, 255, 0.45));
+}
+
+.ascii-bg.is-glitching-hard {
+  translate: -6px 0;
+  filter: drop-shadow(-6px 0 rgba(242, 51, 74, 0.85)) drop-shadow(6px 0 rgba(110, 210, 255, 0.6)) brightness(1.35);
+}
