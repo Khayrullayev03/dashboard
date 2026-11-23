@@ -14,11 +14,12 @@ window.PORTFOLIO = {
   },
 
   contacts: [
-    { label: "github", value: "github.com/Khayrullayev03", href: "https://github.com/Khayrullayev03" },
     { label: "telegram", value: "@anvar_amerikanskiy", href: "https://t.me/anvar_amerikanskiy" },
-    { label: "phone", value: "+998 88 100-77-46", href: "tel:+998881007746" },
     { label: "email", value: "aa7469303@gmail.com", href: "mailto:aa7469303@gmail.com" },
+    { label: "instagram", value: "@_ultraviolence_03", href: "https://www.instagram.com/_ultraviolence_03/" },
   ],
+
+  clients: 30,
 
   focus: [
     {
@@ -481,6 +482,21 @@ window.PORTFOLIO = {
         ru: ["IP-АТС IP-PBX: внутренние номера, IVR, очереди", "SIP-транки, Softswitch оператора, медиашлюзы E1", "IP-телефоны и софтфоны, PoE, отдельный VLAN для голоса", "Запись разговоров, переадресация, качество связи (QoS)"],
         uz: ["IP-PBX IP-ATS: ichki raqamlar, IVR, navbatlar", "SIP-tranklar, operator Softswitch’i, E1 media shlyuzlari", "IP-telefonlar va softfonlar, PoE, ovoz uchun alohida VLAN", "Suhbatlarni yozish, yo‘naltirish, aloqa sifati (QoS)"],
         en: ["IP-PBX IP PBX: extensions, IVR, queues", "SIP trunks, carrier softswitch, E1 media gateways", "IP phones and softphones, PoE, a dedicated voice VLAN", "Call recording, forwarding, call quality (QoS)"],
+      },
+    },
+    {
+      id: "cloudpbx",
+      scene: "cloudpbx",
+      title: { ru: "Облачная АТС", uz: "Bulutli ATS", en: "Cloud PBX" },
+      desc: {
+        ru: "Переведу офис на облачную телефонию — RingCentral, 8x8 и аналоги. Свой сервер не нужен: сотрудники звонят с IP-телефонов, компьютеров и смартфонов из любой точки мира.",
+        uz: "Ofisni bulutli telefoniyaga o‘tkazaman — RingCentral, 8x8 va o‘xshashlari. O‘z serveringiz kerak emas: xodimlar IP-telefon, kompyuter va smartfondan dunyoning istalgan nuqtasidan qo‘ng‘iroq qiladi.",
+        en: "I move offices to cloud telephony: RingCentral, 8x8 and similar. No server of your own: staff call from IP phones, computers and smartphones from anywhere in the world.",
+      },
+      points: {
+        ru: ["RingCentral, 8x8: номера, пользователи, лицензии", "IVR, очереди, группы вызова, переадресация", "Софтфоны, мобильные приложения и IP-телефоны", "Перенос номеров и интеграция с CRM"],
+        uz: ["RingCentral, 8x8: raqamlar, foydalanuvchilar, litsenziyalar", "IVR, navbatlar, qo‘ng‘iroq guruhlari, yo‘naltirish", "Softfonlar, mobil ilovalar va IP-telefonlar", "Raqamlarni ko‘chirish va CRM bilan integratsiya"],
+        en: ["RingCentral, 8x8: numbers, users, licences", "IVR, queues, ring groups, forwarding", "Softphones, mobile apps and IP phones", "Number porting and CRM integration"],
       },
     },
     {

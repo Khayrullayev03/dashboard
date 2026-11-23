@@ -49,19 +49,6 @@
     toastTimer = setTimeout(() => toastEl.classList.remove("is-visible"), 2200);
   }
 
-  const THEME = {
-    get: () => (root.dataset.scheme === "light" ? "light" : "dark"),
-    set(next) {
-      if (next === "light") root.dataset.scheme = "light";
-      else delete root.dataset.scheme;
-      try {
-        localStorage.setItem("scheme", next);
-      } catch (e) {}
-      if (window.BG) window.BG.refreshColors();
-      syncControls();
-    },
-  };
-
   function toggleMatrix() {
     if (!window.BG) return "contour";
     const mode = window.BG.toggleMatrix();
@@ -71,12 +58,10 @@
   }
 
   const langButtons = $$("[data-lang]");
-  const themeBtn = $("[data-theme-btn]");
   const soundBtn = $("[data-sound-btn]");
 
   function syncControls() {
     langButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === I18N.lang)));
-    themeBtn.dataset.mode = THEME.get();
     soundBtn.setAttribute("aria-pressed", String(SOUND.enabled));
     soundBtn.setAttribute("aria-label", t(SOUND.enabled ? "ctrl.soundOff" : "ctrl.soundOn"));
   }
@@ -87,12 +72,6 @@
       I18N.set(b.dataset.lang);
     })
   );
-  themeBtn.addEventListener("click", () => {
-    const next = THEME.get() === "dark" ? "light" : "dark";
-    THEME.set(next);
-    SOUND.tick();
-    toast(t(next === "light" ? "toast.light" : "toast.dark"));
-  });
   soundBtn.addEventListener("click", () => {
     SOUND.set(!SOUND.enabled);
     syncControls();
@@ -166,10 +145,31 @@
   function countUp(scope) {
     $$(".stat-num", scope).forEach((node) => {
       const target = Number(node.dataset.count) || 0;
+      const suffix = node.dataset.suffix || "";
       animate(900, (time, p) => {
         node.textContent = String(Math.round(easeInOut(p) * target)).padStart(String(target).length, "0");
-      }).then(() => (node.textContent = String(target)));
+      }).then(() => (node.textContent = String(target) + suffix));
     });
+  }
+
+  function renderServicesStats() {
+    const root = $("[data-services-stats]");
+    if (!root) return;
+    root.textContent = "";
+    const stats = [
+      [data.clients || 0, "+", "services.clients"],
+      [(data.services || []).length, "", "services.count"],
+    ];
+    stats.forEach(([n, suffix, key]) =>
+      root.append(
+        el(
+          "div",
+          { class: "term stat-card" },
+          el("span", { class: "stat-num", "data-count": n, "data-suffix": suffix, text: String(n) + suffix }),
+          el("span", { class: "stat-label", text: t(key) })
+        )
+      )
+    );
   }
 
   function renderFocus() {
@@ -632,6 +632,7 @@
       animatePanel(panels.find((p) => !p.hidden));
       countUp(page);
     }
+    if (page.dataset.page === "services") countUp(page);
   }
 
   function showPage(id, { animate: withAnimation = true } = {}) {
@@ -689,6 +690,7 @@
     renderSkillLevels();
     renderSkills();
     renderExperience();
+    renderServicesStats();
     renderServices();
     renderContacts();
     syncControls();
@@ -706,7 +708,6 @@
       selectSkill(id, { animate: true });
     },
     goTo,
-    theme: THEME,
     toast,
     toggleMatrix,
     home() {
@@ -714,6 +715,27 @@
       if (logo && state.page === "home") logo.decode(1200);
     },
   };
+
+  if (!reduceMotion && window.matchMedia("(hover: hover)").matches) {
+    let pending = null;
+    let frame = 0;
+    document.addEventListener(
+      "pointermove",
+      (event) => {
+        pending = event;
+        if (frame) return;
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          const card = pending.target.closest && pending.target.closest(".term, .skill-tile");
+          if (!card) return;
+          const r = card.getBoundingClientRect();
+          card.style.setProperty("--mx", `${(((pending.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
+          card.style.setProperty("--my", `${(((pending.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
+        });
+      },
+      { passive: true }
+    );
+  }
 
   const startId = location.hash.slice(1);
   showPage(resolvePage(startId) || "home", { animate: false });

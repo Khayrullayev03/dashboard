@@ -431,7 +431,7 @@
         const y = 2 + i * 2;
         g.put(2, y, name, 0);
         g.put(8, y, "●", 3);
-        g.put(10, y, hash(Math.floor(t * 6) + i * 7) > 0.45 ? "●" : "○", 1);
+        g.put(10, y, hash(Math.floor(t * 6) + i * 7) > 0.45 ? "●" : "◦", 1);
         for (let d = 0; d < 4; d++) g.put(12 + d, y, "■", hash(Math.floor(t * 5) + i * 13 + d) > 0.5 ? 0 : 2);
         g.put(17, y, fans[Math.floor(t * 8 + i) % 4], 2);
         if (i < 3) g.put(2, y + 1, "- - - - - - - -", 2);
@@ -465,7 +465,7 @@
       g.put(22, 8, "docker:", 2);
       ["nginx", "grafana", "postgres"].forEach((name, i) => {
         const up = p > 2 + i * 0.6;
-        g.put(22, 9 + i, up ? "●" : "○", up ? 1 : 2);
+        g.put(22, 9 + i, up ? "●" : "◦", up ? 1 : 2);
         g.put(24, 9 + i, name.padEnd(9), up ? 0 : 2);
         g.put(34, 9 + i, up ? "up " + (3 + i) + "d" : "starting", 2);
       });
@@ -493,7 +493,7 @@
       g.put(2, 1, "║", 2);
       g.put(0, 2, "╭─┴────╮", 3);
       g.put(0, 3, "│", 3);
-      g.put(1, 3, blink(t, 1) ? "●" : "○", 1);
+      g.put(1, 3, blink(t, 1) ? "●" : "◦", 1);
       g.put(3, 3, "CAM├─╮", 3);
       g.put(0, 4, "╰──────┤", 3);
       g.put(8, 4, ["O", "0", "o"][Math.floor(t * 2) % 3], 1);
@@ -600,6 +600,80 @@
       if (p > 8.4) g.put(16, 13, "status: OK · ready for work", 1);
       else g.put(16, 13, "status: servicing…", 2);
     },
+    cloudpbx(g, t) {
+      const cyc = t % 9;
+      const round = Math.floor(t / 9);
+      const who = round % 3;
+      const ringing = cyc >= 1.2 && cyc < 3.2;
+      const talking = cyc >= 3.2 && cyc < 7.6;
+      const ended = cyc >= 7.6;
+      const active = ringing || talking;
+
+      g.put(8, 0, "╭" + "─".repeat(28) + "╮", active ? 1 : 3);
+      for (let y = 1; y <= 3; y++) {
+        g.put(8, y, "│", active ? 1 : 3);
+        g.put(37, y, "│", active ? 1 : 3);
+      }
+      g.put(8, 4, "╰" + "─".repeat(13) + "┬" + "─".repeat(14) + "╯", active ? 1 : 3);
+      g.put(12, 1, "CLOUD PBX", 1);
+      g.put(29, 1, blink(t, 1.2) ? "● live" : "◦ live", 1);
+      g.put(12, 2, "RingCentral · 8x8", 3);
+      const calls = String(12 + round + (talking ? 1 : 0)).padStart(2, "0");
+      g.put(12, 3, `calls ${calls}  queue ${ringing ? 1 : 0}  IVR ok`, 2);
+
+      g.put(22, 5, "│", 2);
+      g.put(24, 5, "SIP/TLS · SRTP", 2);
+      g.put(5, 6, "┌" + "─".repeat(16) + "┴" + "─".repeat(17) + "┐", 2);
+      const ends = [
+        { x: 0, w: 12, drop: 5, name: "IP-phone", label: "desk 101" },
+        { x: 15, w: 15, drop: 22, name: "softphone", label: "laptop" },
+        { x: 33, w: 13, drop: 40, name: "mobile app", label: "iOS·Android" },
+      ];
+      ends.forEach((e, i) => {
+        const mine = i === who;
+        const lit = ringing || (talking && mine);
+        const c = lit ? 1 : 2;
+        g.put(e.drop, 7, "│", lit ? 5 : 2);
+        g.put(e.x, 8, "╭" + "─".repeat(e.w - 2) + "╮", c);
+        g.put(e.drop, 8, "┴", c);
+        g.put(e.x, 9, "│", c);
+        g.put(e.x + e.w - 1, 9, "│", c);
+        g.put(e.x, 10, "│", c);
+        g.put(e.x + e.w - 1, 10, "│", c);
+        g.put(e.x, 11, "╰" + "─".repeat(e.w - 2) + "╯", c);
+        g.put(e.x + 2, 9, e.name, lit ? 3 : 0);
+        let status = "idle";
+        let sc = 2;
+        if (ringing) (status = blink(t, 0.4) ? "» ring «" : "  ring  "), (sc = 1);
+        if (talking && mine) (status = clock(cyc - 3.2).slice(3)), (sc = 1);
+        if (ended && mine) (status = "ended"), (sc = 3);
+        g.put(e.x + 2, 10, status, sc);
+        g.put(e.x + Math.max(0, Math.floor((e.w - e.label.length) / 2)), 12, e.label, 2);
+      });
+
+      const routes = ends.map((e) => (e.drop === 22 ? path([22, 5], [22, 7]) : path([22, 5], [22, 6], [e.drop, 6], [e.drop, 7])));
+      if (ringing)
+        routes.forEach((r) => {
+          const k = Math.floor(t * 12) % r.length;
+          g.put(r[k][0], r[k][1], "•", 1);
+        });
+      if (talking) {
+        const r = routes[who];
+        const a = Math.floor(t * 12) % r.length;
+        const b = r.length - 1 - (Math.floor(t * 12 + 2) % r.length);
+        g.put(r[a][0], r[a][1], "•", 3);
+        g.put(r[b][0], r[b][1], "•", 1);
+      }
+
+      const status = ringing
+        ? "› incoming call → ring group"
+        : talking
+          ? `› answered: ${ends[who].name} · HD voice`
+          : ended
+            ? "› call ended · CDR saved"
+            : "› waiting for calls";
+      g.put(0, 13, status, active ? 1 : 2);
+    },
   };
 
   function fallback(id) {
@@ -611,7 +685,7 @@
     };
   }
 
-  const STILL = { html: 6.5, js: 2.6, css: 1.4, sql: 5.6, node: 1.0, git: 6.2, linux: 1, windows: 6, network: 2.2, servers: 7, cctv: 4.4, monitoring: 3.2, pc: 5 };
+  const STILL = { html: 6.5, js: 2.6, css: 1.4, sql: 5.6, node: 1.0, git: 6.2, linux: 1, windows: 6, network: 2.2, servers: 7, cctv: 4.4, monitoring: 3.2, pc: 5, cloudpbx: 5 };
 
   function createPlayer(pre, id) {
     const scene = SCENES[id] || fallback(id);

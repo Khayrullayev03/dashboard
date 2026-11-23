@@ -167,23 +167,23 @@
         const unit = r - (r0 - o.h + 1);
         if (unit % 2 === 0) {
           g.put(c0 + 1, r, "══", 2);
-          for (let k = 0; k < 3; k++) g.put(c0 + 4 + k, r, hash(tick + unit * 7 + k * 3) > 0.45 ? "●" : "○", k === 0 ? 3 : 1);
+          for (let k = 0; k < 3; k++) g.put(c0 + 4 + k, r, hash(tick + unit * 7 + k * 3) > 0.45 ? "●" : "◦", k === 0 ? 3 : 1);
         } else {
           g.put(c0 + 1, r, "─────", 2);
         }
       }
     } else if (o.kind === "nvr") {
-      g.put(c0 + 1, r0 - 1, blink(t, 1) ? "●" : "○", 1);
+      g.put(c0 + 1, r0 - 1, blink(t, 1) ? "●" : "◦", 1);
       g.put(c0 + 2, r0 - 1, hash(tick + 3) > 0.5 ? "▓▒" : "▒▓", 5);
     } else if (o.kind === "printer") {
       g.put(c0 + 1, r0 - 1, "▄▄▄", 2);
-      g.put(c0 + 4, r0 - 1, blink(t + 0.5, 2) ? "●" : "○", 3);
+      g.put(c0 + 4, r0 - 1, blink(t + 0.5, 2) ? "●" : "◦", 3);
     } else if (o.kind === "sofa") {
       g.put(c0 + 1, r0 - o.h - 1, "▄▄▄▄ ▄▄▄▄", 2);
     } else if (o.kind === "switch") {
       for (let k = 0; k < 4; k++) g.put(c0 + 1 + k, r0 - 1, "■", hash(tick + k * 11) > 0.4 ? 1 : 2);
     } else if (o.kind === "router") {
-      for (let k = 0; k < 4; k++) g.put(c0 + 1 + k, r0 - 1, k === 3 ? "○" : "●", hash(tick + k * 5) > 0.3 ? 1 : 2);
+      for (let k = 0; k < 4; k++) g.put(c0 + 1 + k, r0 - 1, k === 3 ? "◦" : "●", hash(tick + k * 5) > 0.3 ? 1 : 2);
       const ax1 = c0 + 2;
       const ax2 = c0 + 5;
       for (let r = r0 - 4; r <= r0 - 3; r++) {
@@ -311,7 +311,7 @@
             out = on ? "▒" : "▓";
             color = 5;
           } else {
-            out = on ? "●" : "○";
+            out = on ? "●" : "◦";
             color = on ? 1 : 2;
           }
         }
@@ -414,7 +414,7 @@
     g.put(bx, 5, "╰" + "─".repeat(bw - 2) + "╯", border);
     g.put(bx + 2, 2, "▄▄▄", 2);
     g.put(bx + 2, 3, "IP-CAM · 4MP", body);
-    g.put(bx + bw - 3, 2, blink(t, 1) ? "●" : "○", 1);
+    g.put(bx + bw - 3, 2, blink(t, 1) ? "●" : "◦", 1);
     g.put(bx + bw, 2, "──╮", border);
     g.put(bx + bw + 2, 3, "│", border);
     g.put(bx + bw, 4, "──╯", border);

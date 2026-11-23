@@ -136,7 +136,7 @@
         g.put(1, 1 + u, "║", 2);
         g.put(16, 1 + u, "║", 2);
         g.put(3, 1 + u, "═══", 2);
-        for (let k = 0; k < 3; k++) g.put(8 + k, 1 + u, hash(Math.floor(t * 6) + u * 7 + k) > 0.45 ? "●" : "○", k === 0 ? 3 : 1);
+        for (let k = 0; k < 3; k++) g.put(8 + k, 1 + u, hash(Math.floor(t * 6) + u * 7 + k) > 0.45 ? "●" : "◦", k === 0 ? 3 : 1);
         g.put(13, 1 + u, "|/-\\"[(Math.floor(t * 8) + u) % 4], 2);
       }
       g.put(1, 5, "╚══════════════╝", 2);
@@ -147,7 +147,7 @@
       g.put(2, 1, "║", 2);
       g.put(0, 2, "╭─┴─────╮", 3);
       g.put(0, 3, "│", 3);
-      g.put(1, 3, blink(t, 1) ? "●" : "○", 1);
+      g.put(1, 3, blink(t, 1) ? "●" : "◦", 1);
       g.put(3, 3, "CAM ├─╮", 3);
       g.put(0, 4, "╰───────┤", 3);
       g.put(9, 4, ["O", "0", "o"][Math.floor(t * 2) % 3], 1);
@@ -210,7 +210,7 @@
       g.put(5, 5, "▐▌", open ? 3 : 1);
       g.put(13, 1, "access", 2);
       const n = Math.min(6, Math.floor(cyc * 2.5));
-      g.put(13, 3, "▰".repeat(n) + "▱".repeat(6 - n), cyc < 2.4 ? 5 : 1);
+      g.put(13, 3, "█".repeat(n) + "░".repeat(6 - n), cyc < 2.4 ? 5 : 1);
       const status = cyc < 2.4 ? "scan" + ".".repeat((Math.floor(t * 3) % 2) + 1) : cyc < 2.8 ? "✓ ok" : open ? "open" : "lock";
       g.put(13, 5, status, cyc < 2.4 ? 2 : 1);
     },
@@ -320,6 +320,36 @@
         g.put(19, 4, "╱", 3);
         g.put(18, 5, "╱", 3);
         g.put(8, 6, "──────────", 2);
+      }
+    },
+    instagram(g, t) {
+      const cyc = t % 3.2;
+      const flash = cyc > 2.7 && cyc < 2.95;
+      const c = flash ? 1 : 3;
+      g.put(5, 1, "╭────────────╮", c);
+      for (let y = 2; y <= 6; y++) {
+        g.put(5, y, "│", c);
+        g.put(18, y, "│", c);
+      }
+      g.put(5, 7, "╰────────────╯", c);
+      g.put(15, 2, "●", blink(t, 0.8) || flash ? 1 : 5);
+      g.put(8, 3, "╭──────╮", c);
+      g.put(8, 4, "│", c);
+      g.put(15, 4, "│", c);
+      g.put(8, 5, "╰──────╯", c);
+      const lens = ["  ··  ", "  ◦◦  ", " (  ) ", " (◎◎) "];
+      g.put(9, 4, flash ? " ████ " : lens[Math.floor(t * 2.5) % lens.length], flash ? 3 : 1);
+      if (flash) {
+        g.put(3, 0, "\\", 1);
+        g.put(20, 0, "/", 1);
+        g.put(2, 4, "—", 1);
+        g.put(21, 4, "—", 1);
+      }
+      for (let k = 0; k < 2; k++) {
+        const p = (t * 0.45 + k * 0.5) % 1;
+        const y = Math.round(8 - p * 8);
+        const x = k ? 22 : 0;
+        g.put(x, y, "<3", p < 0.6 ? 1 : 5);
       }
     },
   };
