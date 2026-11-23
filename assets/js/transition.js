@@ -388,97 +388,263 @@
     },
   };
 
-  const radar = {
-    cover: 440,
-    hold: 640,
-    reveal: 540,
-    onStart: () => {
-      sound((s) => s.tone(1046, 0.09, "sine", 0.04));
-      later(160, () => sound((s) => s.tone(1046, 0.09, "sine", 0.025)));
+  const globe = {
+    cover: 420,
+    hold: 1700,
+    reveal: 720,
+    init(st) {
+      const small = st.w < 700;
+      st.R = Math.min(st.w, st.h) * (small ? 0.34 : 0.3);
+      st.cx = small ? st.w / 2 : st.w / 2 - st.R * 0.55;
+      st.cy = small ? st.h * 0.36 : st.h / 2;
+      st.cw = small ? 7 : 8;
+      st.chh = small ? 11 : 13;
+      st.t0 = performance.now();
+      st.spinMs = this.cover + this.hold * 0.55;
+      st.geo = null;
+      const fallback = { lat: 41.3, lon: 69.24, city: "Tashkent", country: "Uzbekistan", ip: null };
+      const geo = window.GEO;
+      const estimate = geo && geo.estimate ? geo.estimate() : fallback;
+      const timer = setTimeout(() => {
+        if (!st.geo) st.geo = estimate;
+      }, 900);
+      if (geo && geo.locate)
+        geo
+          .locate()
+          .then((r) => {
+            if (!st.geo || !st.geo.ip) st.geo = r && Number.isFinite(r.lat) ? r : estimate;
+            clearTimeout(timer);
+          })
+          .catch(() => (st.geo = estimate));
+      else st.geo = fallback;
+      st.target = { lat: 41.3, lon: 69.24 };
     },
+    onStart: () => sound((s) => s.tone(220, 0.5, "sine", 0.02)),
     onSwap: () => sound((s) => s.tone(1400, 0.16, "sine", 0.03)),
-    far(st, x, y) {
-      return Math.max(
+    state(st) {
+      const e = performance.now() - st.t0;
+      const s = clamp(e / st.spinMs);
+      const t = st.geo || st.target;
+      const lon1 = (t.lon * Math.PI) / 180;
+      const lat1 = (t.lat * Math.PI) / 180;
+      const lam = lon1 - (1 - out(s)) * Math.PI * 2 * 1.7;
+      const phi = 0.35 + (clamp(lat1, -0.7, 0.7) - 0.35) * out(s);
+      return { e, s, lam, phi, lat1, lon1 };
+    },
+    project(g, lat, lon) {
+      const c = Math.sin(g.phi) * Math.sin(lat) + Math.cos(g.phi) * Math.cos(lat) * Math.cos(lon - g.lam);
+      const x = Math.cos(lat) * Math.sin(lon - g.lam);
+      const y = Math.cos(g.phi) * Math.sin(lat) - Math.sin(g.phi) * Math.cos(lat) * Math.cos(lon - g.lam);
+      return { x, y, visible: c > 0 };
+    },
+    draw(st, g, cx, cy, R, scale, alpha) {
+      const MAP = window.WORLD_MAP_LARGE;
+      const cw = st.cw * scale;
+      const ch = st.chh * scale;
+      const ramp = " .:-=+*#%@";
+      ctx.font = `700 ${(cw / 0.6).toFixed(2)}px ${FONT}`;
+      ctx.textBaseline = "middle";
+      ctx.globalAlpha = alpha;
+      const halo = ctx.createRadialGradient(cx, cy, R * 0.9, cx, cy, R * 1.25);
+      halo.addColorStop(0, "rgba(242,51,74,0.28)");
+      halo.addColorStop(1, "rgba(242,51,74,0)");
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 1.25, 0, Math.PI * 2);
+      ctx.fill();
+      const sinP = Math.sin(g.phi);
+      const cosP = Math.cos(g.phi);
+      const r0 = Math.max(0, Math.floor((cy - R) / ch));
+      const r1 = Math.min(Math.ceil(st.h / ch), Math.ceil((cy + R) / ch));
+      const c0 = Math.max(0, Math.floor((cx - R) / cw));
+      const c1 = Math.min(Math.ceil(st.w / cw), Math.ceil((cx + R) / cw));
+      const colors = [st.colors.muted, "rgba(242,51,74,0.55)", st.colors.accent, st.colors.bright];
+      for (let row = r0; row < r1; row++) {
+        const sy = row * ch + ch / 2;
+        const y = (cy - sy) / R;
+        let run = "";
+        let runColor = -1;
+        let runX = 0;
+        const flush = () => {
+          if (run.trim() && runColor >= 0) {
+            ctx.fillStyle = colors[runColor];
+            ctx.fillText(run, runX, sy);
+          }
+          run = "";
+        };
+        for (let col = c0; col < c1; col++) {
+          const sx = col * cw;
+          const x = (sx + cw / 2 - cx) / R;
+          const rho2 = x * x + y * y;
+          let chr = " ";
+          let color = 0;
+          if (rho2 <= 1) {
+            const z = Math.sqrt(1 - rho2);
+            const lat = Math.asin(clamp(z * sinP + y * cosP, -1, 1));
+            const lon = g.lam + Math.atan2(x, z * cosP - y * sinP);
+            const latD = (lat * 180) / Math.PI;
+            const lonD = (((lon * 180) / Math.PI + 540) % 360) - 180;
+            const mr = Math.round(((MAP.latTop - latD) / (MAP.latTop - MAP.latBottom)) * (MAP.rows - 1));
+            const mc = Math.round(((lonD + 180) / 360) * (MAP.cols - 1));
+            const land = mr >= 0 && mr < MAP.rows && MAP.lines[mr][mc] && MAP.lines[mr][mc] !== " ";
+            const light = clamp(0.2 + 0.8 * (z * 0.75 - x * 0.25 + y * 0.25));
+            if (land) {
+              chr = ramp[Math.max(3, Math.round(light * (ramp.length - 1)))];
+              color = light > 0.9 ? 3 : light > 0.45 ? 2 : 1;
+            } else {
+              const grid = Math.abs(latD % 30) < 1.6 || Math.abs(lonD % 30) < 1.6;
+              if (grid && light > 0.15) {
+                chr = "·";
+                color = 0;
+              } else if (rho2 > 0.94) {
+                chr = ":";
+                color = 1;
+              }
+            }
+          }
+          if (color !== runColor || chr === " ") {
+            flush();
+            runColor = chr === " " ? -1 : color;
+            runX = sx;
+          }
+          run += chr;
+        }
+        flush();
+      }
+      ctx.strokeStyle = "rgba(242,51,74,0.6)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    },
+    marker(st, g, cx, cy, R, lockK) {
+      const pt = this.project(g, g.lat1, g.lon1);
+      if (!pt.visible) return null;
+      const px = cx + pt.x * R;
+      const py = cy - pt.y * R;
+      if (lockK <= 0) return { px, py };
+      ctx.strokeStyle = "rgba(242,51,74,0.35)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - R * 1.15, py);
+      ctx.lineTo(cx + R * 1.15, py);
+      ctx.moveTo(px, cy - R * 1.15);
+      ctx.lineTo(px, cy + R * 1.15);
+      ctx.stroke();
+      const size = 70 - 48 * out(clamp(lockK * 1.6));
+      ctx.strokeStyle = st.colors.bright;
+      ctx.lineWidth = 2;
+      const b = 10;
+      [
+        [-1, -1],
+        [1, -1],
+        [-1, 1],
+        [1, 1],
+      ].forEach(([sx, sy]) => {
+        const x = px + sx * size;
+        const y = py + sy * size;
+        ctx.beginPath();
+        ctx.moveTo(x, y - sy * b);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x - sx * b, y);
+        ctx.stroke();
+      });
+      for (let k = 0; k < 3; k++) {
+        const ring = ((performance.now() / 900 + k / 3) % 1) * 46;
+        ctx.strokeStyle = `rgba(242,51,74,${0.8 - ring / 60})`;
+        ctx.beginPath();
+        ctx.arc(px, py, ring, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.shadowColor = st.colors.accent;
+      ctx.shadowBlur = 16;
+      ctx.fillStyle = Math.floor(performance.now() / 250) % 2 ? st.colors.bright : st.colors.accent;
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      return { px, py };
+    },
+    panel(st, g) {
+      const geo = st.geo;
+      const small = st.w < 700;
+      const x = small ? Math.max(18, st.w / 2 - 150) : st.cx + st.R + 60;
+      const y = small ? st.cy + st.R + 34 : st.cy - 80;
+      const fmt = (v, pos, neg) => `${Math.abs(v).toFixed(2)}° ${v >= 0 ? pos : neg}`;
+      const rows = [["› trace visitor…", 0, st.colors.text]];
+      if (g.s > 0.35) rows.push([`› ip   ${geo ? geo.ip || "n/a" : "resolving…"}`, 0.35, st.colors.bright]);
+      if (g.s > 0.6)
+        rows.push([
+          `› geo  ${geo ? [geo.city, geo.country].filter(Boolean).join(", ") || "—" : "…"}`,
+          0.6,
+          st.colors.bright,
+        ]);
+      if (g.s > 0.8 && geo) rows.push([`› ${fmt(geo.lat, "N", "S")}, ${fmt(geo.lon, "E", "W")}`, 0.8, st.colors.text]);
+      const size = small ? 13 : 16;
+      ctx.font = `600 ${size}px ${FONT}`;
+      ctx.textBaseline = "top";
+      rows.forEach(([text, at, color], i) => {
+        const k = clamp((g.s - at) / 0.15);
+        ctx.fillStyle = color;
+        ctx.fillText(text.slice(0, Math.ceil(text.length * k)), x, y + i * (size + 10));
+      });
+      if (g.s >= 1) {
+        ctx.font = `800 ${small ? 20 : 28}px ${FONT}`;
+        ctx.fillStyle = st.colors.accent;
+        ctx.shadowColor = st.colors.accent;
+        ctx.shadowBlur = 18;
+        if (Math.floor(performance.now() / 300) % 4) ctx.fillText("LOCATED ✓", x, y + rows.length * (size + 10) + 12);
+        ctx.shadowBlur = 0;
+        if (!st.locked) {
+          st.locked = true;
+          sound((s) => s.tone(1568, 0.12, "triangle", 0.04));
+        }
+      }
+    },
+    drawCover(st, p) {
+      const { x, y } = st.origin;
+      const far = Math.max(
         Math.hypot(x, y),
         Math.hypot(st.w - x, y),
         Math.hypot(x, st.h - y),
         Math.hypot(st.w - x, st.h - y)
       );
-    },
-    rings(st, x, y, r, alpha) {
-      ctx.strokeStyle = st.colors.accent;
-      [1, 0.72, 0.46].forEach((k, i) => {
-        ctx.globalAlpha = alpha * [0.9, 0.4, 0.25][i];
-        ctx.lineWidth = i ? 1 : 2;
-        ctx.beginPath();
-        ctx.arc(x, y, r * k, 0, Math.PI * 2);
-        ctx.stroke();
-      });
-      ctx.globalAlpha = 1;
-    },
-    drawCover(st, p) {
-      const { x, y } = st.origin;
-      const r = inOut(p) * this.far(st, x, y);
       ctx.save();
       ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.arc(x, y, inOut(p) * far, 0, Math.PI * 2);
       ctx.clip();
       cover(st);
       ctx.restore();
-      this.rings(st, x, y, r, 1);
+      const g = this.state(st);
+      this.draw(st, g, st.cx, st.cy, st.R * (0.6 + 0.4 * out(p)), 1, out(p));
     },
     drawHold(st, p) {
       cover(st);
-      const { w, h } = st;
-      const cx = w / 2;
-      const cy = h / 2 - (h < 700 ? 70 : 80);
-      const R = Math.min(110, w * 0.25);
-      ctx.strokeStyle = "rgba(242,51,74,0.35)";
-      ctx.lineWidth = 1;
-      [1, 0.66, 0.33].forEach((k) => {
-        ctx.beginPath();
-        ctx.arc(cx, cy, R * k, 0, Math.PI * 2);
-        ctx.stroke();
-      });
-      ctx.beginPath();
-      ctx.moveTo(cx - R, cy);
-      ctx.lineTo(cx + R, cy);
-      ctx.moveTo(cx, cy - R);
-      ctx.lineTo(cx, cy + R);
-      ctx.stroke();
-      const a = p * Math.PI * 2.4 - Math.PI / 2;
-      for (let k = 0; k < 14; k++) {
-        ctx.strokeStyle = `rgba(242,51,74,${0.7 - k * 0.05})`;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(a - k * 0.05) * R, cy + Math.sin(a - k * 0.05) * R);
-        ctx.stroke();
-      }
-      ctx.fillStyle = st.colors.bright;
-      ctx.beginPath();
-      ctx.arc(cx + R * 0.42, cy - R * 0.3, p > 0.5 ? 4 : 0, 0, Math.PI * 2);
-      ctx.fill();
-      const list = [
-        "traceroute → visitor",
-        " 1  192.168.1.1     2 ms",
-        " 2  10.12.0.1       7 ms",
-        " 3  core.uz-ix     12 ms",
-        " 4  → you · ✓",
-      ];
-      const size = w < 600 ? 12 : 14;
-      lines(st, list, p, Math.max(16, cx - (w < 600 ? 140 : 170)), cy + R + 26, size, size + 8);
+      const g = this.state(st);
+      this.draw(st, g, st.cx, st.cy, st.R, 1, 1);
+      this.marker(st, g, st.cx, st.cy, st.R, g.s >= 1 ? (g.e - st.spinMs) / (this.hold * 0.45) : 0);
+      this.panel(st, g);
     },
     drawReveal(st, p) {
-      const cx = st.w / 2;
-      const cy = st.h / 2;
-      const r = out(p) * this.far(st, cx, cy);
+      const g = this.state(st);
+      const pt = this.project(g, g.lat1, g.lon1);
+      const px = st.cx + pt.x * st.R;
+      const py = st.cy - pt.y * st.R;
+      const far = Math.max(
+        Math.hypot(px, py),
+        Math.hypot(st.w - px, py),
+        Math.hypot(px, st.h - py),
+        Math.hypot(st.w - px, st.h - py)
+      );
       cover(st);
       ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.arc(px, py, inn(p) * far * 1.05, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalCompositeOperation = "source-over";
-      this.rings(st, cx, cy, r, 1 - p * 0.6);
+      const k = 1 + 5 * inn(p);
+      this.draw(st, g, px + (st.cx - px) * k, py + (st.cy - py) * k, st.R * k, k, 1 - out(p));
     },
   };
 
@@ -664,13 +830,13 @@
     },
   };
 
-  const EFFECTS = { home: boot, services: rack, about: scan, info: radar, who: logs, contact: plane };
+  const EFFECTS = { home: boot, services: rack, about: scan, info: globe, who: logs, contact: plane };
 
   function play(ms, draw) {
     return new Promise((resolve) => {
       const start = performance.now();
       const tick = (now) => {
-        const p = Math.min(1, (now - start) / ms);
+        const p = clamp((now - start) / ms);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         draw(p);
         if (p < 1) requestAnimationFrame(tick);

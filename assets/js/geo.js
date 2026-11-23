@@ -162,5 +162,5 @@
     return localPending;
   }
 
-  window.GEO = { locate, localIP };
+  window.GEO = { locate, localIP, estimate: byTimezone };
 })();
