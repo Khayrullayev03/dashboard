@@ -18,19 +18,78 @@ window.PORTFOLIO = {
     handle: "anvarjon", // ник в шапке и терминале: anvarjon@portfolio:~$
     // Откуда «идёт сигнал» на карте мира в терминале (команда whereami). Поставьте свой город.
     location: { city: "Tashkent", lat: 41.3, lon: 69.3 },
-    role: { ru: "IT-администратор", uz: "IT-administrator", en: "IT administrator" },
+    role: { ru: "Системный администратор", uz: "Tizim administratori", en: "System administrator" },
+    country: { ru: "Узбекистан", uz: "O‘zbekiston", en: "Uzbekistan" },
+    focusLine: { ru: "Windows Server · AD · сети · СКС", uz: "Windows Server · AD · tarmoqlar · SKS", en: "Windows Server · AD · networks · cabling" },
     about: {
-      ru: "Слежу, чтобы серверы, сеть и рабочие места работали без сбоев. Параллельно развиваюсь в веб-разработке: HTML, JavaScript, CSS, SQL.",
-      uz: "Serverlar, tarmoq va ish joylari uzluksiz ishlashini ta’minlayman. Parallel ravishda veb-dasturlashni o‘rganyapman: HTML, JavaScript, CSS, SQL.",
-      en: "I keep servers, networks and workstations running smoothly. In parallel I’m growing as a web developer: HTML, JavaScript, CSS, SQL.",
+      ru: "Отвечаю за то, чтобы серверы, сеть и рабочие места работали без сбоев. Администрирую Windows Server и Active Directory, настраиваю сетевое оборудование, DHCP и VPN, проектирую СКС и ставлю видеонаблюдение. Помогаю пользователям, слежу за безопасностью и веду учёт техники.",
+      uz: "Serverlar, tarmoq va ish joylari uzluksiz ishlashi uchun javob beraman. Windows Server va Active Directory’ni boshqaraman, tarmoq uskunalari, DHCP va VPN’ni sozlayman, SKS loyihalayman va videokuzatuv o‘rnataman. Foydalanuvchilarga yordam beraman, xavfsizlikni nazorat qilaman va texnikani hisobga olaman.",
+      en: "I keep servers, the network and workstations running smoothly. I manage Windows Server and Active Directory, configure network equipment, DHCP and VPN, design structured cabling and install CCTV. I support users, look after security and keep track of IT assets.",
     },
   },
 
   contacts: [
     { label: "github", value: "github.com/Khayrullayev03", href: "https://github.com/Khayrullayev03" },
-    { label: "telegram", value: "@username", href: "https://t.me/username" },
-    { label: "phone", value: "+998 00 000-00-00", href: "tel:+998000000000" },
-    { label: "email", value: "name@example.com", href: "mailto:name@example.com" },
+    { label: "telegram", value: "@anvar_amerikanskiy", href: "https://t.me/anvar_amerikanskiy" },
+    { label: "phone", value: "+998 88 100-77-46", href: "tel:+998881007746" },
+    { label: "email", value: "aa7469303@gmail.com", href: "mailto:aa7469303@gmail.com" },
+  ],
+
+  focus: [
+    {
+      icon: "windows",
+      title: { ru: "Серверы и домен", uz: "Serverlar va domen", en: "Servers & domain" },
+      items: {
+        ru: ["Windows Server 2008 R2", "Active Directory", "DHCP", "Настройка и администрирование серверов"],
+        uz: ["Windows Server 2008 R2", "Active Directory", "DHCP", "Serverlarni sozlash va boshqarish"],
+        en: ["Windows Server 2008 R2", "Active Directory", "DHCP", "Server setup and administration"],
+      },
+    },
+    {
+      icon: "network",
+      title: { ru: "Сети и VPN", uz: "Tarmoqlar va VPN", en: "Networks & VPN" },
+      items: {
+        ru: ["LAN и сетевые технологии", "Сетевое оборудование", "VPN", "Настройка сетевых подключений"],
+        uz: ["LAN va tarmoq texnologiyalari", "Tarmoq uskunalari", "VPN", "Tarmoq ulanishlarini sozlash"],
+        en: ["LAN and network technologies", "Network equipment", "VPN", "Network connection setup"],
+      },
+    },
+    {
+      icon: "cctv",
+      title: { ru: "СКС и видеонаблюдение", uz: "SKS va videokuzatuv", en: "Cabling & CCTV" },
+      items: {
+        ru: ["Проектирование СКС", "Монтаж кабельных линий", "Системы видеонаблюдения"],
+        uz: ["SKS loyihalash", "Kabel liniyalarini o‘rnatish", "Videokuzatuv tizimlari"],
+        en: ["Structured cabling design", "Cable installation", "CCTV systems"],
+      },
+    },
+    {
+      icon: "helpdesk",
+      title: { ru: "Helpdesk и рабочие места", uz: "Helpdesk va ish joylari", en: "Helpdesk & workstations" },
+      items: {
+        ru: ["Помощь пользователям", "Настройка ПК и ПО", "Офисная техника"],
+        uz: ["Foydalanuvchilarga yordam", "Kompyuter va dasturlarni sozlash", "Ofis texnikasi"],
+        en: ["User support", "PC and software setup", "Office equipment"],
+      },
+    },
+    {
+      icon: "security",
+      title: { ru: "Безопасность", uz: "Xavfsizlik", en: "Security" },
+      items: {
+        ru: ["Информационная безопасность", "Контроль доступа", "Внутренний контроль"],
+        uz: ["Axborot xavfsizligi", "Kirishni nazorat qilish", "Ichki nazorat"],
+        en: ["Information security", "Access control", "Internal control"],
+      },
+    },
+    {
+      icon: "inventory",
+      title: { ru: "IT-процессы и люди", uz: "IT jarayonlar va odamlar", en: "IT processes & people" },
+      items: {
+        ru: ["Инвентаризация техники", "Поддержка руководителя", "Деловое общение", "IT Recruitment"],
+        uz: ["Texnikani inventarizatsiya qilish", "Rahbarga ma’muriy yordam", "Ishbilarmonlik muloqoti", "IT Recruitment"],
+        en: ["IT asset inventory", "Executive support", "Business communication", "IT recruitment"],
+      },
+    },
   ],
 
   // Навыки из резюме — по уровням. Показываются на странице «О себе» (блок «Навыки») и в терминале (skills).
@@ -509,32 +568,8 @@ window.PORTFOLIO = {
   ],
 
   // ПРИМЕРЫ — замените своим опытом (сверху — самое свежее).
-  experience: [
-    {
-      period: { ru: "2023 — сейчас", uz: "2023 — hozir", en: "2023 — now" },
-      company: { ru: "Название компании", uz: "Kompaniya nomi", en: "Company name" },
-      role: { ru: "IT-администратор", uz: "IT-administrator", en: "IT administrator" },
-      points: {
-        ru: ["Обслуживание рабочих мест, принтеров и офисной сети", "Домен Active Directory, почта и общие папки", "Видеонаблюдение и резервное копирование"],
-        uz: ["Ish joylari, printerlar va ofis tarmog‘iga xizmat ko‘rsatish", "Active Directory domeni, pochta va umumiy papkalar", "Videokuzatuv va zaxira nusxalash"],
-        en: ["Supporting workstations, printers and the office network", "Active Directory domain, mail and file shares", "CCTV and backups"],
-      },
-    },
-    {
-      period: "2021 — 2023",
-      company: { ru: "Название компании", uz: "Kompaniya nomi", en: "Company name" },
-      role: { ru: "Специалист техподдержки", uz: "Texnik yordam mutaxassisi", en: "IT support specialist" },
-      points: {
-        ru: ["Помощь пользователям и решение заявок", "Установка и настройка программ", "Учёт компьютерной техники"],
-        uz: ["Foydalanuvchilarga yordam va murojaatlarni hal qilish", "Dasturlarni o‘rnatish va sozlash", "Kompyuter texnikasini hisobga olish"],
-        en: ["Helping users and resolving tickets", "Installing and configuring software", "Keeping track of IT equipment"],
-      },
-    },
-  ],
 
-  // ПРИМЕРЫ — замените своими сертификатами.
-  certs: [
-    { year: "2024", name: { ru: "Название сертификата", uz: "Sertifikat nomi", en: "Certificate name" }, issuer: { ru: "Организация", uz: "Tashkilot", en: "Issuer" } },
-    { year: "2023", name: { ru: "Название курса", uz: "Kurs nomi", en: "Course name" }, issuer: { ru: "Организация", uz: "Tashkilot", en: "Issuer" } },
-  ],
+  experience: [],
+
+  certs: [],
 };

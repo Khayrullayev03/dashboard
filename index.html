@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Хайруллаев Анваржон — портфолио</title>
-    <meta name="description" content="IT-администратор: серверы, сети, СКС, видеонаблюдение." />
+    <title>Хайруллаев Анваржон — системный администратор</title>
+    <meta name="description" content="Системный администратор: Windows Server, Active Directory, сети, СКС, видеонаблюдение." />
     <meta name="theme-color" content="#050506" />
     <!-- Превью ссылки в Telegram, WhatsApp и соцсетях -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://khayrullayev03.github.io/dashboard/" />
-    <meta property="og:title" content="Хайруллаев Анваржон — IT-администратор" />
-    <meta property="og:description" content="Серверы, сети, СКС, видеонаблюдение. Портфолио в ASCII-стиле." />
+    <meta property="og:title" content="Хайруллаев Анваржон — системный администратор" />
+    <meta property="og:description" content="Windows Server, Active Directory, сети, СКС, видеонаблюдение." />
     <meta property="og:image" content="https://khayrullayev03.github.io/dashboard/img/logo.png" />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" href="img/logo.png" />
@@ -88,7 +88,6 @@
             <h2 class="section-title" id="services-title" data-title>
               <span class="num">01.</span><span class="title-text" data-i18n="services.title">Услуги</span>
             </h2>
-            <p class="section-lead" data-reveal data-i18n="services.lead"></p>
           </div>
           <div class="services" data-services></div>
 
@@ -136,39 +135,48 @@
             </h2>
           </div>
 
-          <div class="term about-card" data-reveal>
-            <div class="term-bar" aria-hidden="true"><span>~/about.txt</span><span>cat</span></div>
-            <div class="about-body">
-              <img class="about-logo" src="img/logo.png" alt="" width="96" height="96" />
-              <div>
-                <p class="about-role"><span class="ps1">&gt;</span> <span data-role></span><span class="cursor" aria-hidden="true">▋</span></p>
+          <div class="term about-hero" data-reveal>
+            <div class="term-bar" aria-hidden="true"><span>~/whoami</span><span class="live">● online</span></div>
+            <div class="about-hero-body">
+              <div class="about-avatar" aria-hidden="true">
+                <img class="about-logo" src="img/logo.png" alt="" width="132" height="132" />
+                <span class="avatar-scan"></span>
+              </div>
+              <div class="about-main">
+                <p class="about-kicker" data-i18n="about.kicker">sysadmin</p>
+                <h3 class="about-name" data-name></h3>
+                <p class="about-role"><span class="ps1">&gt;</span> <span class="about-role-text" data-role></span><span class="cursor" aria-hidden="true">▋</span></p>
                 <p class="about-text" data-about></p>
               </div>
             </div>
+            <dl class="about-specs" data-about-specs></dl>
+            <div class="about-stats" data-about-stats></div>
           </div>
 
-          <!-- Навыки из резюме по уровням (список — в js/data.js, skillLevels) -->
-          <h3 class="sub-title" data-reveal><span class="ps1">$</span> cat ~/skills.txt <span class="dim">#</span> <span data-i18n="skills.title">навыки</span></h3>
+          <h3 class="sub-title" data-reveal><span class="sub-mark" aria-hidden="true">▸</span><span class="sub-text" data-i18n="about.focusTitle">Чем занимаюсь</span></h3>
+          <ul class="focus-grid" data-focus></ul>
+
+          <h3 class="sub-title" data-reveal><span class="sub-mark" aria-hidden="true">▸</span><span class="sub-text" data-i18n="skills.title">Навыки</span></h3>
           <div class="term levels" data-reveal>
             <div class="term-bar" aria-hidden="true"><span>~/skills.txt</span><span data-skill-count></span></div>
             <div class="levels-body" data-skill-levels></div>
           </div>
 
-          <h3 class="sub-title" data-reveal><span class="ps1">$</span> ls ~/skills <span class="dim">#</span> <span data-i18n="skills.detail">подробно</span></h3>
+          <h3 class="sub-title" data-reveal><span class="sub-mark" aria-hidden="true">▸</span><span class="sub-text" data-i18n="skills.detail">Подробно</span></h3>
           <div class="tabs" role="tablist" data-tabs data-reveal></div>
           <div class="panels" data-panels data-reveal></div>
 
-          <h3 class="sub-title" data-reveal><span class="ps1">$</span> tail ~/experience.log <span class="dim">#</span> <span data-i18n="exp.title">опыт</span></h3>
-          <div class="exp-grid">
-            <div class="term log" data-reveal>
-              <div class="term-bar" aria-hidden="true"><span>~/experience.log</span><span>tail -f</span></div>
-              <ol class="log-list" data-experience></ol>
-            </div>
-            <div class="certs" data-reveal>
-              <p class="prompt">
-                <span class="ps1">$</span> ls ~/certs <span class="dim">#</span> <span data-i18n="exp.certs">сертификаты</span>
-              </p>
-              <ul class="cert-list" data-certs></ul>
+          <div class="exp-section" data-exp-section>
+            <h3 class="sub-title" data-reveal><span class="sub-mark" aria-hidden="true">▸</span><span class="sub-text" data-i18n="exp.title">Опыт</span></h3>
+            <div class="exp-grid">
+              <div class="term log" data-reveal>
+                <div class="term-bar" aria-hidden="true"><span>~/experience.log</span><span>tail -f</span></div>
+                <ol class="log-list" data-experience></ol>
+              </div>
+              <div class="certs" data-reveal>
+                <p class="prompt"><span class="sub-mark" aria-hidden="true">▸</span> <span data-i18n="exp.certs">Сертификаты</span></p>
+                <ul class="cert-list" data-certs></ul>
+              </div>
             </div>
           </div>
         </div>
@@ -182,7 +190,6 @@
             <h2 class="section-title" id="info-title" data-title>
               <span class="num">03.</span><span class="title-text" data-i18n="info.title">Инфо</span>
             </h2>
-            <p class="section-lead" data-reveal data-i18n="info.lead"></p>
           </div>
 
           <div class="info-grid">
@@ -198,7 +205,7 @@
             </div>
           </div>
 
-          <h3 class="sub-title" data-reveal><span class="ps1">$</span> bash <span class="dim">#</span> <span data-i18n="terminal.title">терминал</span></h3>
+          <h3 class="sub-title" data-reveal><span class="sub-mark" aria-hidden="true">▸</span><span class="sub-text" data-i18n="terminal.title">Терминал</span></h3>
           <div class="term console" data-console data-reveal>
             <div class="term-bar" aria-hidden="true"><span><span data-handle></span>@portfolio: ~</span><span>bash</span></div>
             <div class="console-body" data-console-body>
@@ -233,7 +240,6 @@
             <h2 class="section-title" id="contact-title" data-title>
               <span class="num">04.</span><span class="title-text" data-i18n="contact.title">Контакты</span>
             </h2>
-            <p class="section-lead" data-reveal data-i18n="contact.lead"></p>
           </div>
           <ul class="contacts" data-contacts></ul>
         </div>
@@ -243,7 +249,6 @@
     <footer class="site-footer">
       <div class="footer-inner">
         <span data-footer></span>
-        <span class="eof">── EOF ── <span class="dim">↑↑↓↓←→←→ b a</span></span>
       </div>
     </footer>
 
@@ -253,6 +258,7 @@
     <script src="js/data.js"></script>
     <script src="js/ascii-logo.js"></script>
     <script src="js/fx.js"></script>
+    <script src="js/glitch.js"></script>
     <script src="js/sound.js"></script>
     <script src="js/background.js"></script>
     <script src="js/scenes.js"></script>

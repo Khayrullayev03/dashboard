@@ -324,6 +324,7 @@
     },
 
     experience() {
+      if (!(data.experience || []).length) return print(t("term.noData"), "dim");
       (data.experience || []).forEach((job) => {
         print([[`[${L(job.period)}] `, "dim"], [L(job.company), "bright"], [" · "], [L(job.role), "ps1"]]);
         (L(job.points) || []).forEach((p) => print([["  + ", "ps1"], p]));
@@ -334,6 +335,7 @@
     },
 
     certs() {
+      if (!(data.certs || []).length) return print(t("term.noData"), "dim");
       (data.certs || []).forEach((c) => print([[`[${c.year}] `, "dim"], [L(c.name), "bright"], [" — " + L(c.issuer), "dim"]]));
     },
 

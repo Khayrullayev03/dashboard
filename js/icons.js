@@ -195,6 +195,65 @@
       g.hline(0, 5, 20, 2, "─");
       g.put(0, 6, "cpu · srv01 · live", 2);
     },
+    helpdesk(g, t) {
+      g.box(0, 0, 20, 7, 2);
+      g.put(2, 0, " helpdesk ", 3);
+      const names = ["printer", "vpn", "outlook", "wi-fi", "scanner", "password", "monitor", "1c"];
+      const step = Math.floor(t / 1.3);
+      const phase = (t / 1.3) % 1;
+      for (let r = 0; r < 4; r++) {
+        const k = step + r;
+        const active = r === 3;
+        g.put(2, 1 + r, "#" + (100 + (k % 900)), active ? 1 : 2);
+        g.put(7, 1 + r, names[k % names.length].padEnd(9).slice(0, 9), active ? 3 : 0);
+        g.put(17, 1 + r, active ? (phase > 0.7 ? "✓" : "|/-\\"[Math.floor(t * 8) % 4]) : "✓", active ? 1 : 5);
+      }
+      g.put(2, 5, `done ${String(240 + step).padStart(4, "0")}`, 2);
+    },
+    security(g, t) {
+      const cyc = t % 4;
+      const open = cyc > 2.8 && cyc < 3.7;
+      const top = open ? 0 : 1;
+      g.put(3, top, "╭────╮", 3);
+      g.put(3, top + 1, "│", 3);
+      g.put(8, top + 1, "│", 3);
+      if (!open) g.put(3, 2, "│    │", 3);
+      else g.put(3, 2, "│", 3);
+      g.put(1, 3, open ? "╔═╧══════╗" : "╔═╧════╧═╗", 2);
+      g.put(1, 4, "║        ║", 2);
+      g.put(1, 5, "║        ║", 2);
+      g.put(1, 6, "╚════════╝", 2);
+      g.put(5, 4, "()", open ? 3 : 1);
+      g.put(5, 5, "▐▌", open ? 3 : 1);
+      g.put(13, 1, "access", 2);
+      const n = Math.min(6, Math.floor(cyc * 2.5));
+      g.put(13, 3, "▰".repeat(n) + "▱".repeat(6 - n), cyc < 2.4 ? 5 : 1);
+      const status = cyc < 2.4 ? "scan" + ".".repeat((Math.floor(t * 3) % 2) + 1) : cyc < 2.8 ? "✓ ok" : open ? "open" : "lock";
+      g.put(13, 5, status, cyc < 2.4 ? 2 : 1);
+    },
+    inventory(g, t) {
+      const labels = ["PC", "PRN", "SW", "UPS", "CAM", "NVR", "AP", "TEL"];
+      const step = Math.floor(t / 2.4);
+      const beam = Math.floor(((t / 2.4) % 1) * 26) - 3;
+      let done = 0;
+      for (let i = 0; i < 3; i++) {
+        const x = i * 7;
+        const idx = step * 3 + i;
+        const label = (labels[idx % labels.length] + String((idx * 7) % 100).padStart(2, "0")).slice(0, 4).padEnd(4);
+        const scanned = beam > x + 5;
+        if (scanned) done++;
+        const c = scanned ? 3 : 2;
+        g.put(x, 0, "┌────┐", c);
+        g.put(x, 1, "│", c);
+        g.put(x + 1, 1, label, scanned ? 1 : 0);
+        g.put(x + 5, 1, "│", c);
+        g.put(x, 2, "└────┘", c);
+        if (scanned) g.put(x + 2, 3, "✓", 1);
+      }
+      if (beam >= 0 && beam < 20) for (let y = 0; y < 3; y++) g.put(beam, y, "┃", 1);
+      g.put(1, 4, "▌│▍▌││▌▍│▌▌│▍│▌▍▌", 0);
+      g.put(1, 5, `inv ${String(step * 3 + done + 1).padStart(4, "0")}`, 2);
+    },
   };
 
   /* ---------- картинки контактов: 26×9 ---------- */

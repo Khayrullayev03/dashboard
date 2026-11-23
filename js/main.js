@@ -23,7 +23,8 @@
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 
-  const state = { skill: skills.length ? skills[0].id : null, page: null };
+  const firstSkill = skills.find((s) => s.level === "advanced") || skills.find((s) => s.group === "admin") || skills[0];
+  const state = { skill: firstSkill ? firstSkill.id : null, page: null };
 
   function el(tag, props, ...children) {
     const node = document.createElement(tag);
@@ -141,8 +142,79 @@
   function renderProfile() {
     $$("[data-handle]").forEach((n) => (n.textContent = profile.handle || "user"));
     $("[data-footer]").textContent = `© ${new Date().getFullYear()} · ${profile.handle || ""}`;
+    $("[data-name]").textContent = L(profile.name);
     $("[data-role]").textContent = L(profile.role);
     $("[data-about]").textContent = L(profile.about);
+
+    const levels = data.skillLevels || [];
+    const total = levels.reduce((n, g) => n + g.items.length, 0);
+    const advanced = levels.filter((g) => g.level === "advanced" || g.level === "expert").reduce((n, g) => n + g.items.length, 0);
+    const telegram = contacts.find((c) => c.label === "telegram");
+    const specs = [
+      ["about.spec.role", L(profile.role)],
+      ["about.spec.focus", L(profile.focusLine)],
+      ["about.spec.country", L(profile.country)],
+      ["about.spec.level", t("about.levelValue", { n: advanced, total })],
+      telegram && ["about.spec.contact", telegram.value, telegram.href],
+    ].filter((row) => row && row[1]);
+    const specsRoot = $("[data-about-specs]");
+    specsRoot.textContent = "";
+    specs.forEach(([key, value, href]) =>
+      specsRoot.append(
+        el(
+          "div",
+          { class: "spec" },
+          el("dt", { text: t(key) }),
+          el("dd", null, href ? el("a", { href, target: "_blank", rel: "noopener", text: value }) : value)
+        )
+      )
+    );
+
+    const stats = [
+      [total, "about.stat.skills"],
+      [advanced, "about.stat.advanced"],
+      [(data.focus || []).length, "about.stat.areas"],
+      [(data.services || []).length, "about.stat.services"],
+    ];
+    const statsRoot = $("[data-about-stats]");
+    statsRoot.textContent = "";
+    stats.forEach(([n, key]) =>
+      statsRoot.append(
+        el("div", { class: "stat" }, el("span", { class: "stat-num", "data-count": n, text: String(n) }), el("span", { class: "stat-label", text: t(key) }))
+      )
+    );
+  }
+
+  function countUp(scope) {
+    $$(".stat-num", scope).forEach((node) => {
+      const target = Number(node.dataset.count) || 0;
+      animate(900, (time, p) => {
+        node.textContent = String(Math.round(easeInOut(p) * target)).padStart(String(target).length, "0");
+      }).then(() => (node.textContent = String(target)));
+    });
+  }
+
+  function renderFocus() {
+    const list = $("[data-focus]");
+    list.textContent = "";
+    (data.focus || []).forEach((area, i) => {
+      const icon = window.ICONS && window.ICONS.has("skill", area.icon) ? el("pre", { class: "asc focus-icon", "aria-hidden": "true" }) : null;
+      list.append(
+        el(
+          "li",
+          { class: "focus-card term", "data-reveal": true },
+          el("div", { class: "term-bar", "aria-hidden": "true" }, el("span", { text: `~/focus/${String(i + 1).padStart(2, "0")}` }), el("span", { class: "live", text: "●" })),
+          el(
+            "div",
+            { class: "focus-body" },
+            icon && el("div", { class: "focus-art" }, icon),
+            el("h4", { class: "focus-title", text: L(area.title) }),
+            el("ul", { class: "points focus-points" }, (L(area.items) || []).map((item) => el("li", { text: item })))
+          )
+        )
+      );
+      if (icon) window.ICONS.skill(icon, area.icon);
+    });
   }
 
   /* =====================================================================
@@ -375,8 +447,10 @@
     panelsRoot.textContent = "";
     tabsRoot.setAttribute("aria-label", t("skills.title"));
     tabs = [];
-    [["web", "skills.web"], ["admin", "skills.admin"]].forEach(([group, key]) => {
-      const items = skills.filter((s) => (s.group || "web") === group);
+    [["admin", "skills.admin"], ["web", "skills.web"]].forEach(([group, key]) => {
+      const items = skills
+        .filter((s) => (s.group || "web") === group)
+        .sort((a, b) => (LEVELS[b.level] || 5) - (LEVELS[a.level] || 5));
       if (!items.length) return;
       const row = el("div", { class: "tab-group", role: "presentation" }, el("span", { class: "tab-group-label", text: t(key), "aria-hidden": "true" }));
       items.forEach((skill) => {
@@ -488,6 +562,12 @@
      ОПЫТ И СЕРТИФИКАТЫ
      ===================================================================== */
   function renderExperience() {
+    const section = $("[data-exp-section]");
+    if (section) {
+      section.hidden = !experience.length && !certs.length;
+      $(".log", section).hidden = !experience.length;
+      $(".certs", section).hidden = !certs.length;
+    }
     const list = $("[data-experience]");
     list.textContent = "";
     experience.forEach((job) =>
@@ -593,7 +673,10 @@
     });
     const title = $(".title-text", page);
     if (title) scramble(title, title.textContent, 600);
-    if (page.dataset.page === "about") animatePanel(panels.find((p) => !p.hidden));
+    if (page.dataset.page === "about") {
+      animatePanel(panels.find((p) => !p.hidden));
+      countUp(page);
+    }
   }
 
   function showPage(id, { animate: withAnimation = true } = {}) {
@@ -654,6 +737,7 @@
      ===================================================================== */
   function renderAll() {
     renderProfile();
+    renderFocus();
     renderSkillLevels();
     renderSkills();
     renderExperience();
