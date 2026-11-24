@@ -300,119 +300,98 @@
     );
   }
 
-  const storyRoot = $("[data-story]");
-  const STORY_SCREEN = [
-    "C:\\> boot dad.pc",
-    "fergana ..... OK",
-    "> learn.exe",
-    "> networks.exe",
-    "> sysadmin.exe",
-    "> 30+ clients ✓",
-  ];
-  const storyTimer = { id: 0, visible: false };
-  let storyPre = null;
+  const aboutCard = $(".about-hero");
+  const matrixRain = { canvas: null, ctx: null, cols: [], raf: 0, last: 0, visible: false, w: 0, h: 0 };
+  const RAIN = "01ABCDEF<>/\\{}[]=+*#$%&";
+  const RAIN_PX = 14;
 
-  function storyFrame(lines, cursor) {
-    const W = 18;
-    const shown = lines.slice(-4);
-    while (shown.length < 4) shown.push("");
-    const screen = shown.map((line, i) => {
-      const last = i === Math.min(lines.length, 4) - 1 || (lines.length === 0 && i === 0);
-      const text = (" " + line + (last && cursor ? "_" : "")).padEnd(W).slice(0, W);
-      return `│ │<span class="story-screen">${escapeHtml(text)}</span>│ │`;
-    });
-    return [
-      "┌──────────────────────┐",
-      "│ ┌──────────────────┐ │",
-      ...screen,
-      "│ └──────────────────┘ │",
-      '│  ▄▄▄             <span class="story-led">●</span>   │',
-      "└───────┬──────┬───────┘",
-      "      ──┴──────┴──      ",
-      " ┌────────────────────┐ ",
-      " │ [][][][][][][][][] │ ",
-      " │ [][][][][][][][][] │ ",
-      " └────────────────────┘ ",
-    ].join("\n");
+  function sizeMatrix() {
+    const m = matrixRain;
+    if (!m.canvas) return;
+    const dpr = isLite() ? 1 : Math.min(2, window.devicePixelRatio || 1);
+    m.w = aboutCard.clientWidth;
+    m.h = aboutCard.clientHeight;
+    m.canvas.width = Math.round(m.w * dpr);
+    m.canvas.height = Math.round(m.h * dpr);
+    m.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    m.ctx.font = `700 ${RAIN_PX}px "JetBrains Mono", monospace`;
+    m.ctx.textBaseline = "top";
+    const step = RAIN_PX * 0.75;
+    const count = Math.ceil(m.w / step);
+    const rows = Math.ceil(m.h / RAIN_PX);
+    m.cols = Array.from({ length: count }, (_, i) => ({
+      x: i * step,
+      y: Math.random() * rows * 1.1 - rows * 0.25,
+      speed: 0.25 + Math.random() * 0.55,
+      row: -1,
+      prev: "",
+    }));
   }
 
-  function escapeHtml(text) {
-    return text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
-  }
-
-  function runStory() {
-    clearTimeout(storyTimer.id);
-    if (!storyPre) return;
-    if (reduceMotion) {
-      storyPre.innerHTML = storyFrame(STORY_SCREEN.slice(0, 4), false);
-      return;
-    }
-    let line = 0;
-    let char = 0;
-    let blink = 0;
-    const typed = [];
-    const step = () => {
-      if (!storyTimer.visible || document.hidden || state.page !== "about") {
-        storyTimer.id = setTimeout(step, 400);
+  function drawMatrix(now) {
+    const m = matrixRain;
+    m.raf = requestAnimationFrame(drawMatrix);
+    if (now - m.last < (isLite() ? 90 : 45)) return;
+    m.last = now;
+    const { ctx, w, h } = m;
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "rgba(0, 0, 0, 0.14)";
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalCompositeOperation = "source-over";
+    const rows = Math.ceil(h / RAIN_PX);
+    m.cols.forEach((c) => {
+      c.y += c.speed;
+      const row = Math.floor(c.y);
+      if (row === c.row) return;
+      if (c.row >= 0 && c.prev) {
+        ctx.fillStyle = "rgba(242, 51, 74, 0.9)";
+        ctx.fillText(c.prev, c.x, c.row * RAIN_PX);
+      }
+      c.row = row;
+      if (row > rows + 4) {
+        if (Math.random() < 0.08) {
+          c.y = -Math.random() * 8;
+          c.row = -1;
+          c.speed = 0.25 + Math.random() * 0.55;
+        }
         return;
       }
-      let delay = 70;
-      if (line < STORY_SCREEN.length) {
-        const full = STORY_SCREEN[line];
-        typed[line] = full.slice(0, ++char);
-        if (char >= full.length) {
-          line++;
-          char = 0;
-          delay = 420;
-        }
-      } else if (blink++ < 8) {
-        delay = 380;
-      } else {
-        typed.length = 0;
-        line = 0;
-        blink = 0;
-        delay = 600;
-      }
-      storyPre.innerHTML = storyFrame(typed, line >= STORY_SCREEN.length ? blink % 2 === 0 : true);
-      storyTimer.id = setTimeout(step, delay);
-    };
-    step();
+      if (row < 0) return;
+      c.prev = RAIN[(Math.random() * RAIN.length) | 0];
+      ctx.fillStyle = "#ffe8ec";
+      ctx.fillText(c.prev, c.x, row * RAIN_PX);
+    });
   }
 
-  function renderStory() {
-    if (!storyRoot || !data.story) return;
-    const story = data.story;
-    storyPre = el("pre", { class: "asc story-art", "aria-hidden": "true" });
-    storyRoot.replaceChildren(
-      el(
-        "div",
-        { class: "term-bar", "aria-hidden": "true" },
-        el("span", { text: "~/story/father.txt" }),
-        el("span", { class: "live", text: "● rahmat, dada" })
-      ),
-      el(
-        "div",
-        { class: "story-body" },
-        el("div", { class: "story-pc" }, storyPre),
-        el(
-          "div",
-          { class: "story-text" },
-          el("p", { class: "about-kicker", text: "fergana · uzbekistan" }),
-          el("h3", { class: "story-title", text: L(story.title) }),
-          ...(L(story.text) || []).map((p) => el("p", { text: p })),
-          el("p", { class: "story-closing", text: L(story.closing) })
-        )
-      )
-    );
-    storyPre.innerHTML = storyFrame([], true);
-    runStory();
+  function syncMatrix() {
+    const m = matrixRain;
+    if (!m.canvas) return;
+    const run = m.visible && !document.hidden && state.page === "about" && !reduceMotion;
+    if (run && !m.raf) m.raf = requestAnimationFrame(drawMatrix);
+    else if (!run && m.raf) {
+      cancelAnimationFrame(m.raf);
+      m.raf = 0;
+    }
   }
 
-  if (storyRoot && "IntersectionObserver" in window) {
-    new IntersectionObserver((entries) => {
-      storyTimer.visible = entries.some((e) => e.isIntersecting);
-    }).observe(storyRoot);
-  } else storyTimer.visible = true;
+  function setupMatrix() {
+    if (!aboutCard || matrixRain.canvas) return;
+    const canvas = el("canvas", { class: "matrix-bg", "aria-hidden": "true" });
+    aboutCard.prepend(canvas);
+    matrixRain.canvas = canvas;
+    matrixRain.ctx = canvas.getContext("2d");
+    sizeMatrix();
+    if ("ResizeObserver" in window) new ResizeObserver(sizeMatrix).observe(aboutCard);
+    if ("IntersectionObserver" in window)
+      new IntersectionObserver((entries) => {
+        matrixRain.visible = entries.some((e) => e.isIntersecting);
+        syncMatrix();
+      }).observe(aboutCard);
+    else matrixRain.visible = true;
+    document.addEventListener("visibilitychange", syncMatrix);
+    document.addEventListener("pagechange", syncMatrix);
+    document.addEventListener("perfchange", sizeMatrix);
+  }
 
   function renderFocus() {
     const list = $("[data-focus]");
@@ -1206,7 +1185,7 @@
   const PAGE_RENDER = {
     services: [renderServicesStats, renderServices],
     voip: [renderVoip],
-    about: [renderStory, renderFocus, renderSkillLevels, renderSkills, renderExperience],
+    about: [setupMatrix, renderFocus, renderSkillLevels, renderSkills, renderExperience],
     contact: [renderContacts],
   };
   const rendered = new Set();
