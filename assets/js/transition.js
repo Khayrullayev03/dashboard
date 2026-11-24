@@ -1001,7 +1001,376 @@
     },
   };
 
-  const EFFECTS = { home: boot, services: fiber, voip: call, about: scan, info: globe, who: logs, contact: plane };
+  function coverRects(st, add) {
+    ctx.save();
+    ctx.beginPath();
+    const any = add((x, y, w, h) => ctx.rect(x, y, w, h));
+    if (any !== false) {
+      ctx.clip();
+      cover(st);
+    }
+    ctx.restore();
+  }
+
+  function glowLine(st, x, y, w, h, color) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 22;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+    ctx.shadowBlur = 0;
+  }
+
+  const crt = {
+    cover: 440,
+    hold: 360,
+    reveal: 640,
+    onStart: () => sound((s) => s.tone(140, 0.3, "sawtooth", 0.02)),
+    onSwap: () => sound((s) => s.tone(2600, 0.05, "square", 0.02)),
+    drawCover(st, p) {
+      const { w, h } = st;
+      const cy = h / 2;
+      if (p < 0.72) {
+        const band = Math.max(2, h * (1 - out(p / 0.72)));
+        cover(st, 0, 0, w, cy - band / 2);
+        cover(st, 0, cy + band / 2, w, h - cy - band / 2);
+        ctx.globalAlpha = clamp(p * 2);
+        ctx.fillStyle = "rgba(255,240,244,0.12)";
+        ctx.fillRect(0, cy - band / 2, w, band);
+        glowLine(st, 0, cy - band / 2 - 1, w, 2, st.colors.bright);
+        glowLine(st, 0, cy + band / 2 - 1, w, 2, st.colors.bright);
+        ctx.globalAlpha = 1;
+        return;
+      }
+      cover(st);
+      const k = (p - 0.72) / 0.28;
+      const lw = Math.max(6, w * (1 - out(k)));
+      glowLine(st, (w - lw) / 2, cy - 1.5, lw, 3, st.colors.bright);
+    },
+    drawHold(st, p) {
+      cover(st);
+      const { w, h } = st;
+      const r = 3 + Math.sin(p * Math.PI) * 5;
+      ctx.shadowColor = st.colors.accent;
+      ctx.shadowBlur = 30;
+      ctx.fillStyle = st.colors.bright;
+      ctx.beginPath();
+      ctx.arc(w / 2, h / 2, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      command(st, st.label, p, h / 2 + 60);
+    },
+    drawReveal(st, p) {
+      const { w, h } = st;
+      const cy = h / 2;
+      if (p < 0.3) {
+        cover(st);
+        const lw = w * out(p / 0.3);
+        glowLine(st, (w - lw) / 2, cy - 1.5, lw, 3, st.colors.bright);
+        return;
+      }
+      const k = (p - 0.3) / 0.7;
+      const band = h * out(k);
+      cover(st, 0, 0, w, cy - band / 2);
+      cover(st, 0, cy + band / 2, w, h - cy - band / 2);
+      ctx.globalAlpha = (1 - k) * 0.5;
+      for (let y = cy - band / 2; y < cy + band / 2; y += 3) {
+        ctx.fillStyle = "rgba(0,0,0,0.35)";
+        ctx.fillRect(0, y, w, 1);
+      }
+      if (Math.random() < 0.35) {
+        ctx.fillStyle = "rgba(255,255,255,0.08)";
+        ctx.fillRect(0, cy - band / 2, w, band);
+      }
+      ctx.globalAlpha = 1 - k;
+      glowLine(st, 0, cy - band / 2 - 1, w, 2, st.colors.accent);
+      glowLine(st, 0, cy + band / 2 - 1, w, 2, st.colors.accent);
+      ctx.globalAlpha = 1;
+    },
+  };
+
+  const tear = {
+    cover: 380,
+    hold: 420,
+    reveal: 560,
+    onStart: () => sound((s) => s.tone(90, 0.18, "square", 0.03)),
+    onSwap: () => sound((s) => s.tone(1800, 0.06, "sawtooth", 0.02)),
+    init(st) {
+      const bands = [];
+      let y = 0;
+      while (y < st.h) {
+        const bh = Math.min(st.h - y, 18 + Math.random() * 70);
+        bands.push({ y, h: bh, dir: Math.random() < 0.5 ? -1 : 1, d: Math.random() * 0.35 });
+        y += bh;
+      }
+      st.bands = bands;
+    },
+    edge(st, x, y, h, dir) {
+      ctx.fillStyle = "rgba(242,51,74,0.9)";
+      ctx.fillRect(x - dir * 4, y, 3, h);
+      ctx.fillStyle = "rgba(90,210,255,0.75)";
+      ctx.fillRect(x + dir * 2, y, 2, h);
+      ctx.font = `700 13px ${FONT}`;
+      ctx.textBaseline = "top";
+      ctx.fillStyle = st.colors.bright;
+      for (let gy = y; gy < y + h - 12; gy += 18) ctx.fillText(glyph(), x - dir * 16 - 4, gy);
+    },
+    slide(st, p, covering) {
+      const { w } = st;
+      st.bands.forEach((b) => {
+        const k = clamp((p - b.d) / 0.65);
+        const off = covering ? (1 - out(k)) * w : out(k) * w;
+        const x0 = b.dir > 0 ? -off : off;
+        const left = Math.max(0, x0);
+        const right = Math.min(w, x0 + w);
+        if (right > left) cover(st, left, b.y, right - left, b.h);
+        if (k > 0 && k < 1) this.edge(st, b.dir > 0 ? right : left, b.y, b.h, b.dir > 0 ? 1 : -1);
+      });
+    },
+    drawCover(st, p) {
+      this.slide(st, p, true);
+    },
+    drawHold(st, p) {
+      cover(st);
+      const { w } = st;
+      for (let i = 0; i < 4; i++) {
+        const b = st.bands[(Math.random() * st.bands.length) | 0];
+        const shift = (Math.random() * 2 - 1) * 26;
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = "rgba(242,51,74,0.5)";
+        ctx.fillRect(0, b.y, w, 2);
+        ctx.fillStyle = "rgba(90,210,255,0.4)";
+        ctx.fillRect(shift, b.y + b.h - 2, w, 2);
+        ctx.globalAlpha = 1;
+      }
+      command(st, st.label, p);
+    },
+    drawReveal(st, p) {
+      this.slide(st, p, false);
+    },
+  };
+
+  const rain = {
+    cover: 520,
+    hold: 380,
+    reveal: 620,
+    onStart: () => sound((s) => s.tone(660, 0.4, "sine", 0.012)),
+    onSwap: () => sound((s) => s.tone(990, 0.08, "triangle", 0.03)),
+    init(st) {
+      const cw = 12;
+      st.cw = cw;
+      st.drops = Array.from({ length: Math.ceil(st.w / cw) }, () => ({
+        d: Math.random() * 0.45,
+        s: 0.8 + Math.random() * 0.5,
+      }));
+    },
+    glyphs(st, x, y0, y1, head) {
+      ctx.font = `700 14px ${FONT}`;
+      ctx.textBaseline = "top";
+      for (let y = Math.max(0, y1 - 18 * 9); y < y1; y += 18) {
+        if (y < y0) continue;
+        const t = (y1 - y) / (18 * 9);
+        ctx.fillStyle = t < 0.12 && head ? st.colors.bright : `rgba(242,51,74,${(0.9 - t * 0.8).toFixed(2)})`;
+        ctx.fillText(glyph(), x + 1, y);
+      }
+    },
+    drawCover(st, p) {
+      const { h, cw } = st;
+      const heads = [];
+      coverRects(st, (rect) => {
+        st.drops.forEach((c, i) => {
+          const k = clamp(((p - c.d) / 0.55) * c.s);
+          const head = k * (h + 40);
+          heads.push(head);
+          if (head > 0) rect(i * cw, 0, cw, head);
+        });
+      });
+      st.drops.forEach((c, i) => heads[i] > 0 && heads[i] < h + 40 && this.glyphs(st, i * cw, 0, heads[i], true));
+    },
+    drawHold(st, p) {
+      cover(st);
+      ctx.globalAlpha = 0.5;
+      for (let i = 0; i < st.drops.length; i += 3) {
+        const y = ((p * 1.4 + st.drops[i].d) % 1) * (st.h + 160);
+        this.glyphs(st, i * st.cw, 0, y, true);
+      }
+      ctx.globalAlpha = 1;
+      command(st, st.label, p);
+    },
+    drawReveal(st, p) {
+      const { h, cw } = st;
+      const tails = [];
+      coverRects(st, (rect) => {
+        st.drops.forEach((c, i) => {
+          const k = clamp(((p - c.d) / 0.55) * c.s);
+          const tail = k * (h + 40);
+          tails.push(tail);
+          if (tail < h) rect(i * cw, tail, cw, h - tail);
+        });
+      });
+      st.drops.forEach(
+        (c, i) => tails[i] > 0 && tails[i] < h && this.glyphs(st, i * cw, tails[i], tails[i] + 18 * 3, false)
+      );
+    },
+  };
+
+  const decrypt = {
+    cover: 420,
+    hold: 560,
+    reveal: 640,
+    onStart: () => sound((s) => s.tone(320, 0.2, "square", 0.015)),
+    onSwap: () => sound((s) => s.tone(1500, 0.1, "triangle", 0.035)),
+    init(st) {
+      const HEX = "0123456789abcdef";
+      const ch = 18;
+      const cols = Math.ceil(st.w / 8.4);
+      st.rowH = ch;
+      st.rows = Array.from({ length: Math.ceil(st.h / ch) }, () =>
+        Array.from({ length: cols }, (_, i) => (i % 3 === 2 ? " " : HEX[(Math.random() * 16) | 0])).join("")
+      );
+      const plain = "GET /info HTTP/2 · 200 OK · visitor verified · tls1.3 · aes-256-gcm · ";
+      st.plain = plain.repeat(Math.ceil(cols / plain.length) + 1).slice(0, cols);
+      st.HEX = HEX;
+    },
+    mutate(st) {
+      for (let k = 0; k < 6; k++) {
+        const r = (Math.random() * st.rows.length) | 0;
+        const row = st.rows[r];
+        const i = (Math.random() * row.length) | 0;
+        if (row[i] === " ") continue;
+        st.rows[r] = row.slice(0, i) + st.HEX[(Math.random() * 16) | 0] + row.slice(i + 1);
+      }
+    },
+    text(st, r, y, str, color, alpha) {
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.fillText(str, 0, y + 2);
+      ctx.globalAlpha = 1;
+    },
+    drawCover(st, p) {
+      const { w } = st;
+      const n = st.rows.length;
+      const widths = st.rows.map((_, r) => w * clamp((p - (r / n) * 0.55) / 0.45));
+      coverRects(st, (rect) => widths.forEach((cw, r) => cw > 0 && rect(0, r * st.rowH, cw, st.rowH)));
+      ctx.font = `600 14px ${FONT}`;
+      ctx.textBaseline = "top";
+      widths.forEach((cw, r) => {
+        if (cw <= 0) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, r * st.rowH, cw, st.rowH);
+        ctx.clip();
+        this.text(st, r, r * st.rowH, st.rows[r], st.colors.accent, 0.55);
+        ctx.restore();
+      });
+    },
+    drawHold(st, p) {
+      cover(st);
+      this.mutate(st);
+      ctx.font = `600 14px ${FONT}`;
+      ctx.textBaseline = "top";
+      st.rows.forEach((row, r) => this.text(st, r, r * st.rowH, row, st.colors.accent, 0.4));
+      const { w, h } = st;
+      const bw = Math.min(420, w - 40);
+      const x = (w - bw) / 2;
+      const y = h / 2 - 50;
+      ctx.fillStyle = "rgba(5,5,6,0.9)";
+      ctx.fillRect(x - 16, y - 16, bw + 32, 112);
+      ctx.strokeStyle = st.colors.accent;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x - 16, y - 16, bw + 32, 112);
+      ctx.font = `700 ${w < 600 ? 14 : 17}px ${FONT}`;
+      ctx.fillStyle = st.colors.bright;
+      ctx.fillText("AES-256-GCM · decrypt", x, y);
+      ctx.font = `600 13px ${FONT}`;
+      ctx.fillStyle = st.colors.muted;
+      ctx.fillText(`key 0x${st.rows[0].replace(/ /g, "").slice(0, 16)}…`, x, y + 28);
+      ctx.fillStyle = "rgba(255,255,255,0.08)";
+      ctx.fillRect(x, y + 58, bw, 10);
+      glowLine(st, x, y + 58, bw * out(p), 10, st.colors.accent);
+    },
+    drawReveal(st, p) {
+      const n = st.rows.length;
+      const state = st.rows.map((_, r) => clamp((p - (r / n) * 0.6) / 0.4));
+      coverRects(st, (rect) => state.forEach((k, r) => k < 0.55 && rect(0, r * st.rowH, st.w, st.rowH)));
+      ctx.font = `600 14px ${FONT}`;
+      ctx.textBaseline = "top";
+      state.forEach((k, r) => {
+        if (k >= 0.55) return;
+        if (k > 0) this.text(st, r, r * st.rowH, st.plain, st.colors.bright, 0.9);
+        else this.text(st, r, r * st.rowH, st.rows[r], st.colors.accent, 0.4);
+      });
+    },
+  };
+
+  const shatter = {
+    cover: 560,
+    hold: 320,
+    reveal: 700,
+    onStart: () => sound((s) => s.tone(520, 0.12, "triangle", 0.025)),
+    onSwap: () => sound((s) => s.tone(1250, 0.12, "sine", 0.035)),
+    init(st) {
+      const size = document.documentElement.dataset.perf === "lite" ? 34 : st.w < 700 ? 22 : 28;
+      const cols = Math.ceil(st.w / size);
+      const rows = Math.ceil(st.h / size);
+      st.size = size;
+      st.parts = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const a = Math.random() * Math.PI * 2;
+          const dist = 0.4 + Math.random() * 0.8;
+          st.parts.push({
+            x: c * size,
+            y: r * size,
+            d: Math.random() * 0.45,
+            fx: Math.cos(a) * st.w * dist,
+            fy: Math.sin(a) * st.h * dist,
+            g: glyph(),
+          });
+        }
+      }
+    },
+    draw(st, p, covering) {
+      const { size } = st;
+      const flying = [];
+      coverRects(st, (rect) =>
+        st.parts.forEach((pt) => {
+          const k = clamp((p - pt.d) / 0.5);
+          const settled = covering ? k >= 1 : k <= 0;
+          if (settled) rect(pt.x, pt.y, size, size);
+          else if (k > 0 && k < 1) flying.push([pt, covering ? 1 - out(k) : inn(k), k]);
+        })
+      );
+      ctx.font = `700 ${size - 8}px ${FONT}`;
+      ctx.textBaseline = "top";
+      const groups = new Map();
+      flying.forEach((item) => {
+        const k = item[2];
+        const alpha = Math.round((covering ? clamp(k * 3) : 1 - k) * 4) / 4;
+        if (!alpha) return;
+        const key = `${k < 0.3 ? "b" : "a"}${alpha}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(item);
+      });
+      groups.forEach((items, key) => {
+        ctx.globalAlpha = Number(key.slice(1));
+        ctx.fillStyle = key[0] === "b" ? st.colors.bright : st.colors.accent;
+        items.forEach(([pt, f]) => ctx.fillText(pt.g, pt.x + pt.fx * f + 4, pt.y + pt.fy * f + 3));
+      });
+      ctx.globalAlpha = 1;
+    },
+    drawCover(st, p) {
+      this.draw(st, p, true);
+    },
+    drawHold(st, p) {
+      cover(st);
+      command(st, st.label, p);
+    },
+    drawReveal(st, p) {
+      this.draw(st, p, false);
+    },
+  };
+
+  const EFFECTS = { home: crt, services: tear, voip: call, about: rain, info: decrypt, who: logs, contact: shatter };
 
   function play(ms, draw) {
     return new Promise((resolve) => {

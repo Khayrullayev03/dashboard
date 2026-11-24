@@ -234,8 +234,11 @@
       showMap();
     } else {
       clearTimeout(unloadTimer);
-      unloadTimer = setTimeout(unloadFrame, 15000);
+      unloadFrame();
     }
+  });
+  document.addEventListener("pageleave", (event) => {
+    if (event.detail && event.detail.from === "info" && event.detail.to !== "info") unloadFrame();
   });
   document.addEventListener("langchange", () => {
     renderStats(false);
