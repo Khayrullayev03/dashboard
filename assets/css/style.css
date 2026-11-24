@@ -1492,6 +1492,75 @@ main {
   height: 100%;
 }
 
+.logo3d {
+  width: 100%;
+  height: 100%;
+}
+
+.logo3d.is-3d {
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 50%, rgba(242, 51, 74, 0.22), #000 68%);
+  perspective: 420px;
+}
+
+.logo3d-spin {
+  position: relative;
+  width: 86%;
+  height: 86%;
+  transform-style: preserve-3d;
+  animation: logo3d-spin 8s linear infinite;
+}
+
+.logo3d-spin img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: translateZ(var(--z));
+  backface-visibility: visible;
+}
+
+.logo3d-edge {
+  filter: brightness(var(--b)) sepia(0.6) hue-rotate(-30deg) saturate(2.2);
+}
+
+.logo3d-face {
+  filter: drop-shadow(0 0 6px rgba(242, 51, 74, 0.55));
+}
+
+.logo3d-shine {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(6.2px);
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.75) 50%, transparent 62%) 0 0 / 260% 100%;
+  -webkit-mask: url("../img/logo-cut.png") center / 100% 100% no-repeat;
+  mask: url("../img/logo-cut.png") center / 100% 100% no-repeat;
+  mix-blend-mode: screen;
+  animation: logo3d-shine 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes logo3d-spin {
+  from {
+    transform: rotateX(-10deg) rotateY(0deg);
+  }
+  to {
+    transform: rotateX(-10deg) rotateY(360deg);
+  }
+}
+
+@keyframes logo3d-shine {
+  0%,
+  35% {
+    background-position: 130% 0;
+  }
+  70%,
+  100% {
+    background-position: -30% 0;
+  }
+}
+
 .avatar-scan {
   position: absolute;
   inset: 0;
