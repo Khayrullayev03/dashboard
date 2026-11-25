@@ -135,12 +135,17 @@
     empty: C("Пока пусто — станьте первым!", "Hozircha bo‘sh — birinchi bo‘ling!", "Nothing here yet — be the first!"),
     loading: C("Загружаю комментарии…", "Izohlar yuklanmoqda…", "Loading comments…"),
     error: C("Не удалось загрузить комментарии", "Izohlarni yuklab bo‘lmadi", "Couldn't load comments"),
-    sent: C(
-      "Спасибо! Комментарий отправлен и появится у всех через пару минут.",
-      "Rahmat! Izoh yuborildi va bir-ikki daqiqada hammaga ko‘rinadi.",
-      "Thanks! Your comment is sent and will appear for everyone in a couple of minutes."
+    sent: C("Спасибо! Комментарий опубликован.", "Rahmat! Izoh e’lon qilindi.", "Thanks! Your comment is published."),
+    rules: C(
+      "Комментарий увидят все гости сайта. Ссылки не принимаются.",
+      "Izohni saytning barcha mehmonlari ko‘radi. Havolalar qabul qilinmaydi.",
+      "Every visitor will see your comment. Links are not accepted."
     ),
-    pending: C("отправлено", "yuborildi", "sent"),
+    noLinks: C(
+      "Без ссылок, пожалуйста — уберите адрес сайта из текста",
+      "Havolasiz, iltimos — matndan sayt manzilini olib tashlang",
+      "No links, please — remove the web address from the text"
+    ),
     tooShort: C("Напишите никнейм и комментарий", "Taxallus va izoh yozing", "Write a nickname and a comment"),
     wait: C(
       "Подождите минуту перед следующим комментарием",
@@ -153,7 +158,11 @@
       "Couldn't send, please try later"
     ),
     more: C("[ показать ещё ]", "[ yana ko‘rsatish ]", "[ show more ]"),
-    count: C("{n} комментариев", "{n} ta izoh", "{n} comments"),
+    count: C(
+      ["{n} комментарий", "{n} комментария", "{n} комментариев"],
+      ["{n} ta izoh"],
+      ["{n} comment", "{n} comments"]
+    ),
   };
   const T = (key, vars) => {
     let s = L(TX[key]);
@@ -652,49 +661,36 @@
 
   const bookBox = page.querySelector("[data-guest-book]");
   const cfg = (window.SITE_CONFIG && window.SITE_CONFIG.guestbook) || {};
-  const ready = Boolean(cfg.form && cfg.nick && cfg.text && cfg.csv);
-  const book = { rows: null, failed: false, shown: 20, opened: Date.now(), timer: 0 };
+  const server = String(cfg.server || "https://ntfy.sh").replace(/\/+$/, "");
+  const topic = /^[A-Za-z0-9_-]{1,64}$/.test(cfg.topic || "") ? cfg.topic : "";
+  const ready = Boolean(topic);
+  const book = { stored: null, seen: new Set(), live: [], mine: [], failed: false, shown: 20, opened: 0, timer: 0 };
   let bookUI = null;
 
-  function parseCSV(text) {
-    const rows = [];
-    let row = [];
-    let cell = "";
-    let quoted = false;
-    for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
-      if (quoted) {
-        if (ch === '"' && text[i + 1] === '"') {
-          cell += '"';
-          i++;
-        } else if (ch === '"') quoted = false;
-        else cell += ch;
-      } else if (ch === '"') quoted = true;
-      else if (ch === ",") {
-        row.push(cell);
-        cell = "";
-      } else if (ch === "\n" || ch === "\r") {
-        if (ch === "\r" && text[i + 1] === "\n") i++;
-        row.push(cell);
-        rows.push(row);
-        row = [];
-        cell = "";
-      } else cell += ch;
-    }
-    if (cell || row.length) {
-      row.push(cell);
-      rows.push(row);
-    }
-    return rows;
-  }
+  const LINK =
+    /(https?:\/\/|www\.|t\.me\/|\b[\w-]+\.(?:com|net|org|ru|uz|io|me|xyz|top|info|site|online|shop|click|link|biz|club|pro)\b)/i;
+  const CONTROL = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f​-‏‪-‮⁦-⁩]/g;
+  const cleanNick = (s) =>
+    String(s || "")
+      .replace(CONTROL, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  const cleanText = (s) =>
+    String(s || "")
+      .replace(CONTROL, "")
+      .replace(/\r/g, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  const hasLink = (s) => LINK.test(s);
 
-  const pendingList = () => {
-    try {
-      return JSON.parse(store.get("gbPending") || "[]").filter((p) => Date.now() - p.at < 3600000);
-    } catch (e) {
-      return [];
-    }
-  };
+  function fromMessage(m) {
+    if (!m || m.event !== "message" || m.attachment || !m.id || !m.time) return null;
+    const nick = cleanNick(m.title);
+    const text = cleanText(m.message);
+    if (nick.length < 2 || nick.length > 32 || text.length < 2 || text.length > 500) return null;
+    if (hasLink(nick) || hasLink(text)) return null;
+    return { id: String(m.id), time: Number(m.time), nick, text };
+  }
 
   const nickColor = (nick) => {
     const palette = ["#f2334a", "#ff8c9a", "#ffd23f", "#45d483", "#6ed2ff", "#cfd1d7"];
@@ -702,6 +698,17 @@
     for (let i = 0; i < nick.length; i++) h = (h * 31 + nick.charCodeAt(i)) >>> 0;
     return palette[h % palette.length];
   };
+
+  const LOCALES = { ru: "ru-RU", uz: "uz-UZ", en: "en-GB" };
+  function stamp(time) {
+    const date = new Date(time * 1000);
+    const opts = { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" };
+    try {
+      return date.toLocaleString(LOCALES[I18N.lang] || "ru-RU", opts);
+    } catch (e) {
+      return date.toLocaleString("ru-RU", opts);
+    }
+  }
 
   function buildBook() {
     if (!bookBox) return;
@@ -721,7 +728,8 @@
     send.type = "submit";
     const row = el("div", "guest-form-row");
     row.append(counter, send);
-    form.append(nick, text, trap, row);
+    const rules = el("p", "net-note guest-rules");
+    form.append(nick, text, trap, row, rules);
     const status = el("p", "net-note guest-status");
     status.setAttribute("role", "status");
     const list = el("ol", "guest-list");
@@ -732,15 +740,14 @@
     });
     const countEl = el("span", "guest-count");
     bookBox.replaceChildren(bar("~/guests/guestbook.log", countEl), form, status, list, more);
-    bookUI = { form, nick, text, trap, counter, send, status, list, more, countEl };
+    bookUI = { form, nick, text, trap, counter, send, rules, status, list, more, countEl };
     text.addEventListener("input", () => (counter.textContent = `${text.value.length}/500`));
-    nick.addEventListener("focus", () => (book.opened = book.opened || Date.now()));
+    const opened = () => (book.opened = book.opened || Date.now());
+    nick.addEventListener("focus", opened);
+    text.addEventListener("focus", opened);
     form.addEventListener("submit", submit);
     labelBook();
-    if (!ready) {
-      [nick, text, send].forEach((n) => (n.disabled = true));
-      status.textContent = T("soon");
-    }
+    if (!ready) [nick, text, send].forEach((n) => (n.disabled = true));
     renderBook();
   }
 
@@ -750,96 +757,128 @@
     bookUI.text.placeholder = T("text");
     bookUI.send.textContent = T("send");
     bookUI.more.textContent = T("more");
-    if (!ready) bookUI.status.textContent = T("soon");
+    bookUI.rules.textContent = T(ready ? "rules" : "soon");
+    bookUI.status.textContent = "";
   }
 
   function entries() {
-    const fetched = book.rows || [];
-    const pending = pendingList().filter((p) => !fetched.some((r) => r.nick === p.nick && r.text === p.text));
-    return [...pending.map((p) => ({ ...p, time: T("pending"), pending: true })).reverse(), ...fetched];
+    const byId = new Map();
+    [...(book.stored || []), ...book.live.filter((c) => !book.seen.has(c.id)), ...book.mine].forEach((c) =>
+      byId.set(c.id, c)
+    );
+    return [...byId.values()].sort((a, b) => b.time - a.time || (a.id < b.id ? 1 : -1));
+  }
+
+  function countLabel(n) {
+    const forms = L(TX.count);
+    let i = forms.length - 1;
+    if (forms.length === 3) {
+      const d = n % 10;
+      const h = n % 100;
+      i = d === 1 && h !== 11 ? 0 : d >= 2 && d <= 4 && (h < 12 || h > 14) ? 1 : 2;
+    } else if (forms.length === 2) i = n === 1 ? 0 : 1;
+    return forms[i].replace("{n}", n);
   }
 
   function renderBook() {
     if (!bookUI) return;
     const all = entries();
     bookUI.list.textContent = "";
-    bookUI.countEl.textContent = all.length ? T("count", { n: all.length }) : "";
+    bookUI.countEl.textContent = all.length ? countLabel(all.length) : "";
     if (!all.length) {
-      if (ready)
-        bookUI.list.append(el("li", "guest-empty", book.rows ? T("empty") : book.failed ? T("error") : T("loading")));
+      if (ready) {
+        const loaded = book.stored || book.live.length || book.liveOk;
+        bookUI.list.append(el("li", "guest-empty", loaded ? T("empty") : book.failed ? T("error") : T("loading")));
+      }
       bookUI.more.hidden = true;
       return;
     }
     all.slice(0, book.shown).forEach((e, i) => {
-      const li = el("li", `guest-entry${e.pending ? " is-pending" : ""}`);
+      const li = el("li", "guest-entry");
       li.style.setProperty("--i", Math.min(i, 12));
       const meta = el("div", "guest-meta");
       const who = el("span", "guest-who", e.nick);
       who.style.color = nickColor(e.nick);
-      meta.append(el("span", "guest-time", `[${e.time}]`), who);
+      meta.append(el("span", "guest-time", `[${stamp(e.time)}]`), who);
       li.append(meta, el("p", "guest-msg", e.text));
       bookUI.list.append(li);
     });
     bookUI.more.hidden = all.length <= book.shown;
   }
 
+  async function loadStored() {
+    const res = await fetch(`assets/data/guestbook.json?_=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    const comments = Array.isArray(data.comments) ? data.comments : [];
+    book.stored = comments
+      .map((c) => fromMessage({ event: "message", id: c.id, time: c.time, title: c.nick, message: c.text }))
+      .filter(Boolean);
+    book.seen = new Set([...Object.keys(data.seen || {}), ...book.stored.map((c) => c.id)]);
+  }
+
+  async function loadLive() {
+    const res = await fetch(`${server}/${topic}/json?poll=1&since=all`, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    const lines = (await res.text()).split("\n");
+    const live = [];
+    lines.forEach((line) => {
+      if (!line.trim()) return;
+      try {
+        const c = fromMessage(JSON.parse(line));
+        if (c) live.push(c);
+      } catch (e) {}
+    });
+    book.live = live.slice(-100);
+    book.liveOk = true;
+  }
+
   async function loadBook() {
     if (!ready) return;
-    try {
-      const res = await fetch(`${cfg.csv}${cfg.csv.includes("?") ? "&" : "?"}_=${Date.now()}`, { cache: "no-store" });
-      if (!res.ok) throw new Error(res.status);
-      const rows = parseCSV(await res.text()).slice(1);
-      book.rows = rows
-        .map((r) => ({
-          time: String(r[0] || "")
-            .replace(/:\d{2}$/, "")
-            .trim(),
-          nick: String(r[1] || "")
-            .trim()
-            .slice(0, 32),
-          text: String(r[2] || "")
-            .trim()
-            .slice(0, 500),
-        }))
-        .filter((r) => r.nick && r.text)
-        .reverse();
-      book.failed = false;
-    } catch (e) {
-      book.failed = !book.rows;
-    }
+    const [stored, live] = await Promise.allSettled([loadStored(), loadLive()]);
+    book.failed = stored.status === "rejected" && live.status === "rejected" && !book.stored;
     renderBook();
   }
 
   async function submit(event) {
     event.preventDefault();
-    if (!ready || !bookUI) return;
-    const nick = bookUI.nick.value.replace(/\s+/g, " ").trim().slice(0, 32);
-    const text = bookUI.text.value.trim().slice(0, 500);
+    if (!ready || !bookUI || bookUI.send.disabled) return;
+    const nick = cleanNick(bookUI.nick.value).slice(0, 32);
+    const text = cleanText(bookUI.text.value).slice(0, 500);
     if (bookUI.trap.value) return;
     if (nick.length < 2 || text.length < 2) {
       bookUI.status.textContent = T("tooShort");
       return;
     }
+    if (hasLink(nick) || hasLink(text)) {
+      bookUI.status.textContent = T("noLinks");
+      return;
+    }
     const last = Number(store.get("gbLast") || 0);
-    if (Date.now() - last < 60000 || Date.now() - book.opened < 2500) {
+    if (Date.now() - last < 60000 || !book.opened || Date.now() - book.opened < 2500) {
       bookUI.status.textContent = T("wait");
       return;
     }
     bookUI.send.disabled = true;
     try {
-      const body = new URLSearchParams();
-      body.append(cfg.nick, nick);
-      body.append(cfg.text, text);
-      await fetch(cfg.form, { method: "POST", mode: "no-cors", body });
+      const res = await fetch(`${server}/${topic}?title=${encodeURIComponent(nick)}&tags=speech_balloon`, {
+        method: "POST",
+        body: text,
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error(res.status);
+      const sent = fromMessage(await res.json().catch(() => null)) || {
+        id: `local-${Date.now()}`,
+        time: Math.floor(Date.now() / 1000),
+        nick,
+        text,
+      };
+      book.mine.push(sent);
       store.set("gbLast", String(Date.now()));
-      const pending = pendingList();
-      pending.push({ nick, text, at: Date.now() });
-      store.set("gbPending", JSON.stringify(pending.slice(-5)));
       bookUI.text.value = "";
       bookUI.counter.textContent = "0/500";
       bookUI.status.textContent = T("sent");
       renderBook();
-      setTimeout(loadBook, 60000);
     } catch (e) {
       bookUI.status.textContent = T("fail");
     }

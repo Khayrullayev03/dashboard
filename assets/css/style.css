@@ -4280,6 +4280,10 @@ html.intro-lock body {
   gap: 12px;
 }
 
+.guest-rules {
+  margin: 0;
+}
+
 .guest-counter {
   color: var(--muted);
   font-size: 12px;
@@ -4311,11 +4315,6 @@ html.intro-lock body {
   background: rgba(0, 0, 0, 0.28);
   animation: chip-in 0.45s var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * 40ms);
-}
-
-.guest-entry.is-pending {
-  border-style: dashed;
-  border-color: rgba(242, 51, 74, 0.45);
 }
 
 .guest-meta {
@@ -4505,143 +4504,5 @@ html.intro-lock body {
   .guest-list {
     padding-left: 12px;
     padding-right: 12px;
-  }
-}
-
-.offsec {
-  --htb: #9fef00;
-  margin-bottom: 44px;
-}
-
-.offsec-live {
-  color: var(--htb);
-  animation: blink 1.6s steps(1) infinite;
-}
-
-.offsec-banner {
-  position: relative;
-  display: grid;
-  place-items: center;
-  height: 92px;
-  border-bottom: 1px solid rgba(159, 239, 0, 0.18);
-  background: #030603;
-  overflow: hidden;
-}
-
-.offsec-rain {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.55;
-}
-
-.offsec-title {
-  position: relative;
-  margin: 0;
-  padding: 6px 14px;
-  background: rgba(3, 6, 3, 0.72);
-  color: var(--htb);
-  font-size: clamp(15px, 2.4vw, 24px);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-align: center;
-  text-shadow:
-    0 0 12px rgba(159, 239, 0, 0.6),
-    0 0 30px rgba(159, 239, 0, 0.25);
-}
-
-.offsec-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: 28px;
-  padding: 22px 24px 24px;
-}
-
-.offsec-h {
-  margin: 0 0 10px;
-  color: var(--bright);
-  font-size: 20px;
-}
-
-.offsec-text {
-  margin: 0 0 16px;
-  color: var(--text);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.offsec-tools .skill-chip::before {
-  color: var(--htb);
-}
-
-.offsec-track {
-  display: grid;
-  align-content: start;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.offsec-item {
-  display: grid;
-  grid-template-columns: 12px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: var(--lg-radius-sm);
-  background: rgba(0, 0, 0, 0.3);
-  font-size: 13px;
-}
-
-.offsec-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--htb);
-  box-shadow: 0 0 10px var(--htb);
-}
-
-.offsec-item.is-active .offsec-dot {
-  animation: net-pulse 2.4s ease-in-out infinite;
-  --c: var(--htb);
-}
-
-.offsec-item.is-learn .offsec-dot {
-  background: #ffd23f;
-  box-shadow: 0 0 10px #ffd23f;
-}
-
-.offsec-item.is-goal .offsec-dot {
-  background: transparent;
-  border: 2px solid var(--muted);
-  box-shadow: none;
-}
-
-.offsec-name {
-  color: var(--bright);
-  font-weight: 700;
-}
-
-.offsec-status {
-  color: var(--muted);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.offsec-item.is-active .offsec-status {
-  color: var(--htb);
-}
-
-.offsec-item.is-learn .offsec-status {
-  color: #ffd23f;
-}
-
-@media (max-width: 760px) {
-  .offsec-body {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 18px 16px 20px;
   }
 }
