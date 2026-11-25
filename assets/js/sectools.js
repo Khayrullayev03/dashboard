@@ -871,7 +871,7 @@
       checks.append(l);
       return c;
     });
-    const pwOut = el("code", "sec-gen-out");
+    const pwOut = el("code", "sec-gen-out allow-copy");
     const genRow = el("div", "sec-actions");
     const genBtn = labelled("button", "cta-btn is-primary sec-btn", "generate");
     const copyBtn = labelled("button", "cta-btn sec-btn", "copy");

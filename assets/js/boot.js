@@ -29,4 +29,42 @@
     (nav.connection && nav.connection.saveData);
   root.dataset.perf = saved === "lite" || saved === "full" ? saved : weak ? "lite" : "full";
   if (saved) root.dataset.perfLocked = "1";
+
+  // Copy protection for ordinary visitors. The text is still in the page source,
+  // so this only stops selecting, copying, saving and printing from the page itself.
+  var ALLOW = "input, textarea, select, [contenteditable], .allow-copy";
+  var SIGN = "\u00a9 Anvarjon Khayrullayev \u2014 " + HOME;
+  function node(t) {
+    return t && t.nodeType !== 1 ? t.parentElement : t;
+  }
+  function free(t) {
+    t = node(t);
+    return Boolean(t && t.closest && t.closest(ALLOW));
+  }
+  document.addEventListener("copy", function (e) {
+    if (free(e.target)) return;
+    e.preventDefault();
+    if (e.clipboardData) e.clipboardData.setData("text/plain", SIGN);
+  });
+  ["cut", "selectstart", "dragstart"].forEach(function (type) {
+    document.addEventListener(type, function (e) {
+      if (!free(e.target)) e.preventDefault();
+    });
+  });
+  document.addEventListener("contextmenu", function (e) {
+    var t = node(e.target);
+    if (free(t) || (t && t.closest && t.closest("a[href]"))) return;
+    e.preventDefault();
+  });
+  document.addEventListener(
+    "keydown",
+    function (e) {
+      var k = (e.key || "").toLowerCase();
+      var mod = e.ctrlKey || e.metaKey;
+      var devtools = k === "f12" || (mod && e.shiftKey && (k === "i" || k === "j" || k === "c"));
+      var grab = mod && !e.shiftKey && !e.altKey && "cxasup".indexOf(k) !== -1 && k.length === 1 && !free(e.target);
+      if (devtools || grab) e.preventDefault();
+    },
+    true
+  );
 })(document.documentElement);
