@@ -6,7 +6,6 @@
   if (!I18N || !page) return;
   const root = document.documentElement;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const lite = () => root.dataset.perf === "lite";
   const L = (v) => (typeof v === "string" ? v : I18N.pick(v));
   const C = (ru, uz, en) => ({ ru, uz, en });
   const store = {
@@ -40,7 +39,6 @@
     if (right) b.append(right);
     return b;
   };
-  const toast = (msg) => window.APP && window.APP.toast && window.APP.toast(msg);
 
   const TX = {
     morning: C("Доброе утро", "Xayrli tong", "Good morning"),
@@ -61,25 +59,6 @@
       "visit #{n} — good to see you again"
     ),
     time: C("у вас сейчас", "sizda hozir", "your time"),
-    camStart: C("[ включить камеру ]", "[ kamerani yoqish ]", "[ turn on camera ]"),
-    camSnap: C("[ снимок ]", "[ suratga olish ]", "[ snapshot ]"),
-    camAgain: C("[ ещё раз ]", "[ yana ]", "[ again ]"),
-    camSave: C("[ сохранить ]", "[ saqlash ]", "[ save ]"),
-    camShare: C("[ поделиться ]", "[ ulashish ]", "[ share ]"),
-    camStop: C("[ выключить ]", "[ o‘chirish ]", "[ turn off ]"),
-    camIdle: C(
-      "Включите камеру — и увидите себя в стиле этого сайта, из ASCII-символов.",
-      "Kamerani yoqing — o‘zingizni shu sayt uslubida, ASCII belgilardan ko‘rasiz.",
-      "Turn on the camera to see yourself in this site's style, made of ASCII characters."
-    ),
-    camNote: C(
-      "Видео обрабатывается только на вашем устройстве и никуда не отправляется.",
-      "Video faqat qurilmangizda qayta ishlanadi va hech qayerga yuborilmaydi.",
-      "Video is processed only on your device and is never sent anywhere."
-    ),
-    camDenied: C("Нет доступа к камере", "Kameraga ruxsat yo‘q", "No camera access"),
-    camNone: C("Камера не найдена", "Kamera topilmadi", "No camera found"),
-    shareText: C("Мой ASCII-портрет с сайта", "Saytdagi ASCII-portretim", "My ASCII portrait from"),
     qOf: C("вопрос {n} из {total}", "{total} tadan {n}-savol", "question {n} of {total}"),
     yes: C("Да", "Ha", "Yes"),
     no: C("Нет", "Yo‘q", "No"),
@@ -124,45 +103,6 @@
         "Excellent: protection is at a high level."
       ),
     ],
-    nick: C("никнейм", "taxallus", "nickname"),
-    text: C("ваш комментарий", "izohingiz", "your comment"),
-    send: C("[ отправить ]", "[ yuborish ]", "[ send ]"),
-    soon: C(
-      "Гостевая книга открывается — совсем скоро здесь можно будет оставить комментарий.",
-      "Mehmonlar kitobi ochilmoqda — tez orada bu yerda izoh qoldirish mumkin bo‘ladi.",
-      "The guestbook is opening — you'll be able to leave a comment here very soon."
-    ),
-    empty: C("Пока пусто — станьте первым!", "Hozircha bo‘sh — birinchi bo‘ling!", "Nothing here yet — be the first!"),
-    loading: C("Загружаю комментарии…", "Izohlar yuklanmoqda…", "Loading comments…"),
-    error: C("Не удалось загрузить комментарии", "Izohlarni yuklab bo‘lmadi", "Couldn't load comments"),
-    sent: C("Спасибо! Комментарий опубликован.", "Rahmat! Izoh e’lon qilindi.", "Thanks! Your comment is published."),
-    rules: C(
-      "Комментарий увидят все гости сайта. Ссылки не принимаются.",
-      "Izohni saytning barcha mehmonlari ko‘radi. Havolalar qabul qilinmaydi.",
-      "Every visitor will see your comment. Links are not accepted."
-    ),
-    noLinks: C(
-      "Без ссылок, пожалуйста — уберите адрес сайта из текста",
-      "Havolasiz, iltimos — matndan sayt manzilini olib tashlang",
-      "No links, please — remove the web address from the text"
-    ),
-    tooShort: C("Напишите никнейм и комментарий", "Taxallus va izoh yozing", "Write a nickname and a comment"),
-    wait: C(
-      "Подождите минуту перед следующим комментарием",
-      "Keyingi izohdan oldin bir daqiqa kuting",
-      "Please wait a minute before the next comment"
-    ),
-    fail: C(
-      "Не получилось отправить, попробуйте позже",
-      "Yuborib bo‘lmadi, keyinroq urinib ko‘ring",
-      "Couldn't send, please try later"
-    ),
-    more: C("[ показать ещё ]", "[ yana ko‘rsatish ]", "[ show more ]"),
-    count: C(
-      ["{n} комментарий", "{n} комментария", "{n} комментариев"],
-      ["{n} ta izoh"],
-      ["{n} comment", "{n} comments"]
-    ),
   };
   const T = (key, vars) => {
     let s = L(TX[key]);
@@ -360,228 +300,6 @@
     } catch (e) {}
   }
 
-  const camBox = page.querySelector("[data-guest-cam]");
-  const RAMP = " .:-=+*#%@";
-  const cam = {
-    stream: null,
-    video: null,
-    raf: 0,
-    last: 0,
-    frozen: false,
-    canvas: null,
-    ctx: null,
-    small: null,
-    sctx: null,
-  };
-  let camUI = null;
-
-  function buildCam() {
-    if (!camBox) return;
-    const canvas = el("canvas", "guest-cam-canvas");
-    const idle = el("p", "guest-cam-idle", T("camIdle"));
-    const stage = el("div", "guest-cam-stage");
-    stage.append(canvas, idle);
-    const startBtn = button("cta-btn is-primary", T("camStart"));
-    const snapBtn = button("cta-btn is-primary", T("camSnap"));
-    const againBtn = button("cta-btn", T("camAgain"));
-    const saveBtn = button("cta-btn", T("camSave"));
-    const shareBtn = button("cta-btn", T("camShare"));
-    const stopBtn = button("cta-btn", T("camStop"));
-    const actions = el("div", "guest-cam-actions");
-    actions.append(startBtn, snapBtn, againBtn, saveBtn, shareBtn, stopBtn);
-    const note = el("p", "net-note guest-cam-note", T("camNote"));
-    camBox.replaceChildren(bar("~/guests/ascii-cam", el("span", "live", "● rec")), stage, actions, note);
-    cam.canvas = canvas;
-    cam.ctx = canvas.getContext("2d");
-    cam.small = document.createElement("canvas");
-    cam.sctx = cam.small.getContext("2d", { willReadFrequently: true });
-    camUI = { stage, idle, startBtn, snapBtn, againBtn, saveBtn, shareBtn, stopBtn };
-    startBtn.addEventListener("click", startCam);
-    snapBtn.addEventListener("click", snapshot);
-    againBtn.addEventListener("click", () => {
-      cam.frozen = false;
-      syncCam();
-    });
-    saveBtn.addEventListener("click", savePortrait);
-    shareBtn.addEventListener("click", sharePortrait);
-    stopBtn.addEventListener("click", stopCam);
-    syncCam();
-  }
-
-  function syncCam() {
-    if (!camUI) return;
-    const on = Boolean(cam.stream);
-    camUI.startBtn.hidden = on;
-    camUI.snapBtn.hidden = !on || cam.frozen;
-    camUI.againBtn.hidden = !on || !cam.frozen;
-    camUI.saveBtn.hidden = !cam.frozen;
-    camUI.shareBtn.hidden = !cam.frozen;
-    camUI.stopBtn.hidden = !on;
-    camUI.idle.hidden = on;
-    camUI.stage.classList.toggle("is-live", on);
-  }
-
-  async function startCam() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast(T("camNone"));
-    try {
-      cam.stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false,
-      });
-    } catch (e) {
-      cam.stream = null;
-      toast(T(e && e.name === "NotFoundError" ? "camNone" : "camDenied"));
-      return;
-    }
-    cam.video = document.createElement("video");
-    cam.video.muted = true;
-    cam.video.playsInline = true;
-    cam.video.setAttribute("playsinline", "");
-    cam.video.srcObject = cam.stream;
-    try {
-      await cam.video.play();
-    } catch (e) {}
-    cam.frozen = false;
-    syncCam();
-    cam.raf = requestAnimationFrame(camLoop);
-  }
-
-  function stopCam() {
-    cancelAnimationFrame(cam.raf);
-    cam.raf = 0;
-    if (cam.stream) cam.stream.getTracks().forEach((t) => t.stop());
-    cam.stream = null;
-    cam.video = null;
-    cam.frozen = false;
-    if (cam.ctx) cam.ctx.clearRect(0, 0, cam.canvas.width, cam.canvas.height);
-    syncCam();
-  }
-
-  function camLoop(now) {
-    cam.raf = requestAnimationFrame(camLoop);
-    if (cam.frozen || !cam.video || cam.video.readyState < 2) return;
-    if (now - cam.last < (lite() ? 90 : 55)) return;
-    cam.last = now;
-    drawAscii();
-  }
-
-  function drawAscii() {
-    const v = cam.video;
-    const vw = v.videoWidth || 640;
-    const vh = v.videoHeight || 480;
-    const W = camUI.stage.clientWidth || 600;
-    const cols = W < 520 ? 64 : lite() ? 80 : 104;
-    const cell = W / cols;
-    const size = cell / 0.6;
-    const rows = Math.max(10, Math.round((cols * (vh / vw) * 0.6) / 1));
-    const H = Math.round(rows * size);
-    const dpr = lite() ? 1 : Math.min(2, window.devicePixelRatio || 1);
-    if (cam.canvas.width !== Math.round(W * dpr) || cam.canvas.height !== Math.round(H * dpr)) {
-      cam.canvas.width = Math.round(W * dpr);
-      cam.canvas.height = Math.round(H * dpr);
-      cam.canvas.style.height = `${H}px`;
-    }
-    cam.small.width = cols;
-    cam.small.height = rows;
-    const s = cam.sctx;
-    s.save();
-    s.translate(cols, 0);
-    s.scale(-1, 1);
-    s.drawImage(v, 0, 0, cols, rows);
-    s.restore();
-    const px = s.getImageData(0, 0, cols, rows).data;
-    const lum = new Float32Array(cols * rows);
-    let lo = 1;
-    let hi = 0;
-    for (let i = 0; i < lum.length; i++) {
-      const l = (0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]) / 255;
-      lum[i] = l;
-      if (l < lo) lo = l;
-      if (l > hi) hi = l;
-    }
-    const span = Math.max(0.15, hi - lo);
-    const ctx = cam.ctx;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = "#050506";
-    ctx.fillRect(0, 0, W, H);
-    ctx.font = `700 ${size.toFixed(2)}px "JetBrains Mono", monospace`;
-    ctx.textBaseline = "top";
-    for (let y = 0; y < rows; y++) {
-      let dim = "";
-      let red = "";
-      let hot = "";
-      for (let x = 0; x < cols; x++) {
-        const n = Math.pow((lum[y * cols + x] - lo) / span, 0.9);
-        const ch = RAMP[Math.min(9, Math.max(0, Math.round(n * 9)))];
-        dim += n < 0.38 ? ch : " ";
-        red += n >= 0.38 && n < 0.72 ? ch : " ";
-        hot += n >= 0.72 ? ch : " ";
-      }
-      ctx.fillStyle = "rgba(242, 51, 74, 0.5)";
-      ctx.fillText(dim, 0, y * size);
-      ctx.fillStyle = "#f2334a";
-      ctx.fillText(red, 0, y * size);
-      ctx.fillStyle = "#ffe8ec";
-      ctx.fillText(hot, 0, y * size);
-    }
-    cam.view = { W, H, size };
-  }
-
-  function snapshot() {
-    if (!cam.video) return;
-    drawAscii();
-    cam.frozen = true;
-    const { W, H } = cam.view;
-    const ctx = cam.ctx;
-    const band = Math.max(28, Math.round(H * 0.08));
-    ctx.fillStyle = "rgba(5, 5, 6, 0.88)";
-    ctx.fillRect(0, H - band, W, band);
-    ctx.fillStyle = "#f2334a";
-    ctx.fillRect(0, H - band, W, 2);
-    ctx.font = `700 ${Math.round(band * 0.4)}px "JetBrains Mono", monospace`;
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#f6f6f8";
-    ctx.fillText("anvarjon · ascii guest", 12, H - band / 2);
-    ctx.textAlign = "right";
-    ctx.fillStyle = "#8f9198";
-    ctx.fillText("khayrullayev03.github.io/dashboard", W - 12, H - band / 2);
-    ctx.textAlign = "left";
-    if (window.SOUND && window.SOUND.tick) window.SOUND.tick();
-    syncCam();
-  }
-
-  function portraitBlob() {
-    return new Promise((resolve) => cam.canvas.toBlob((b) => resolve(b), "image/png"));
-  }
-
-  async function savePortrait() {
-    const blob = await portraitBlob();
-    if (!blob) return;
-    const a = el("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "ascii-portrait.png";
-    document.body.append(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  }
-
-  async function sharePortrait() {
-    const blob = await portraitBlob();
-    if (!blob) return;
-    const file = new File([blob], "ascii-portrait.png", { type: "image/png" });
-    const url = "https://khayrullayev03.github.io/dashboard/?from=portrait";
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: "ASCII portrait", text: `${T("shareText")} ${url}` });
-        return;
-      } catch (e) {
-        if (e && e.name === "AbortError") return;
-      }
-    }
-    savePortrait();
-  }
-
   const testBox = page.querySelector("[data-guest-test]");
   const test = { index: 0, answers: [] };
 
@@ -637,7 +355,7 @@
       weak.sort((a, b) => b[0][2] - a[0][2]).forEach(([q]) => list.append(el("li", null, L(q[1]))));
       side.append(list);
     } else side.append(el("p", "guest-tips-title", T("perfect")));
-    const actions = el("div", "guest-cam-actions");
+    const actions = el("div", "guest-actions");
     const contacts = (window.PORTFOLIO && window.PORTFOLIO.contacts) || [];
     const tg = contacts.find((c) => c.label === "telegram");
     if (tg) {
@@ -659,266 +377,24 @@
     testBox.replaceChildren(head, body);
   }
 
-  const bookBox = page.querySelector("[data-guest-book]");
-  const cfg = (window.SITE_CONFIG && window.SITE_CONFIG.guestbook) || {};
-  const server = String(cfg.server || "https://ntfy.sh").replace(/\/+$/, "");
-  const topic = /^[A-Za-z0-9_-]{1,64}$/.test(cfg.topic || "") ? cfg.topic : "";
-  const ready = Boolean(topic);
-  const book = { stored: null, seen: new Set(), live: [], mine: [], failed: false, shown: 20, opened: 0, timer: 0 };
-  let bookUI = null;
-
-  const LINK =
-    /(https?:\/\/|www\.|t\.me\/|\b[\w-]+\.(?:com|net|org|ru|uz|io|me|xyz|top|info|site|online|shop|click|link|biz|club|pro)\b)/i;
-  const CONTROL = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f​-‏‪-‮⁦-⁩]/g;
-  const cleanNick = (s) =>
-    String(s || "")
-      .replace(CONTROL, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  const cleanText = (s) =>
-    String(s || "")
-      .replace(CONTROL, "")
-      .replace(/\r/g, "")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
-  const hasLink = (s) => LINK.test(s);
-
-  function fromMessage(m) {
-    if (!m || m.event !== "message" || m.attachment || !m.id || !m.time) return null;
-    const nick = cleanNick(m.title);
-    const text = cleanText(m.message);
-    if (nick.length < 2 || nick.length > 32 || text.length < 2 || text.length > 500) return null;
-    if (hasLink(nick) || hasLink(text)) return null;
-    return { id: String(m.id), time: Number(m.time), nick, text };
-  }
-
-  const nickColor = (nick) => {
-    const palette = ["#f2334a", "#ff8c9a", "#ffd23f", "#45d483", "#6ed2ff", "#cfd1d7"];
-    let h = 0;
-    for (let i = 0; i < nick.length; i++) h = (h * 31 + nick.charCodeAt(i)) >>> 0;
-    return palette[h % palette.length];
-  };
-
-  const LOCALES = { ru: "ru-RU", uz: "uz-UZ", en: "en-GB" };
-  function stamp(time) {
-    const date = new Date(time * 1000);
-    const opts = { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" };
-    try {
-      return date.toLocaleString(LOCALES[I18N.lang] || "ru-RU", opts);
-    } catch (e) {
-      return date.toLocaleString("ru-RU", opts);
-    }
-  }
-
-  function buildBook() {
-    if (!bookBox) return;
-    const form = el("form", "guest-form");
-    const nick = el("input", "sec-input guest-nick");
-    nick.maxLength = 32;
-    nick.autocomplete = "nickname";
-    nick.spellcheck = false;
-    const text = el("textarea", "sec-input sec-area guest-text");
-    text.maxLength = 500;
-    const trap = el("input", "guest-trap");
-    trap.tabIndex = -1;
-    trap.autocomplete = "off";
-    trap.setAttribute("aria-hidden", "true");
-    const counter = el("span", "guest-counter", "0/500");
-    const send = el("button", "cta-btn is-primary");
-    send.type = "submit";
-    const row = el("div", "guest-form-row");
-    row.append(counter, send);
-    const rules = el("p", "net-note guest-rules");
-    form.append(nick, text, trap, row, rules);
-    const status = el("p", "net-note guest-status");
-    status.setAttribute("role", "status");
-    const list = el("ol", "guest-list");
-    const more = button("anim-toggle guest-more", "");
-    more.addEventListener("click", () => {
-      book.shown += 20;
-      renderBook();
-    });
-    const countEl = el("span", "guest-count");
-    bookBox.replaceChildren(bar("~/guests/guestbook.log", countEl), form, status, list, more);
-    bookUI = { form, nick, text, trap, counter, send, rules, status, list, more, countEl };
-    text.addEventListener("input", () => (counter.textContent = `${text.value.length}/500`));
-    const opened = () => (book.opened = book.opened || Date.now());
-    nick.addEventListener("focus", opened);
-    text.addEventListener("focus", opened);
-    form.addEventListener("submit", submit);
-    labelBook();
-    if (!ready) [nick, text, send].forEach((n) => (n.disabled = true));
-    renderBook();
-  }
-
-  function labelBook() {
-    if (!bookUI) return;
-    bookUI.nick.placeholder = T("nick");
-    bookUI.text.placeholder = T("text");
-    bookUI.send.textContent = T("send");
-    bookUI.more.textContent = T("more");
-    bookUI.rules.textContent = T(ready ? "rules" : "soon");
-    bookUI.status.textContent = "";
-  }
-
-  function entries() {
-    const byId = new Map();
-    [...(book.stored || []), ...book.live.filter((c) => !book.seen.has(c.id)), ...book.mine].forEach((c) =>
-      byId.set(c.id, c)
-    );
-    return [...byId.values()].sort((a, b) => b.time - a.time || (a.id < b.id ? 1 : -1));
-  }
-
-  function countLabel(n) {
-    const forms = L(TX.count);
-    let i = forms.length - 1;
-    if (forms.length === 3) {
-      const d = n % 10;
-      const h = n % 100;
-      i = d === 1 && h !== 11 ? 0 : d >= 2 && d <= 4 && (h < 12 || h > 14) ? 1 : 2;
-    } else if (forms.length === 2) i = n === 1 ? 0 : 1;
-    return forms[i].replace("{n}", n);
-  }
-
-  function renderBook() {
-    if (!bookUI) return;
-    const all = entries();
-    bookUI.list.textContent = "";
-    bookUI.countEl.textContent = all.length ? countLabel(all.length) : "";
-    if (!all.length) {
-      if (ready) {
-        const loaded = book.stored || book.live.length || book.liveOk;
-        bookUI.list.append(el("li", "guest-empty", loaded ? T("empty") : book.failed ? T("error") : T("loading")));
-      }
-      bookUI.more.hidden = true;
-      return;
-    }
-    all.slice(0, book.shown).forEach((e, i) => {
-      const li = el("li", "guest-entry");
-      li.style.setProperty("--i", Math.min(i, 12));
-      const meta = el("div", "guest-meta");
-      const who = el("span", "guest-who", e.nick);
-      who.style.color = nickColor(e.nick);
-      meta.append(el("span", "guest-time", `[${stamp(e.time)}]`), who);
-      li.append(meta, el("p", "guest-msg", e.text));
-      bookUI.list.append(li);
-    });
-    bookUI.more.hidden = all.length <= book.shown;
-  }
-
-  async function loadStored() {
-    const res = await fetch(`assets/data/guestbook.json?_=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(res.status);
-    const data = await res.json();
-    const comments = Array.isArray(data.comments) ? data.comments : [];
-    book.stored = comments
-      .map((c) => fromMessage({ event: "message", id: c.id, time: c.time, title: c.nick, message: c.text }))
-      .filter(Boolean);
-    book.seen = new Set([...Object.keys(data.seen || {}), ...book.stored.map((c) => c.id)]);
-  }
-
-  async function loadLive() {
-    const res = await fetch(`${server}/${topic}/json?poll=1&since=all`, { cache: "no-store" });
-    if (!res.ok) throw new Error(res.status);
-    const lines = (await res.text()).split("\n");
-    const live = [];
-    lines.forEach((line) => {
-      if (!line.trim()) return;
-      try {
-        const c = fromMessage(JSON.parse(line));
-        if (c) live.push(c);
-      } catch (e) {}
-    });
-    book.live = live.slice(-100);
-    book.liveOk = true;
-  }
-
-  async function loadBook() {
-    if (!ready) return;
-    const [stored, live] = await Promise.allSettled([loadStored(), loadLive()]);
-    book.failed = stored.status === "rejected" && live.status === "rejected" && !book.stored;
-    renderBook();
-  }
-
-  async function submit(event) {
-    event.preventDefault();
-    if (!ready || !bookUI || bookUI.send.disabled) return;
-    const nick = cleanNick(bookUI.nick.value).slice(0, 32);
-    const text = cleanText(bookUI.text.value).slice(0, 500);
-    if (bookUI.trap.value) return;
-    if (nick.length < 2 || text.length < 2) {
-      bookUI.status.textContent = T("tooShort");
-      return;
-    }
-    if (hasLink(nick) || hasLink(text)) {
-      bookUI.status.textContent = T("noLinks");
-      return;
-    }
-    const last = Number(store.get("gbLast") || 0);
-    if (Date.now() - last < 60000 || !book.opened || Date.now() - book.opened < 2500) {
-      bookUI.status.textContent = T("wait");
-      return;
-    }
-    bookUI.send.disabled = true;
-    try {
-      const res = await fetch(`${server}/${topic}?title=${encodeURIComponent(nick)}&tags=speech_balloon`, {
-        method: "POST",
-        body: text,
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(res.status);
-      const sent = fromMessage(await res.json().catch(() => null)) || {
-        id: `local-${Date.now()}`,
-        time: Math.floor(Date.now() / 1000),
-        nick,
-        text,
-      };
-      book.mine.push(sent);
-      store.set("gbLast", String(Date.now()));
-      bookUI.text.value = "";
-      bookUI.counter.textContent = "0/500";
-      bookUI.status.textContent = T("sent");
-      renderBook();
-    } catch (e) {
-      bookUI.status.textContent = T("fail");
-    }
-    bookUI.send.disabled = false;
-  }
-
   let started = false;
   function start() {
     if (!started) {
       started = true;
-      buildCam();
       renderTest();
-      buildBook();
       locate().then(() => renderGreeting(false));
     }
     if (!greeted) {
       greeted = true;
       renderGreeting(true);
     }
-    loadBook();
-    clearInterval(book.timer);
-    book.timer = setInterval(() => root.dataset.view === "guests" && !document.hidden && loadBook(), 90000);
   }
 
-  document.addEventListener("pagechange", (event) => {
-    if (event.detail === "guests") start();
-    else {
-      clearInterval(book.timer);
-      if (cam.stream) stopCam();
-    }
-  });
-  document.addEventListener("visibilitychange", () => document.hidden && cam.stream && stopCam());
+  document.addEventListener("pagechange", (event) => event.detail === "guests" && start());
   document.addEventListener("langchange", () => {
     if (!started) return;
     renderGreeting(false);
-    if (cam.stream) stopCam();
-    buildCam();
     renderTest();
-    labelBook();
-    renderBook();
   });
   if (root.dataset.view === "guests") start();
 })();
