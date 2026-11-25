@@ -1477,8 +1477,8 @@ main {
 
 .about-avatar {
   position: relative;
-  width: 230px;
-  height: 150px;
+  width: 280px;
+  height: 180px;
   overflow: hidden;
   border: 1px solid var(--accent);
   background: #000;
@@ -1713,8 +1713,8 @@ main {
     grid-template-columns: minmax(0, 1fr);
   }
   .about-avatar {
-    width: 200px;
-    height: 130px;
+    width: 240px;
+    height: 154px;
   }
 }
 
@@ -4165,4 +4165,63 @@ html.is-framed body::before {
 .about-hero > :not(.matrix-bg) {
   position: relative;
   z-index: 1;
+}
+
+.logo3d.is-gl {
+  display: block;
+  background: radial-gradient(circle at 50% 50%, rgba(242, 51, 74, 0.2), #000 70%);
+}
+
+.mark3d {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.home-mark {
+  display: none;
+}
+
+.page-home.is-intro .home-logo {
+  width: min(560px, 80vw, 50svh);
+}
+
+.page-home.is-intro .home-mark.is-on {
+  display: block;
+  width: min(460px, 80vw, 42svh);
+  aspect-ratio: 1.66;
+  margin-top: -5svh;
+  opacity: 0;
+  transform: translateY(18px) scale(0.86);
+  filter: drop-shadow(0 0 26px rgba(242, 51, 74, 0.45));
+  transition:
+    opacity 0.9s ease,
+    transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.page-home.is-intro .home-mark.is-on.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+.home-mark.is-flying {
+  position: fixed;
+  z-index: 60;
+  display: block;
+  margin: 0;
+  opacity: 1;
+  transform-origin: center;
+  pointer-events: none;
+  filter: drop-shadow(0 0 22px rgba(242, 51, 74, 0.5));
+}
+
+@media (max-width: 640px) {
+  .page-home.is-intro .home-logo {
+    width: min(300px, 72vw, 44svh);
+  }
+  .page-home.is-intro .home-mark.is-on {
+    width: min(300px, 70vw, 36svh);
+    margin-top: 2svh;
+  }
 }

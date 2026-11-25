@@ -145,12 +145,14 @@
     if (heroShown) return;
     heroShown = true;
     if (!withAnimation || reduceMotion) {
+      dropIntroMark();
       homePage.classList.replace("is-intro", "is-hero");
       if (logo) logo.show();
       return;
     }
     if (logo) logo.show();
     const from = logoBox.getBoundingClientRect();
+    dropIntroMark();
     homePage.classList.replace("is-intro", "is-hero");
     const to = logoBox.getBoundingClientRect();
     if (logo) logo.glitch(2.4);
@@ -376,8 +378,35 @@
 
   function setupLogo3d() {
     const holder = $("[data-logo3d]");
-    if (!holder || holder.dataset.ready || reduceMotion) return;
+    if (!holder || holder.dataset.ready) return;
     holder.dataset.ready = "1";
+    const canvas = el("canvas", { class: "mark3d" });
+    holder.replaceChildren(canvas);
+    const mark = window.MARK3D && window.MARK3D.create(canvas, { lite: isLite(), speed: reduceMotion ? 0 : 0.55 });
+    if (mark) {
+      holder.classList.add("is-gl");
+      let visible = false;
+      const sync = () =>
+        visible && !document.hidden && state.page === "about" && !reduceMotion ? mark.start() : mark.stop();
+      if ("IntersectionObserver" in window)
+        new IntersectionObserver((entries) => {
+          visible = entries.some((e) => e.isIntersecting);
+          sync();
+        }).observe(holder);
+      else visible = true;
+      document.addEventListener("visibilitychange", sync);
+      document.addEventListener("pagechange", sync);
+      holder.addEventListener("pointermove", (event) => {
+        const r = holder.getBoundingClientRect();
+        mark.pointer((event.clientX - r.left) / r.width - 0.5, (event.clientY - r.top) / r.height - 0.5);
+      });
+      holder.addEventListener("pointerleave", () => mark.pointer(0, 0));
+      return;
+    }
+    if (reduceMotion) {
+      holder.replaceChildren(el("img", { class: "about-logo", src: "assets/img/logo-mark.webp", alt: "" }));
+      return;
+    }
     const layers = isLite() ? 5 : 9;
     const depth = 8;
     const spin = el("div", { class: "logo3d-spin" });
@@ -1427,15 +1456,76 @@
     );
   }
 
+  const markCanvas = $("[data-home-mark]");
+  let introMark = null;
+
+  function startIntroMark() {
+    if (!markCanvas || !window.MARK3D || reduceMotion) return;
+    markCanvas.classList.add("is-on");
+    introMark = window.MARK3D.create(markCanvas, { lite: isLite(), speed: 0.9 });
+    if (!introMark) {
+      markCanvas.classList.remove("is-on");
+      return;
+    }
+    introMark.start();
+    setTimeout(() => markCanvas.classList.add("is-shown"), 500);
+  }
+
+  function dropIntroMark() {
+    if (!introMark) return;
+    const mark = introMark;
+    introMark = null;
+    const target = $(".brand img");
+    const from = markCanvas.getBoundingClientRect();
+    if (!target || !from.width || !markCanvas.animate || reduceMotion) {
+      mark.dispose();
+      markCanvas.remove();
+      return;
+    }
+    const to = target.getBoundingClientRect();
+    Object.assign(markCanvas.style, {
+      left: `${from.left}px`,
+      top: `${from.top}px`,
+      width: `${from.width}px`,
+      height: `${from.height}px`,
+    });
+    markCanvas.classList.add("is-flying");
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+    const scale = Math.max(0.05, to.height / (from.height * 0.62));
+    markCanvas.animate(
+      [
+        { transform: "none", opacity: 1 },
+        { transform: `translate(${dx * 0.6}px, ${dy * 0.6}px) scale(${(1 + scale) / 2})`, opacity: 1, offset: 0.6 },
+        { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, opacity: 0 },
+      ],
+      { duration: 1100, easing: "cubic-bezier(0.65, 0, 0.35, 1)" }
+    ).onfinish = () => {
+      mark.dispose();
+      markCanvas.remove();
+      target.animate(
+        [
+          { filter: "drop-shadow(0 0 0 transparent) brightness(1)" },
+          { filter: "drop-shadow(0 0 14px rgba(242, 51, 74, 0.95)) brightness(1.8)" },
+          { filter: "drop-shadow(0 0 6px rgba(255, 255, 255, 0.25)) brightness(1)" },
+        ],
+        { duration: 700, easing: "ease-out" }
+      );
+    };
+  }
+
+  document.addEventListener("pagechange", (event) => event.detail !== "home" && dropIntroMark());
+
   const startId = location.hash.slice(1);
   showPage(resolvePage(startId) || "home", { animate: false });
   if (state.page === "home" && logo && !reduceMotion) {
+    startIntroMark();
     logo.clear();
     setTimeout(
       () =>
         logo
           .decode(1600)
-          .then(() => new Promise((done) => setTimeout(done, 700)))
+          .then(() => new Promise((done) => setTimeout(done, introMark ? 1700 : 700)))
           .then(() => showHero()),
       200
     );
