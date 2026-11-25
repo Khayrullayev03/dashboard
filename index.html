@@ -107,6 +107,7 @@
           <a href="#about" data-i18n="nav.about">о себе</a>
           <a href="#info" data-i18n="nav.info">инфо</a>
           <a href="#who" data-i18n="nav.who">кто</a>
+          <a href="#guests" data-i18n="nav.guests">гости</a>
           <a href="#contact" data-i18n="nav.contact">контакты</a>
         </nav>
         <div class="controls">
@@ -457,12 +458,42 @@
         </div>
       </section>
 
+      <section class="page" data-page="guests" aria-labelledby="guests-title" hidden>
+        <div class="container container-wide">
+          <div class="page-head">
+            <a class="back" href="#home" data-i18n="nav.back">← меню</a>
+            <h2 class="section-title" id="guests-title" data-title>
+              <span class="num">06.</span><span class="title-text" data-i18n="guests.title">Гости</span>
+            </h2>
+          </div>
+          <div class="term guest-greet" data-guest-greet data-reveal></div>
+
+          <h3 class="sub-title" data-reveal>
+            <span class="sub-mark" aria-hidden="true">▸</span
+            ><span class="sub-text" data-i18n="guests.bookTitle">Гостевая книга</span>
+          </h3>
+          <div class="term guest-book" data-guest-book data-reveal></div>
+
+          <h3 class="sub-title" data-reveal>
+            <span class="sub-mark" aria-hidden="true">▸</span
+            ><span class="sub-text" data-i18n="guests.camTitle">Ваш ASCII-портрет</span>
+          </h3>
+          <div class="term guest-cam" data-guest-cam data-reveal></div>
+
+          <h3 class="sub-title" data-reveal>
+            <span class="sub-mark" aria-hidden="true">▸</span
+            ><span class="sub-text" data-i18n="guests.testTitle">Насколько защищён ваш офис?</span>
+          </h3>
+          <div class="term guest-test" data-guest-test data-reveal></div>
+        </div>
+      </section>
+
       <section class="page" data-page="contact" aria-labelledby="contact-title" hidden>
         <div class="container">
           <div class="page-head">
             <a class="back" href="#home" data-i18n="nav.back">← меню</a>
             <h2 class="section-title" id="contact-title" data-title>
-              <span class="num">06.</span><span class="title-text" data-i18n="contact.title">Контакты</span>
+              <span class="num">07.</span><span class="title-text" data-i18n="contact.title">Контакты</span>
             </h2>
           </div>
           <ul class="contacts" data-contacts></ul>
@@ -529,5 +560,6 @@
     <script src="assets/js/netwatch.js?v=dev"></script>
     <script src="assets/js/ping.js?v=dev"></script>
     <script src="assets/js/sectools.js?v=dev"></script>
+    <script src="assets/js/guests.js?v=dev"></script>
   </body>
 </html>

@@ -406,10 +406,10 @@
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
       ctx.fillStyle = st.colors.accent;
-      ctx.fillText("IDENTITY SCAN", w / 2, h / 2 - 34);
+      ctx.fillText("GUEST SCAN", w / 2, h / 2 - 34);
       ctx.fillStyle = st.colors.muted;
       ctx.font = `600 13px ${FONT}`;
-      ctx.fillText("subject: anvarjon · sysadmin", w / 2, h / 2 + 34);
+      ctx.fillText("subject: guest · welcome", w / 2, h / 2 + 34);
       ctx.textAlign = "left";
       const bw = Math.min(320, w - 60);
       const x = (w - bw) / 2;
@@ -442,8 +442,8 @@
         ctx.fillText(glyph(), beam - 14, y);
       }
       const labels = [
-        ["IDENTITY: VERIFIED ✓", 0.3],
-        ["ROLE: SYSADMIN", 0.48],
+        ["GUEST: DETECTED ✓", 0.3],
+        ["ROLE: VISITOR", 0.48],
         ["ACCESS: GRANTED", 0.66],
       ];
       const fade = 1 - clamp((p - 0.82) / 0.18);
@@ -1370,7 +1370,16 @@
     },
   };
 
-  const EFFECTS = { home: crt, services: tear, voip: call, about: rain, info: decrypt, who: logs, contact: shatter };
+  const EFFECTS = {
+    home: crt,
+    services: tear,
+    voip: call,
+    about: rain,
+    info: decrypt,
+    who: logs,
+    guests: scan,
+    contact: shatter,
+  };
 
   function play(ms, draw) {
     return new Promise((resolve) => {

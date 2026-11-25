@@ -1,0 +1,885 @@
+(function () {
+  "use strict";
+
+  const I18N = window.I18N;
+  const page = document.querySelector('[data-page="guests"]');
+  if (!I18N || !page) return;
+  const root = document.documentElement;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const lite = () => root.dataset.perf === "lite";
+  const L = (v) => (typeof v === "string" ? v : I18N.pick(v));
+  const C = (ru, uz, en) => ({ ru, uz, en });
+  const store = {
+    get(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    },
+    set(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch (e) {}
+    },
+  };
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const button = (cls, text) => {
+    const b = el("button", cls, text);
+    b.type = "button";
+    return b;
+  };
+  const bar = (path, right) => {
+    const b = el("div", "term-bar");
+    b.append(el("span", null, path));
+    if (right) b.append(right);
+    return b;
+  };
+  const toast = (msg) => window.APP && window.APP.toast && window.APP.toast(msg);
+
+  const TX = {
+    morning: C("Доброе утро", "Xayrli tong", "Good morning"),
+    day: C("Добрый день", "Xayrli kun", "Good afternoon"),
+    evening: C("Добрый вечер", "Xayrli kech", "Good evening"),
+    night: C("Доброй ночи", "Xayrli tun", "Good night"),
+    guest: C("гость", "mehmon", "guest"),
+    from: C("подключение из", "ulanish joyi", "connecting from"),
+    unknown: C("где-то в интернете", "internetning qayeridir", "somewhere on the internet"),
+    first: C(
+      "вы здесь впервые — добро пожаловать!",
+      "siz bu yerda birinchi marta — xush kelibsiz!",
+      "first time here — welcome!"
+    ),
+    again: C(
+      "визит №{n} — рад снова видеть",
+      "{n}-tashrif — sizni yana ko‘rganimdan xursandman",
+      "visit #{n} — good to see you again"
+    ),
+    time: C("у вас сейчас", "sizda hozir", "your time"),
+    camStart: C("[ включить камеру ]", "[ kamerani yoqish ]", "[ turn on camera ]"),
+    camSnap: C("[ снимок ]", "[ suratga olish ]", "[ snapshot ]"),
+    camAgain: C("[ ещё раз ]", "[ yana ]", "[ again ]"),
+    camSave: C("[ сохранить ]", "[ saqlash ]", "[ save ]"),
+    camShare: C("[ поделиться ]", "[ ulashish ]", "[ share ]"),
+    camStop: C("[ выключить ]", "[ o‘chirish ]", "[ turn off ]"),
+    camIdle: C(
+      "Включите камеру — и увидите себя в стиле этого сайта, из ASCII-символов.",
+      "Kamerani yoqing — o‘zingizni shu sayt uslubida, ASCII belgilardan ko‘rasiz.",
+      "Turn on the camera to see yourself in this site's style, made of ASCII characters."
+    ),
+    camNote: C(
+      "Видео обрабатывается только на вашем устройстве и никуда не отправляется.",
+      "Video faqat qurilmangizda qayta ishlanadi va hech qayerga yuborilmaydi.",
+      "Video is processed only on your device and is never sent anywhere."
+    ),
+    camDenied: C("Нет доступа к камере", "Kameraga ruxsat yo‘q", "No camera access"),
+    camNone: C("Камера не найдена", "Kamera topilmadi", "No camera found"),
+    shareText: C("Мой ASCII-портрет с сайта", "Saytdagi ASCII-portretim", "My ASCII portrait from"),
+    qOf: C("вопрос {n} из {total}", "{total} tadan {n}-savol", "question {n} of {total}"),
+    yes: C("Да", "Ha", "Yes"),
+    no: C("Нет", "Yo‘q", "No"),
+    dunno: C("Не знаю", "Bilmayman", "Not sure"),
+    grade: C("защита офиса", "ofis himoyasi", "office security"),
+    tipsTitle: C(
+      "Что стоит исправить в первую очередь",
+      "Birinchi navbatda nimani tuzatish kerak",
+      "What to fix first"
+    ),
+    perfect: C(
+      "Отличный результат — у вас всё под контролем.",
+      "Ajoyib natija — hammasi nazorat ostida.",
+      "Great result — everything is under control."
+    ),
+    audit: C("Обсудить аудит в Telegram", "Telegram’da auditni muhokama qilish", "Discuss an audit on Telegram"),
+    restart: C("Пройти заново", "Qaytadan o‘tish", "Start over"),
+    verdict: [
+      C(
+        "Критично: офис уязвим, нужна срочная помощь.",
+        "Jiddiy: ofis zaif, shoshilinch yordam kerak.",
+        "Critical: the office is vulnerable and needs urgent help."
+      ),
+      C(
+        "Слабо: много дыр, через которые можно потерять данные.",
+        "Zaif: ma’lumotni yo‘qotish mumkin bo‘lgan teshiklar ko‘p.",
+        "Weak: plenty of holes that can cost you data."
+      ),
+      C(
+        "Средне: база есть, но риски остаются.",
+        "O‘rtacha: asos bor, lekin xavflar qolmoqda.",
+        "Fair: the basics are there, but risks remain."
+      ),
+      C(
+        "Хорошо: осталось закрыть несколько пунктов.",
+        "Yaxshi: bir nechta bandni yopish qoldi.",
+        "Good: just a few points left to close."
+      ),
+      C(
+        "Отлично: защита на высоком уровне.",
+        "A’lo: himoya yuqori darajada.",
+        "Excellent: protection is at a high level."
+      ),
+    ],
+    nick: C("никнейм", "taxallus", "nickname"),
+    text: C("ваш комментарий", "izohingiz", "your comment"),
+    send: C("[ отправить ]", "[ yuborish ]", "[ send ]"),
+    soon: C(
+      "Гостевая книга открывается — совсем скоро здесь можно будет оставить комментарий.",
+      "Mehmonlar kitobi ochilmoqda — tez orada bu yerda izoh qoldirish mumkin bo‘ladi.",
+      "The guestbook is opening — you'll be able to leave a comment here very soon."
+    ),
+    empty: C("Пока пусто — станьте первым!", "Hozircha bo‘sh — birinchi bo‘ling!", "Nothing here yet — be the first!"),
+    loading: C("Загружаю комментарии…", "Izohlar yuklanmoqda…", "Loading comments…"),
+    error: C("Не удалось загрузить комментарии", "Izohlarni yuklab bo‘lmadi", "Couldn't load comments"),
+    sent: C(
+      "Спасибо! Комментарий отправлен и появится у всех через пару минут.",
+      "Rahmat! Izoh yuborildi va bir-ikki daqiqada hammaga ko‘rinadi.",
+      "Thanks! Your comment is sent and will appear for everyone in a couple of minutes."
+    ),
+    pending: C("отправлено", "yuborildi", "sent"),
+    tooShort: C("Напишите никнейм и комментарий", "Taxallus va izoh yozing", "Write a nickname and a comment"),
+    wait: C(
+      "Подождите минуту перед следующим комментарием",
+      "Keyingi izohdan oldin bir daqiqa kuting",
+      "Please wait a minute before the next comment"
+    ),
+    fail: C(
+      "Не получилось отправить, попробуйте позже",
+      "Yuborib bo‘lmadi, keyinroq urinib ko‘ring",
+      "Couldn't send, please try later"
+    ),
+    more: C("[ показать ещё ]", "[ yana ko‘rsatish ]", "[ show more ]"),
+    count: C("{n} комментариев", "{n} ta izoh", "{n} comments"),
+  };
+  const T = (key, vars) => {
+    let s = L(TX[key]);
+    if (vars) Object.keys(vars).forEach((k) => (s = s.replace(`{${k}}`, vars[k])));
+    return s;
+  };
+
+  const QUESTIONS = [
+    [
+      C(
+        "Есть резервные копии важных данных, и восстановление из них проверялось за последние 3 месяца?",
+        "Muhim ma’lumotlarning zaxira nusxalari bormi va ulardan tiklash so‘nggi 3 oyda tekshirilganmi?",
+        "Do you back up important data, and was a restore tested in the last 3 months?"
+      ),
+      C(
+        "Настроить ежедневные бэкапы по правилу 3-2-1 и раз в квартал проверять восстановление.",
+        "Har kuni 3-2-1 qoidasi bo‘yicha zaxira nusxalashni sozlash va har chorakda tiklashni tekshirish.",
+        "Set up daily 3-2-1 backups and test a restore every quarter."
+      ),
+      3,
+    ],
+    [
+      C(
+        "У каждого сотрудника свой логин, общих паролей нет?",
+        "Har bir xodimning o‘z logini bormi, umumiy parollar yo‘qmi?",
+        "Does every employee have their own login, with no shared passwords?"
+      ),
+      C(
+        "Завести личные учётные записи (Active Directory) и отказаться от общих паролей.",
+        "Shaxsiy hisoblar (Active Directory) yaratish va umumiy parollardan voz kechish.",
+        "Create personal accounts (Active Directory) and drop shared passwords."
+      ),
+      2,
+    ],
+    [
+      C(
+        "Пароль Wi-Fi сменён с заводского, а гостевой Wi-Fi отделён от рабочей сети?",
+        "Wi-Fi paroli zavod parolidan o‘zgartirilganmi, mehmon Wi-Fi ishchi tarmoqdan ajratilganmi?",
+        "Is the Wi-Fi password changed from the default, and is guest Wi-Fi separated from the work network?"
+      ),
+      C(
+        "Сменить пароль Wi-Fi и вынести гостей в отдельную сеть (VLAN).",
+        "Wi-Fi parolini almashtirish va mehmonlarni alohida tarmoqqa (VLAN) chiqarish.",
+        "Change the Wi-Fi password and move guests to a separate network (VLAN)."
+      ),
+      2,
+    ],
+    [
+      C(
+        "Заводские пароли на роутере, камерах и принтерах заменены?",
+        "Router, kamera va printerlardagi zavod parollari almashtirilganmi?",
+        "Are default passwords on the router, cameras and printers replaced?"
+      ),
+      C(
+        "Заменить заводские пароли на всём сетевом оборудовании — это первое, что пробуют взломщики.",
+        "Barcha tarmoq uskunalaridagi zavod parollarini almashtirish — buzg‘unchilar birinchi shuni sinaydi.",
+        "Replace default passwords on all network gear — it's the first thing attackers try."
+      ),
+      2,
+    ],
+    [
+      C(
+        "Windows и программы обновляются регулярно?",
+        "Windows va dasturlar muntazam yangilanadimi?",
+        "Are Windows and software updated regularly?"
+      ),
+      C(
+        "Включить автообновления или централизованно ставить обновления (WSUS).",
+        "Avtomatik yangilanishni yoqish yoki yangilanishlarni markazlashgan holda o‘rnatish (WSUS).",
+        "Turn on automatic updates or deploy them centrally (WSUS)."
+      ),
+      2,
+    ],
+    [
+      C(
+        "На всех компьютерах работает антивирус (хотя бы Защитник Windows)?",
+        "Barcha kompyuterlarda antivirus ishlaydimi (hech bo‘lmasa Windows Defender)?",
+        "Is antivirus running on every computer (at least Windows Defender)?"
+      ),
+      C(
+        "Включить антивирус везде и проверить, что он обновляет базы.",
+        "Hamma joyda antivirusni yoqish va bazalarini yangilashini tekshirish.",
+        "Enable antivirus everywhere and make sure it updates."
+      ),
+      1,
+    ],
+    [
+      C(
+        "Уволенный сотрудник сразу теряет доступ ко всем системам?",
+        "Ishdan bo‘shagan xodim barcha tizimlarga kirishni darhol yo‘qotadimi?",
+        "Does a departing employee lose access to every system right away?"
+      ),
+      C(
+        "Сделать чек-лист увольнения: отключить учётку, почту, VPN, сменить общие пароли.",
+        "Ishdan bo‘shatish chek-listini tuzish: hisob, pochta, VPN’ni o‘chirish, umumiy parollarni almashtirish.",
+        "Create an offboarding checklist: disable the account, mail, VPN, and rotate shared passwords."
+      ),
+      2,
+    ],
+    [
+      C(
+        "Почта и банк-клиент защищены двухфакторной аутентификацией?",
+        "Pochta va bank-mijoz ikki bosqichli autentifikatsiya bilan himoyalanganmi?",
+        "Are email and online banking protected with two-factor authentication?"
+      ),
+      C(
+        "Включить двухфакторную защиту на почте, банке и админ-панелях.",
+        "Pochta, bank va admin panellarida ikki bosqichli himoyani yoqish.",
+        "Turn on two-factor authentication for email, banking and admin panels."
+      ),
+      2,
+    ],
+    [
+      C(
+        "Серверы и сетевое оборудование подключены к ИБП?",
+        "Serverlar va tarmoq uskunalari UPS’ga ulanganmi?",
+        "Are servers and network equipment on a UPS?"
+      ),
+      C(
+        "Поставить ИБП, чтобы скачки и отключения света не ломали оборудование и данные.",
+        "Kuchlanish sakrashlari va o‘chishlar uskuna va ma’lumotni buzmasligi uchun UPS o‘rnatish.",
+        "Install a UPS so power surges and outages don't break hardware and data."
+      ),
+      1,
+    ],
+    [
+      C(
+        "Кто-то следит за серверами и сетью и получает оповещения о сбоях?",
+        "Serverlar va tarmoqni kimdir kuzatib, nosozliklar haqida xabar oladimi?",
+        "Does someone monitor servers and the network and get alerts about failures?"
+      ),
+      C(
+        "Настроить мониторинг (Zabbix) с оповещениями в Telegram — узнавать о проблеме раньше сотрудников.",
+        "Telegram’ga ogohlantirishli monitoringni (Zabbix) sozlash — muammoni xodimlardan oldin bilish.",
+        "Set up monitoring (Zabbix) with Telegram alerts — hear about problems before your staff do."
+      ),
+      2,
+    ],
+  ];
+
+  let visit = Number(store.get("guestVisits") || 0);
+  try {
+    if (!sessionStorage.getItem("guestSeen")) {
+      visit += 1;
+      store.set("guestVisits", String(visit));
+      sessionStorage.setItem("guestSeen", "1");
+    }
+  } catch (e) {
+    visit = visit || 1;
+  }
+
+  const greetBox = page.querySelector("[data-guest-greet]");
+  let place = null;
+  let greeted = false;
+
+  function greetLines() {
+    const h = new Date().getHours();
+    const word = h >= 5 && h < 12 ? "morning" : h >= 12 && h < 18 ? "day" : h >= 18 && h < 23 ? "evening" : "night";
+    const time = new Date().toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" });
+    return [
+      `${T(word)}, ${T("guest")}.`,
+      `${T("from")}: ${place || T("unknown")}`,
+      visit > 1 ? `${T("again", { n: visit })}.` : T("first"),
+      `${T("time")}: ${time}`,
+    ];
+  }
+
+  function renderGreeting(animate) {
+    if (!greetBox) return;
+    const lines = greetLines();
+    const pre = el("pre", "guest-greet-text");
+    greetBox.replaceChildren(bar("~/guests/hello.sh", el("span", "live", "● online")), pre);
+    if (!animate || reduceMotion) {
+      pre.textContent = lines.map((l) => `> ${l}`).join("\n");
+      return;
+    }
+    const full = lines.map((l) => `> ${l}`).join("\n");
+    let i = 0;
+    const step = () => {
+      i = Math.min(full.length, i + 2);
+      pre.textContent = full.slice(0, i);
+      if (i < full.length) setTimeout(step, 18);
+    };
+    step();
+  }
+
+  async function locate() {
+    const geo = window.GEO;
+    if (!geo) return;
+    try {
+      const hit = await Promise.race([geo.locate(), new Promise((r) => setTimeout(() => r(null), 2500))]);
+      const pick = hit && hit.city ? hit : geo.estimate ? geo.estimate() : null;
+      if (pick && pick.city && !/^(UTC|GMT|Etc)|\//.test(pick.city))
+        place = [pick.city, pick.country].filter(Boolean).join(", ");
+    } catch (e) {}
+  }
+
+  const camBox = page.querySelector("[data-guest-cam]");
+  const RAMP = " .:-=+*#%@";
+  const cam = {
+    stream: null,
+    video: null,
+    raf: 0,
+    last: 0,
+    frozen: false,
+    canvas: null,
+    ctx: null,
+    small: null,
+    sctx: null,
+  };
+  let camUI = null;
+
+  function buildCam() {
+    if (!camBox) return;
+    const canvas = el("canvas", "guest-cam-canvas");
+    const idle = el("p", "guest-cam-idle", T("camIdle"));
+    const stage = el("div", "guest-cam-stage");
+    stage.append(canvas, idle);
+    const startBtn = button("cta-btn is-primary", T("camStart"));
+    const snapBtn = button("cta-btn is-primary", T("camSnap"));
+    const againBtn = button("cta-btn", T("camAgain"));
+    const saveBtn = button("cta-btn", T("camSave"));
+    const shareBtn = button("cta-btn", T("camShare"));
+    const stopBtn = button("cta-btn", T("camStop"));
+    const actions = el("div", "guest-cam-actions");
+    actions.append(startBtn, snapBtn, againBtn, saveBtn, shareBtn, stopBtn);
+    const note = el("p", "net-note guest-cam-note", T("camNote"));
+    camBox.replaceChildren(bar("~/guests/ascii-cam", el("span", "live", "● rec")), stage, actions, note);
+    cam.canvas = canvas;
+    cam.ctx = canvas.getContext("2d");
+    cam.small = document.createElement("canvas");
+    cam.sctx = cam.small.getContext("2d", { willReadFrequently: true });
+    camUI = { stage, idle, startBtn, snapBtn, againBtn, saveBtn, shareBtn, stopBtn };
+    startBtn.addEventListener("click", startCam);
+    snapBtn.addEventListener("click", snapshot);
+    againBtn.addEventListener("click", () => {
+      cam.frozen = false;
+      syncCam();
+    });
+    saveBtn.addEventListener("click", savePortrait);
+    shareBtn.addEventListener("click", sharePortrait);
+    stopBtn.addEventListener("click", stopCam);
+    syncCam();
+  }
+
+  function syncCam() {
+    if (!camUI) return;
+    const on = Boolean(cam.stream);
+    camUI.startBtn.hidden = on;
+    camUI.snapBtn.hidden = !on || cam.frozen;
+    camUI.againBtn.hidden = !on || !cam.frozen;
+    camUI.saveBtn.hidden = !cam.frozen;
+    camUI.shareBtn.hidden = !cam.frozen;
+    camUI.stopBtn.hidden = !on;
+    camUI.idle.hidden = on;
+    camUI.stage.classList.toggle("is-live", on);
+  }
+
+  async function startCam() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast(T("camNone"));
+    try {
+      cam.stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false,
+      });
+    } catch (e) {
+      cam.stream = null;
+      toast(T(e && e.name === "NotFoundError" ? "camNone" : "camDenied"));
+      return;
+    }
+    cam.video = document.createElement("video");
+    cam.video.muted = true;
+    cam.video.playsInline = true;
+    cam.video.setAttribute("playsinline", "");
+    cam.video.srcObject = cam.stream;
+    try {
+      await cam.video.play();
+    } catch (e) {}
+    cam.frozen = false;
+    syncCam();
+    cam.raf = requestAnimationFrame(camLoop);
+  }
+
+  function stopCam() {
+    cancelAnimationFrame(cam.raf);
+    cam.raf = 0;
+    if (cam.stream) cam.stream.getTracks().forEach((t) => t.stop());
+    cam.stream = null;
+    cam.video = null;
+    cam.frozen = false;
+    if (cam.ctx) cam.ctx.clearRect(0, 0, cam.canvas.width, cam.canvas.height);
+    syncCam();
+  }
+
+  function camLoop(now) {
+    cam.raf = requestAnimationFrame(camLoop);
+    if (cam.frozen || !cam.video || cam.video.readyState < 2) return;
+    if (now - cam.last < (lite() ? 90 : 55)) return;
+    cam.last = now;
+    drawAscii();
+  }
+
+  function drawAscii() {
+    const v = cam.video;
+    const vw = v.videoWidth || 640;
+    const vh = v.videoHeight || 480;
+    const W = camUI.stage.clientWidth || 600;
+    const cols = W < 520 ? 64 : lite() ? 80 : 104;
+    const cell = W / cols;
+    const size = cell / 0.6;
+    const rows = Math.max(10, Math.round((cols * (vh / vw) * 0.6) / 1));
+    const H = Math.round(rows * size);
+    const dpr = lite() ? 1 : Math.min(2, window.devicePixelRatio || 1);
+    if (cam.canvas.width !== Math.round(W * dpr) || cam.canvas.height !== Math.round(H * dpr)) {
+      cam.canvas.width = Math.round(W * dpr);
+      cam.canvas.height = Math.round(H * dpr);
+      cam.canvas.style.height = `${H}px`;
+    }
+    cam.small.width = cols;
+    cam.small.height = rows;
+    const s = cam.sctx;
+    s.save();
+    s.translate(cols, 0);
+    s.scale(-1, 1);
+    s.drawImage(v, 0, 0, cols, rows);
+    s.restore();
+    const px = s.getImageData(0, 0, cols, rows).data;
+    const lum = new Float32Array(cols * rows);
+    let lo = 1;
+    let hi = 0;
+    for (let i = 0; i < lum.length; i++) {
+      const l = (0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]) / 255;
+      lum[i] = l;
+      if (l < lo) lo = l;
+      if (l > hi) hi = l;
+    }
+    const span = Math.max(0.15, hi - lo);
+    const ctx = cam.ctx;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#050506";
+    ctx.fillRect(0, 0, W, H);
+    ctx.font = `700 ${size.toFixed(2)}px "JetBrains Mono", monospace`;
+    ctx.textBaseline = "top";
+    for (let y = 0; y < rows; y++) {
+      let dim = "";
+      let red = "";
+      let hot = "";
+      for (let x = 0; x < cols; x++) {
+        const n = Math.pow((lum[y * cols + x] - lo) / span, 0.9);
+        const ch = RAMP[Math.min(9, Math.max(0, Math.round(n * 9)))];
+        dim += n < 0.38 ? ch : " ";
+        red += n >= 0.38 && n < 0.72 ? ch : " ";
+        hot += n >= 0.72 ? ch : " ";
+      }
+      ctx.fillStyle = "rgba(242, 51, 74, 0.5)";
+      ctx.fillText(dim, 0, y * size);
+      ctx.fillStyle = "#f2334a";
+      ctx.fillText(red, 0, y * size);
+      ctx.fillStyle = "#ffe8ec";
+      ctx.fillText(hot, 0, y * size);
+    }
+    cam.view = { W, H, size };
+  }
+
+  function snapshot() {
+    if (!cam.video) return;
+    drawAscii();
+    cam.frozen = true;
+    const { W, H } = cam.view;
+    const ctx = cam.ctx;
+    const band = Math.max(28, Math.round(H * 0.08));
+    ctx.fillStyle = "rgba(5, 5, 6, 0.88)";
+    ctx.fillRect(0, H - band, W, band);
+    ctx.fillStyle = "#f2334a";
+    ctx.fillRect(0, H - band, W, 2);
+    ctx.font = `700 ${Math.round(band * 0.4)}px "JetBrains Mono", monospace`;
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#f6f6f8";
+    ctx.fillText("anvarjon · ascii guest", 12, H - band / 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#8f9198";
+    ctx.fillText("khayrullayev03.github.io/dashboard", W - 12, H - band / 2);
+    ctx.textAlign = "left";
+    if (window.SOUND && window.SOUND.tick) window.SOUND.tick();
+    syncCam();
+  }
+
+  function portraitBlob() {
+    return new Promise((resolve) => cam.canvas.toBlob((b) => resolve(b), "image/png"));
+  }
+
+  async function savePortrait() {
+    const blob = await portraitBlob();
+    if (!blob) return;
+    const a = el("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ascii-portrait.png";
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  async function sharePortrait() {
+    const blob = await portraitBlob();
+    if (!blob) return;
+    const file = new File([blob], "ascii-portrait.png", { type: "image/png" });
+    const url = "https://khayrullayev03.github.io/dashboard/?from=portrait";
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: "ASCII portrait", text: `${T("shareText")} ${url}` });
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+      }
+    }
+    savePortrait();
+  }
+
+  const testBox = page.querySelector("[data-guest-test]");
+  const test = { index: 0, answers: [] };
+
+  function renderTest() {
+    if (!testBox) return;
+    const head = bar(
+      "~/guests/office-audit",
+      el("span", null, `${Math.min(test.index + 1, QUESTIONS.length)}/${QUESTIONS.length}`)
+    );
+    if (test.index >= QUESTIONS.length) return renderResult(head);
+    const [q] = QUESTIONS[test.index];
+    const body = el("div", "guest-test-body");
+    const progress = el("div", "guest-progress");
+    const fill = el("span");
+    fill.style.setProperty("--w", `${(test.index / QUESTIONS.length) * 100}%`);
+    progress.append(fill);
+    const count = el("p", "guest-test-count", T("qOf", { n: test.index + 1, total: QUESTIONS.length }));
+    const question = el("p", "guest-test-q", L(q));
+    const choices = el("div", "guest-test-choices");
+    [
+      ["yes", 1],
+      ["no", 0],
+      ["dunno", 0.25],
+    ].forEach(([key, value]) => {
+      const b = button(`cta-btn${key === "yes" ? " is-primary" : ""}`, T(key));
+      b.addEventListener("click", () => {
+        test.answers[test.index] = value;
+        test.index += 1;
+        renderTest();
+      });
+      choices.append(b);
+    });
+    body.append(progress, count, question, choices);
+    body.classList.add("is-in");
+    testBox.replaceChildren(head, body);
+  }
+
+  function renderResult(head) {
+    const total = QUESTIONS.reduce((n, q) => n + q[2], 0);
+    const got = QUESTIONS.reduce((n, q, i) => n + q[2] * (test.answers[i] || 0), 0);
+    const pct = Math.round((got / total) * 100);
+    const grade = pct >= 90 ? "A" : pct >= 75 ? "B" : pct >= 55 ? "C" : pct >= 35 ? "D" : "F";
+    const tier = pct >= 90 ? 4 : pct >= 75 ? 3 : pct >= 55 ? 2 : pct >= 35 ? 1 : 0;
+    const body = el("div", "guest-test-body guest-result is-in");
+    const badge = el("div", `sec-grade grade-${grade === "A" ? "a" : grade === "B" ? "b" : grade === "C" ? "c" : "d"}`);
+    badge.append(el("span", "sec-grade-letter", grade), el("span", "sec-grade-label", `${T("grade")} · ${pct}%`));
+    const side = el("div", "guest-result-side");
+    side.append(el("p", "guest-verdict", L(TX.verdict[tier])));
+    const weak = QUESTIONS.map((q, i) => [q, test.answers[i]]).filter(([, a]) => a !== 1);
+    if (weak.length) {
+      side.append(el("p", "guest-tips-title", T("tipsTitle")));
+      const list = el("ol", "guest-tips");
+      weak.sort((a, b) => b[0][2] - a[0][2]).forEach(([q]) => list.append(el("li", null, L(q[1]))));
+      side.append(list);
+    } else side.append(el("p", "guest-tips-title", T("perfect")));
+    const actions = el("div", "guest-cam-actions");
+    const contacts = (window.PORTFOLIO && window.PORTFOLIO.contacts) || [];
+    const tg = contacts.find((c) => c.label === "telegram");
+    if (tg) {
+      const a = el("a", "cta-btn is-primary", T("audit"));
+      a.href = tg.href;
+      a.target = "_blank";
+      a.rel = "noopener";
+      actions.append(a);
+    }
+    const again = button("cta-btn", T("restart"));
+    again.addEventListener("click", () => {
+      test.index = 0;
+      test.answers = [];
+      renderTest();
+    });
+    actions.append(again);
+    side.append(actions);
+    body.append(badge, side);
+    testBox.replaceChildren(head, body);
+  }
+
+  const bookBox = page.querySelector("[data-guest-book]");
+  const cfg = (window.SITE_CONFIG && window.SITE_CONFIG.guestbook) || {};
+  const ready = Boolean(cfg.form && cfg.nick && cfg.text && cfg.csv);
+  const book = { rows: null, failed: false, shown: 20, opened: Date.now(), timer: 0 };
+  let bookUI = null;
+
+  function parseCSV(text) {
+    const rows = [];
+    let row = [];
+    let cell = "";
+    let quoted = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (quoted) {
+        if (ch === '"' && text[i + 1] === '"') {
+          cell += '"';
+          i++;
+        } else if (ch === '"') quoted = false;
+        else cell += ch;
+      } else if (ch === '"') quoted = true;
+      else if (ch === ",") {
+        row.push(cell);
+        cell = "";
+      } else if (ch === "\n" || ch === "\r") {
+        if (ch === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell);
+        rows.push(row);
+        row = [];
+        cell = "";
+      } else cell += ch;
+    }
+    if (cell || row.length) {
+      row.push(cell);
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  const pendingList = () => {
+    try {
+      return JSON.parse(store.get("gbPending") || "[]").filter((p) => Date.now() - p.at < 3600000);
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const nickColor = (nick) => {
+    const palette = ["#f2334a", "#ff8c9a", "#ffd23f", "#45d483", "#6ed2ff", "#cfd1d7"];
+    let h = 0;
+    for (let i = 0; i < nick.length; i++) h = (h * 31 + nick.charCodeAt(i)) >>> 0;
+    return palette[h % palette.length];
+  };
+
+  function buildBook() {
+    if (!bookBox) return;
+    const form = el("form", "guest-form");
+    const nick = el("input", "sec-input guest-nick");
+    nick.maxLength = 32;
+    nick.autocomplete = "nickname";
+    nick.spellcheck = false;
+    const text = el("textarea", "sec-input sec-area guest-text");
+    text.maxLength = 500;
+    const trap = el("input", "guest-trap");
+    trap.tabIndex = -1;
+    trap.autocomplete = "off";
+    trap.setAttribute("aria-hidden", "true");
+    const counter = el("span", "guest-counter", "0/500");
+    const send = el("button", "cta-btn is-primary");
+    send.type = "submit";
+    const row = el("div", "guest-form-row");
+    row.append(counter, send);
+    form.append(nick, text, trap, row);
+    const status = el("p", "net-note guest-status");
+    status.setAttribute("role", "status");
+    const list = el("ol", "guest-list");
+    const more = button("anim-toggle guest-more", "");
+    more.addEventListener("click", () => {
+      book.shown += 20;
+      renderBook();
+    });
+    const countEl = el("span", "guest-count");
+    bookBox.replaceChildren(bar("~/guests/guestbook.log", countEl), form, status, list, more);
+    bookUI = { form, nick, text, trap, counter, send, status, list, more, countEl };
+    text.addEventListener("input", () => (counter.textContent = `${text.value.length}/500`));
+    nick.addEventListener("focus", () => (book.opened = book.opened || Date.now()));
+    form.addEventListener("submit", submit);
+    labelBook();
+    if (!ready) {
+      [nick, text, send].forEach((n) => (n.disabled = true));
+      status.textContent = T("soon");
+    }
+    renderBook();
+  }
+
+  function labelBook() {
+    if (!bookUI) return;
+    bookUI.nick.placeholder = T("nick");
+    bookUI.text.placeholder = T("text");
+    bookUI.send.textContent = T("send");
+    bookUI.more.textContent = T("more");
+    if (!ready) bookUI.status.textContent = T("soon");
+  }
+
+  function entries() {
+    const fetched = book.rows || [];
+    const pending = pendingList().filter((p) => !fetched.some((r) => r.nick === p.nick && r.text === p.text));
+    return [...pending.map((p) => ({ ...p, time: T("pending"), pending: true })).reverse(), ...fetched];
+  }
+
+  function renderBook() {
+    if (!bookUI) return;
+    const all = entries();
+    bookUI.list.textContent = "";
+    bookUI.countEl.textContent = all.length ? T("count", { n: all.length }) : "";
+    if (!all.length) {
+      if (ready)
+        bookUI.list.append(el("li", "guest-empty", book.rows ? T("empty") : book.failed ? T("error") : T("loading")));
+      bookUI.more.hidden = true;
+      return;
+    }
+    all.slice(0, book.shown).forEach((e, i) => {
+      const li = el("li", `guest-entry${e.pending ? " is-pending" : ""}`);
+      li.style.setProperty("--i", Math.min(i, 12));
+      const meta = el("div", "guest-meta");
+      const who = el("span", "guest-who", e.nick);
+      who.style.color = nickColor(e.nick);
+      meta.append(el("span", "guest-time", `[${e.time}]`), who);
+      li.append(meta, el("p", "guest-msg", e.text));
+      bookUI.list.append(li);
+    });
+    bookUI.more.hidden = all.length <= book.shown;
+  }
+
+  async function loadBook() {
+    if (!ready) return;
+    try {
+      const res = await fetch(`${cfg.csv}${cfg.csv.includes("?") ? "&" : "?"}_=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(res.status);
+      const rows = parseCSV(await res.text()).slice(1);
+      book.rows = rows
+        .map((r) => ({
+          time: String(r[0] || "")
+            .replace(/:\d{2}$/, "")
+            .trim(),
+          nick: String(r[1] || "")
+            .trim()
+            .slice(0, 32),
+          text: String(r[2] || "")
+            .trim()
+            .slice(0, 500),
+        }))
+        .filter((r) => r.nick && r.text)
+        .reverse();
+      book.failed = false;
+    } catch (e) {
+      book.failed = !book.rows;
+    }
+    renderBook();
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    if (!ready || !bookUI) return;
+    const nick = bookUI.nick.value.replace(/\s+/g, " ").trim().slice(0, 32);
+    const text = bookUI.text.value.trim().slice(0, 500);
+    if (bookUI.trap.value) return;
+    if (nick.length < 2 || text.length < 2) {
+      bookUI.status.textContent = T("tooShort");
+      return;
+    }
+    const last = Number(store.get("gbLast") || 0);
+    if (Date.now() - last < 60000 || Date.now() - book.opened < 2500) {
+      bookUI.status.textContent = T("wait");
+      return;
+    }
+    bookUI.send.disabled = true;
+    try {
+      const body = new URLSearchParams();
+      body.append(cfg.nick, nick);
+      body.append(cfg.text, text);
+      await fetch(cfg.form, { method: "POST", mode: "no-cors", body });
+      store.set("gbLast", String(Date.now()));
+      const pending = pendingList();
+      pending.push({ nick, text, at: Date.now() });
+      store.set("gbPending", JSON.stringify(pending.slice(-5)));
+      bookUI.text.value = "";
+      bookUI.counter.textContent = "0/500";
+      bookUI.status.textContent = T("sent");
+      renderBook();
+      setTimeout(loadBook, 60000);
+    } catch (e) {
+      bookUI.status.textContent = T("fail");
+    }
+    bookUI.send.disabled = false;
+  }
+
+  let started = false;
+  function start() {
+    if (!started) {
+      started = true;
+      buildCam();
+      renderTest();
+      buildBook();
+      locate().then(() => renderGreeting(false));
+    }
+    if (!greeted) {
+      greeted = true;
+      renderGreeting(true);
+    }
+    loadBook();
+    clearInterval(book.timer);
+    book.timer = setInterval(() => root.dataset.view === "guests" && !document.hidden && loadBook(), 90000);
+  }
+
+  document.addEventListener("pagechange", (event) => {
+    if (event.detail === "guests") start();
+    else {
+      clearInterval(book.timer);
+      if (cam.stream) stopCam();
+    }
+  });
+  document.addEventListener("visibilitychange", () => document.hidden && cam.stream && stopCam());
+  document.addEventListener("langchange", () => {
+    if (!started) return;
+    renderGreeting(false);
+    if (cam.stream) stopCam();
+    buildCam();
+    renderTest();
+    labelBook();
+    renderBook();
+  });
+  if (root.dataset.view === "guests") start();
+})();

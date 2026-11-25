@@ -12,7 +12,7 @@ create table if not exists public.visits (
 
 alter table public.visits drop constraint if exists visits_page_check;
 alter table public.visits
-  add constraint visits_page_check check (page in ('home', 'services', 'voip', 'about', 'info', 'who', 'contact'));
+  add constraint visits_page_check check (page in ('home', 'services', 'voip', 'about', 'info', 'who', 'guests', 'contact'));
 create index if not exists visits_created_at on public.visits (created_at desc);
 
 create table if not exists public.ratings (
