@@ -445,16 +445,18 @@ main {
 }
 
 .brand img {
-  width: 30px;
+  width: auto;
   height: 30px;
   flex-shrink: 0;
-  border: 1px solid var(--line-strong);
-  background: #000;
-  transition: transform 0.8s var(--ease-out);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.25));
+  transition:
+    transform 0.6s var(--ease-out),
+    filter 0.3s ease;
 }
 
 .brand:hover img {
-  transform: rotate(360deg);
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 10px var(--accent-glow));
 }
 
 .brand-user {
@@ -1475,8 +1477,8 @@ main {
 
 .about-avatar {
   position: relative;
-  width: 132px;
-  height: 132px;
+  width: 230px;
+  height: 150px;
   overflow: hidden;
   border: 1px solid var(--accent);
   background: #000;
@@ -1490,6 +1492,7 @@ main {
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .logo3d {
@@ -1506,8 +1509,8 @@ main {
 
 .logo3d-spin {
   position: relative;
-  width: 86%;
-  height: 86%;
+  width: 90%;
+  height: 80%;
   transform-style: preserve-3d;
   animation: logo3d-spin 8s linear infinite;
 }
@@ -1517,12 +1520,13 @@ main {
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
   transform: translateZ(var(--z));
   backface-visibility: visible;
 }
 
 .logo3d-edge {
-  filter: brightness(var(--b)) sepia(0.6) hue-rotate(-30deg) saturate(2.2);
+  filter: brightness(var(--b)) sepia(0.35) hue-rotate(-30deg) saturate(1.6);
 }
 
 .logo3d-face {
@@ -1532,10 +1536,10 @@ main {
 .logo3d-shine {
   position: absolute;
   inset: 0;
-  transform: translateZ(6.2px);
+  transform: translateZ(4.2px);
   background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.75) 50%, transparent 62%) 0 0 / 260% 100%;
-  -webkit-mask: url("../img/logo-cut.png") center / 100% 100% no-repeat;
-  mask: url("../img/logo-cut.png") center / 100% 100% no-repeat;
+  -webkit-mask: url("../img/logo-mark.webp") center / contain no-repeat;
+  mask: url("../img/logo-mark.webp") center / contain no-repeat;
   mix-blend-mode: screen;
   animation: logo3d-shine 4s ease-in-out infinite;
   pointer-events: none;
@@ -1709,8 +1713,8 @@ main {
     grid-template-columns: minmax(0, 1fr);
   }
   .about-avatar {
-    width: 96px;
-    height: 96px;
+    width: 200px;
+    height: 130px;
   }
 }
 
@@ -2172,10 +2176,9 @@ main {
 }
 
 .footer-badge img {
-  width: 20px;
+  width: auto;
   height: 20px;
-  border-radius: 6px;
-  box-shadow: 0 0 14px var(--accent-glow);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
 }
 
 .footer-dot {

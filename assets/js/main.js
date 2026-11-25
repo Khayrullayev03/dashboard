@@ -378,20 +378,20 @@
     const holder = $("[data-logo3d]");
     if (!holder || holder.dataset.ready || reduceMotion) return;
     holder.dataset.ready = "1";
-    const layers = isLite() ? 6 : 14;
-    const depth = 12;
+    const layers = isLite() ? 5 : 9;
+    const depth = 8;
     const spin = el("div", { class: "logo3d-spin" });
     for (let i = 0; i < layers; i++) {
       const k = i / (layers - 1);
       const face = i === 0 || i === layers - 1;
       spin.append(
         el("img", {
-          src: "assets/img/logo-cut.png",
+          src: "assets/img/logo-mark.webp",
           alt: "",
           class: face ? "logo3d-face" : "logo3d-edge",
           vars: {
             "--z": `${((0.5 - k) * depth).toFixed(2)}px`,
-            "--b": face ? "1" : (0.32 + 0.22 * Math.sin(k * Math.PI)).toFixed(2),
+            "--b": face ? "1" : (0.22 + 0.16 * Math.sin(k * Math.PI)).toFixed(2),
           },
         })
       );

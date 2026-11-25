@@ -22,7 +22,9 @@ index.html
 assets/
   css/style.css
   fonts/          JetBrains Mono (OFL)
-  img/logo.png
+  img/logo-mark.webp   логотип (шапка, подвал, 3D-эмблема в «О себе»), logo-mark-sm.webp — маленькая версия
+  img/favicon.png      иконка вкладки
+  img/logo.png         цветок, исходник ASCII-логотипа в интро
   js/
     config.js     ключи Supabase для статистики и оценок
     data.js       контент: профиль, услуги, навыки, контакты
