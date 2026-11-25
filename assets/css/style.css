@@ -704,6 +704,52 @@ main {
   display: none;
 }
 
+/* eclipse corona shown while the scripts are still loading; the canvas moon takes over */
+.page-home.is-intro .home-stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: max(calc(min(640px, 86vw, 68svh) * 1.28), 84vmin);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(6, 4, 6, 0.96) 0 93%,
+    rgba(242, 51, 74, 0.55) 97%,
+    transparent 100%
+  );
+  box-shadow: 0 0 80px 10px rgba(190, 14, 38, 0.24);
+  pointer-events: none;
+  animation: corona 2.2s ease-in-out infinite alternate;
+  transition: opacity 0.9s ease;
+}
+
+html.bg-ready .page-home.is-intro .home-stage::before {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes corona {
+  to {
+    box-shadow: 0 0 120px 20px rgba(190, 14, 38, 0.36);
+  }
+}
+
+@media (max-width: 719px) {
+  .page-home.is-intro .home-stage::before {
+    width: max(calc(min(640px, 86vw, 68svh) * 1.28), 96vmin);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-home.is-intro .home-stage::before {
+    display: none;
+  }
+}
+
 .page-home.is-hero .home-stage {
   grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
   gap: clamp(24px, 4vw, 72px);

@@ -29,6 +29,18 @@
   let pointerX = -9999;
   let pointerY = -9999;
   let mode = "contour";
+  // Intro eclipse: the moon starts covered and the shadow slides off when BG.eclipse() runs.
+  const introAhead = !reduceMotion && /^#?(home)?$/.test(location.hash);
+  const eclipse = { start: introAhead ? Infinity : -1, dur: 1, since: performance.now() };
+  const easeSine = (p) => 0.5 - Math.cos(Math.PI * p) / 2;
+  function eclipseProgress(now) {
+    if (eclipse.start === Infinity && now - eclipse.since > 5000) eclipse.start = now;
+    if (eclipse.start === Infinity) return 0;
+    if (eclipse.start < 0) return 1;
+    const p = (now - eclipse.start) / eclipse.dur;
+    if (p >= 1) eclipse.start = -1;
+    return Math.min(1, Math.max(0, p));
+  }
   let scene = "home";
   let drops = [];
 
@@ -273,16 +285,28 @@
     return d2 < 1 || (!cloud && (d2 < 1.14 || (d2 > 1.4 && d2 < 1.52))) || (cloud && d2 < 4);
   }
 
-  function drawMoon(now, moon, art) {
+  function drawMoon(now, moon, art, e) {
     const home = scene === "home";
     const moonAlpha = home ? 1 : 0.45;
     const rot = now * 0.000012;
+    const shadow = e > 0.001;
+    const sOff = 0.16 + (1 - e) * 2.4;
     lctx.clearRect(0, 0, width, height);
-    lctx.globalAlpha = Math.min(1, moonAlpha * (0.82 + 0.18 * Math.sin(now * 0.0012)));
+    lctx.globalAlpha =
+      Math.min(1, moonAlpha * (0.82 + 0.18 * Math.sin(now * 0.0012))) * (shadow ? 0.5 + 0.5 * (1 - e) : 1);
     const gr = moon.R * 2.4;
     lctx.drawImage(art.glow, moon.cx - gr, moon.cy - gr, gr * 2, gr * 2);
     lctx.globalAlpha = moonAlpha * (home ? 0.75 : 0.5) * (home ? 0.42 : 0.3);
     lctx.drawImage(art.disc, moon.cx - moon.R, moon.cy - moon.R, moon.R * 2, moon.R * 2);
+    if (shadow) {
+      lctx.save();
+      lctx.globalCompositeOperation = "destination-out";
+      lctx.globalAlpha = 0.93;
+      lctx.beginPath();
+      lctx.arc(moon.cx + sOff * moon.R, moon.cy, moon.R * 1.03, 0, Math.PI * 2);
+      lctx.fill();
+      lctx.restore();
+    }
 
     const y0 = Math.max(0, Math.floor((moon.cy - moon.R * 2) / LINE_PX));
     const y1 = Math.min(rows, Math.ceil((moon.cy + moon.R * 2) / LINE_PX) + 1);
@@ -302,7 +326,26 @@
         let mc = " ";
         let ml = 0;
         let cc = " ";
-        if (d2 < 1) {
+        let shaded = 0;
+        if (shadow && d2 < 1.12) {
+          const ex = dx - sOff;
+          const sd = ex * ex + dy * dy;
+          shaded = sd < 1.06 ? 1 : sd < 1.22 && d2 < 1 ? 2 : 0;
+        }
+        if (shaded === 1) {
+          if (d2 < 1) {
+            if (hash2(x, y) > 0.8) {
+              mc = ".";
+              ml = 1;
+            }
+          } else if (e > 0.2) {
+            mc = hash2(y, x) > 0.5 ? "·" : "*";
+            ml = 2;
+          }
+        } else if (shaded === 2) {
+          mc = hash2(x, y) > 0.4 ? "@" : "%";
+          ml = 3;
+        } else if (d2 < 1) {
           const z = Math.sqrt(1 - d2);
           const light = Math.max(0, -dx * 0.55 - dy * 0.45 + z * 0.7);
           let lon = Math.atan2(dx, z) / (Math.PI * 2) + rot;
@@ -374,11 +417,13 @@
       });
     }
 
+    const ip = eclipseProgress(now);
+    const e = 1 - easeSine(ip);
     const moved =
       !layerGeo ||
       Math.abs(moon.cx - layerGeo.cx) + Math.abs(moon.cy - layerGeo.cy) + Math.abs(moon.R - layerGeo.R) > 0.5;
-    if (moved || now - layerAt > (lite() ? 240 : 140)) {
-      drawMoon(now, moon, art);
+    if (moved || (e > 0 && ip > 0) || now - layerAt > (lite() ? 240 : 140)) {
+      drawMoon(now, moon, art, e);
       layerAt = now;
       layerGeo = moon;
     }
@@ -407,7 +452,7 @@
         let fl = 0;
         if (!moonCell(d2, cloudAt(x, y, rowFrac, now))) {
           const h = hash2(x, y);
-          if (starRow && h > 0.993 && d2 > 1.4) {
+          if (starRow && h > 0.993 && d2 > 1.4 && (ip >= 1 || hash2(x * 1.7 + 3.1, y * 2.3 + 7.7) < ip * 1.25)) {
             const tw = Math.sin(now * 0.002 + h * 60);
             if (tw > -0.2) sc = tw > 0.85 && h > 0.997 ? "+" : "·";
           }
@@ -449,7 +494,9 @@
         hot += fl === 3 ? fd : " ";
       }
 
-      const fieldAlpha = matrix ? 1 : Math.min(1, Math.max(0, (rowFrac - 0.35) / 0.4));
+      const fieldAlpha =
+        (matrix ? 1 : Math.min(1, Math.max(0, (rowFrac - 0.35) / 0.4))) *
+        (ip >= 1 ? 1 : Math.min(1, Math.max(0, (ip - 0.3) / 0.7)));
       if (fieldAlpha > 0) {
         ctx.globalAlpha = fieldAlpha;
         ctx.fillStyle = colors.dim;
@@ -500,7 +547,7 @@
   let live = false;
   function interval() {
     const low = lite();
-    if (live) return low ? 50 : 33;
+    if (live || (eclipse.start > 0 && eclipse.start !== Infinity)) return low ? 50 : 33;
     const base = scene === "home" ? (low ? 60 : 40) : low ? 120 : 70;
     return cost > 14 ? Math.min(160, base * 1.8) : base;
   }
@@ -656,6 +703,7 @@
     draw(performance.now());
   });
   draw(performance.now());
+  root.classList.add("bg-ready");
   start();
   if (!reduceMotion) setTimeout(scheduleMeteor, 1500);
   if (document.fonts && document.fonts.ready) {
@@ -712,6 +760,13 @@
       flashPower = Math.min(1.2, Math.max(flashLevel(now), power));
       flashAt = now;
       draw(now);
+    },
+    eclipse(ms = 1800) {
+      if (reduceMotion) return;
+      eclipse.start = performance.now();
+      eclipse.dur = ms;
+      invalidate();
+      draw(eclipse.start);
     },
     pause(on) {
       paused = Boolean(on);

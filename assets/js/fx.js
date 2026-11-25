@@ -206,6 +206,30 @@
           render((i) => (t >= at[i] ? chars[i] : t >= at[i] - 280 ? randomGlyph() : " "))
         ).then((done) => done && render());
       },
+      // Grows the art from the centre outwards; five "petal" rays run ahead of the rest.
+      bloom(duration = 1500) {
+        if (reduceMotion) {
+          api.show();
+          return Promise.resolve();
+        }
+        sample(current);
+        visible = true;
+        const phase = Math.random() * Math.PI * 2;
+        const at = new Float32Array(total);
+        for (let i = 0; i < total; i++) {
+          const ang = Math.atan2(((i / cols) | 0) - rows / 2, ((i % cols) - cols / 2) * 0.6);
+          const petal = 0.5 + 0.5 * Math.cos(ang * 5 + phase);
+          at[i] = duration * (0.05 + 0.72 * Math.pow(dist[i], 0.9) * (1 - 0.32 * petal) + Math.random() * 0.1);
+        }
+        return run(duration, (t) =>
+          render((i) => {
+            const k = t - at[i];
+            if (k >= 0) return chars[i];
+            if (k < -300) return " ";
+            return k < -200 ? "." : k < -100 ? ":" : randomGlyph();
+          })
+        ).then((done) => done && render());
+      },
       vanish(duration = 450) {
         if (!visible || reduceMotion) {
           api.clear();

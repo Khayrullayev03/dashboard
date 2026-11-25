@@ -1478,6 +1478,14 @@
     setTimeout(() => markCanvas.classList.add("is-shown"), 500);
   }
 
+  function introHit() {
+    if (heroShown || state.page !== "home") return;
+    beat({ strength: 3, ms: 460, strong: true, power: 1 });
+    if (window.BG && window.BG.glitch) window.BG.glitch(2.6, 420);
+    if (markCanvas && markCanvas.animate)
+      markCanvas.animate(shakeFrames(1, 18, 4, 0.08), { duration: 400, easing: "linear" });
+  }
+
   function dropIntroMark() {
     if (!introMark) return;
     const mark = introMark;
@@ -1526,18 +1534,31 @@
   const startId = location.hash.slice(1);
   showPage(resolvePage(startId) || "home", { animate: false });
   if (state.page === "home" && logo && !reduceMotion) {
+    // eclipse → the flower blooms → the wordmark appears → one hard glitch hit → hero
     root.classList.add("intro-lock");
     window.scrollTo(0, 0);
-    startIntroMark();
     logo.clear();
-    setTimeout(
-      () =>
-        logo
-          .decode(1600)
-          .then(() => new Promise((done) => setTimeout(done, introMark ? 1700 : 700)))
-          .then(() => showHero()),
-      200
-    );
+    if (window.BG && window.BG.eclipse) window.BG.eclipse(1900);
+    const wait = (ms) => new Promise((done) => setTimeout(done, ms));
+    wait(650)
+      .then(() => {
+        if (logoBox.animate)
+          logoBox.animate(
+            [
+              { transform: "scale(0.84) rotate(-9deg)", opacity: 0.5 },
+              { transform: "none", opacity: 1 },
+            ],
+            { duration: 1500, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }
+          );
+        return logo.bloom(1500);
+      })
+      .then(() => wait(introMark ? 1100 : 500))
+      .then(() => {
+        introHit();
+        return wait(380);
+      })
+      .then(() => showHero());
+    setTimeout(startIntroMark, 1250);
   } else {
     showHero({ animate: false });
   }
