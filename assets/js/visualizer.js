@@ -435,7 +435,7 @@
 
     const bass = Math.pow(Math.min(1, Math.max(0, (bassRaw - (bassRef - 0.42)) / 0.42)), 1.6);
     bassEnv += (bass - bassEnv) * (bass > bassEnv ? 1 - Math.exp(-dt / 18) : 1 - Math.exp(-dt / 220));
-    if (mode === "synth") synthKicks(now);
+    if (mode === "synth") synthKicks();
     else if (!detector) detectKick(now, dt);
     kickTarget *= Math.exp(-dt / 160);
     kick += (kickTarget - kick) * (1 - Math.exp(-dt / 25));
@@ -456,15 +456,18 @@
     else go();
   }
 
-  // Site soundtrack: fire exactly on the scheduled kicks, compensating for output latency.
-  function synthKicks(now) {
+  // Site soundtrack: kicks are known ~120 ms ahead, so each one is timed to the moment it is heard
+  // (output latency included) instead of waiting for the next video frame.
+  function synthKicks() {
     if (!synth || !synth.takeHits) return;
-    const at = audio.currentTime - latency();
-    const hit = synth
-      .takeHits(at)
-      .filter((h) => at - h.t < 0.15)
-      .pop();
-    if (hit) hitKick(now, hit.level);
+    const lat = latency();
+    synth.takeHits(audio.currentTime + 0.15).forEach((hit) => {
+      const wait = (hit.t + lat - audio.currentTime) * 1000;
+      if (wait < -150) return;
+      const go = () => mode === "synth" && synth.playing && hitKick(performance.now(), hit.level);
+      if (wait > 4) setTimeout(go, wait);
+      else go();
+    });
   }
 
   function energy(tap, buf) {
@@ -573,7 +576,8 @@
   }
 
   function start() {
-    const visible = box.offsetWidth > 0 && !document.hidden;
+    // while music plays the loop keeps running even if the bars are hidden, so the beat effects go on
+    const visible = (box.offsetWidth > 0 || mode !== "idle") && !document.hidden;
     if ((reduceMotion || document.documentElement.dataset.perf === "lite") && mode === "idle") {
       cancelAnimationFrame(raf);
       raf = 0;
