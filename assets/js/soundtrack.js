@@ -45,6 +45,7 @@
 
     let step = 0;
     let nextTime = 0;
+    const hits = [];
     let timer = 0;
     let playing = false;
 
@@ -55,6 +56,8 @@
     }
 
     function kick(t, level) {
+      hits.push({ t, level });
+      if (hits.length > 64) hits.shift();
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
       osc.frequency.setValueAtTime(160, t);
@@ -200,19 +203,30 @@
       get playing() {
         return playing;
       },
-      start() {
+      get step() {
+        return step;
+      },
+      start(from) {
         if (playing) return;
         playing = true;
+        if (typeof from === "number" && from >= 0) step = Math.floor(from / 16) * 16;
         master.gain.cancelScheduledValues(ctx.currentTime);
         master.gain.setValueAtTime(0.85, ctx.currentTime);
         nextTime = ctx.currentTime + 0.08;
         tick();
         timer = setInterval(tick, 25);
       },
+      // Kicks whose audio time has been reached, oldest first; the visualizer syncs to these exactly.
+      takeHits(upTo) {
+        let n = 0;
+        while (n < hits.length && hits[n].t <= upTo) n++;
+        return hits.splice(0, n);
+      },
       stop() {
         if (!playing) return;
         playing = false;
         clearInterval(timer);
+        hits.length = 0;
         master.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.05);
       },
       dispose() {

@@ -29,12 +29,13 @@
   let synth = null;
   let synthOut = null;
   let spec = null;
+  let sense = null;
   let low = null;
-  let bassTap = null;
-  let wave = null;
-  let peakRef = 0.05;
-  let recentPeak = 0;
-  let pending = null;
+  let kickTap = null;
+  let midTap = null;
+  let kickBuf = null;
+  let midBuf = null;
+  let detector = null;
   let mode = "idle";
   let raf = 0;
   let last = 0;
@@ -48,17 +49,19 @@
   let h = 0;
   let pitch = 6;
   let fill = null;
-  let glow = null;
   let ref = 0.7;
   let bassRef = 0.7;
   let bassEnv = 0;
   let kick = 0;
   let kickTarget = 0;
-  let scoreAvg = 0;
-  let fluxAvg = 0;
-  let armed = true;
-  let prevDb = null;
-  let lastGlitch = 0;
+  let kSlow = 0;
+  let mSlow = 0;
+  let kPeak = 1e-6;
+  let kPrev1 = 0;
+  let kPrev2 = 0;
+  let kArmed = true;
+  let lastKick = 0;
+  let lastKickE = 0;
 
   const LO = 20;
   const HI = 16000;
@@ -84,9 +87,6 @@
     fill.addColorStop(0, "rgba(120,10,28,0.95)");
     fill.addColorStop(0.5, "#f2334a");
     fill.addColorStop(1, "#ffd3d9");
-    glow = ctx.createLinearGradient(0, 0, w * 0.5, 0);
-    glow.addColorStop(0, "rgba(242,51,74,0.55)");
-    glow.addColorStop(1, "rgba(242,51,74,0)");
   }
 
   function context() {
@@ -98,13 +98,47 @@
       analyser.fftSize = 4096;
       analyser.smoothingTimeConstant = 0.45;
       spec = new Float32Array(analyser.frequencyBinCount);
-      low = audio.createBiquadFilter();
-      low.type = "lowpass";
-      low.frequency.value = 160;
-      bassTap = audio.createAnalyser();
-      bassTap.fftSize = 1024;
-      low.connect(bassTap);
-      wave = new Float32Array(bassTap.fftSize);
+      // Every source feeds `sense`, which splits into a sub band (kick drum) and a low-mid band (bass notes).
+      sense = audio.createGain();
+      const band = (type, frequency, q) => {
+        const f = audio.createBiquadFilter();
+        f.type = type;
+        f.frequency.value = frequency;
+        f.Q.value = q;
+        return f;
+      };
+      const tap = () => {
+        const a = audio.createAnalyser();
+        a.fftSize = 512;
+        return a;
+      };
+      const hp = band("highpass", 35, 0.7);
+      low = band("lowpass", 150, 0.8);
+      kickTap = tap();
+      sense.connect(hp);
+      hp.connect(low);
+      low.connect(kickTap);
+      const mid = band("bandpass", 350, 0.9);
+      midTap = tap();
+      sense.connect(mid);
+      mid.connect(midTap);
+      kickBuf = new Float32Array(kickTap.fftSize);
+      midBuf = new Float32Array(midTap.fftSize);
+      // The same detection on the audio thread, immune to dropped video frames.
+      if (audio.audioWorklet && window.AudioWorkletNode)
+        audio.audioWorklet
+          .addModule("assets/js/kick-worklet.js")
+          .then(() => {
+            const node = new AudioWorkletNode(audio, "kick-detector", { outputChannelCount: [1] });
+            const mute = audio.createGain();
+            mute.gain.value = 0;
+            sense.connect(node);
+            node.connect(mute);
+            mute.connect(audio.destination);
+            node.port.onmessage = onKick;
+            detector = node;
+          })
+          .catch(() => {});
     }
     if (audio.state === "suspended") audio.resume().catch(() => {});
     return audio;
@@ -128,6 +162,7 @@
 
   function setMode(next) {
     mode = next;
+    saveState();
     const live = mode !== "idle";
     btn.setAttribute("aria-pressed", String(live));
     if (live) document.documentElement.dataset.music = "on";
@@ -155,26 +190,27 @@
     if (mode === "synth") trackEl.textContent = t("viz.synthName");
   }
 
-  function useSynth() {
+  function useSynth(opts = {}) {
     closeMenu();
-    if (!window.SOUNDTRACK || !context()) return toast(t("viz.unsupported"));
+    if (!window.SOUNDTRACK || !context()) return opts.resume ? null : toast(t("viz.unsupported"));
     detach();
     if (!synthOut) synthOut = audio.createGain();
     synthOut.connect(analyser);
-    synthOut.connect(low);
+    synthOut.connect(sense);
     analyser.connect(audio.destination);
     if (!synth) synth = window.SOUNDTRACK.create(audio, synthOut);
-    synth.start();
+    if (!opts.paused) synth.start(opts.step);
     source = null;
     reset(0.7);
     setMode("synth");
-    toast(t("viz.synthOn"));
+    if (!opts.resume) toast(t("viz.synthOn"));
+    else if (!opts.paused) whenAllowed();
   }
 
-  async function useMic() {
+  async function useMic(opts = {}) {
     closeMenu();
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !context())
-      return toast(t("viz.unsupported"));
+      return opts.resume ? null : toast(t("viz.unsupported"));
     try {
       const s = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
@@ -183,39 +219,134 @@
       stream = s;
       source = audio.createMediaStreamSource(stream);
       source.connect(analyser);
-      source.connect(low);
+      source.connect(sense);
       reset(0.55);
       setMode("mic");
-      toast(t("viz.micOn"));
+      if (opts.resume) whenAllowed();
+      else toast(t("viz.micOn"));
     } catch (e) {
-      toast(t("viz.denied"));
+      if (!opts.resume) toast(t("viz.denied"));
     }
   }
 
-  function useFile(file) {
+  function useFile(file, opts = {}) {
     if (!file || !context()) return;
+    const name = opts.name || file.name || "track";
+    if (!opts.resume) saveTrack(file, name);
     detach();
     if (!player) {
       player = new Audio();
       player.crossOrigin = "anonymous";
       player.addEventListener("ended", () => stop());
-      player.addEventListener("play", syncToggle);
-      player.addEventListener("pause", syncToggle);
+      player.addEventListener("play", () => {
+        syncToggle();
+        saveState();
+      });
+      player.addEventListener("pause", () => {
+        syncToggle();
+        saveState();
+      });
       playerSource = audio.createMediaElementSource(player);
     }
     if (player.src) URL.revokeObjectURL(player.src);
     player.src = URL.createObjectURL(file);
     playerSource.disconnect();
     playerSource.connect(analyser);
-    playerSource.connect(low);
+    playerSource.connect(sense);
     analyser.disconnect();
     analyser.connect(audio.destination);
     source = null;
-    trackEl.textContent = file.name;
+    trackEl.textContent = name;
     reset(0.7);
-    player.play().catch(() => {});
+    if (opts.pos > 0) player.addEventListener("loadedmetadata", () => (player.currentTime = opts.pos), { once: true });
+    wantPlay = !opts.paused;
+    if (wantPlay) player.play().catch(() => opts.resume && whenAllowed(true));
     setMode("file");
-    toast(t("viz.playing", { name: file.name.replace(/\.[^.]+$/, "").slice(0, 40) }));
+    if (!opts.resume) toast(t("viz.playing", { name: name.replace(/\.[^.]+$/, "").slice(0, 40) }));
+    else if (wantPlay) whenAllowed();
+  }
+
+  /* ---------- keep the music going across page reloads ---------- */
+
+  const STATE_KEY = "vizState";
+  let wantPlay = false;
+  let gestureArmed = false;
+
+  // Browsers only let sound start after a click or key press; until then, wait for the first one.
+  function whenAllowed(blocked) {
+    const ready = () => audio && audio.state === "running" && !blocked;
+    const arm = () => {
+      if (ready() || gestureArmed) return;
+      gestureArmed = true;
+      toast(t("viz.resume"));
+      const go = () => {
+        ["pointerdown", "keydown", "touchend"].forEach((type) => document.removeEventListener(type, go, true));
+        gestureArmed = false;
+        context();
+        if (mode === "file" && player && wantPlay) player.play().catch(() => {});
+      };
+      ["pointerdown", "keydown", "touchend"].forEach((type) => document.addEventListener(type, go, true));
+    };
+    if (blocked) arm();
+    else setTimeout(arm, 350);
+  }
+
+  function saveState() {
+    try {
+      if (mode === "idle") return localStorage.removeItem(STATE_KEY);
+      const state = {
+        mode,
+        paused: mode === "file" ? !wantPlay : mode === "synth" ? !(synth && synth.playing) : false,
+        at: Date.now(),
+      };
+      if (mode === "synth" && synth) state.step = synth.step;
+      if (mode === "file" && player) state.pos = player.currentTime || 0;
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+    } catch (e) {}
+  }
+
+  function trackDb() {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) return reject(new Error("no idb"));
+      const req = indexedDB.open("viz", 1);
+      req.onupgradeneeded = () => req.result.createObjectStore("track");
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function saveTrack(file, name) {
+    if (file.size > 80 * 1024 * 1024) return;
+    trackDb()
+      .then((db) => db.transaction("track", "readwrite").objectStore("track").put({ blob: file, name }, "last"))
+      .catch(() => {});
+  }
+
+  function loadTrack() {
+    return trackDb().then(
+      (db) =>
+        new Promise((resolve) => {
+          const req = db.transaction("track").objectStore("track").get("last");
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        })
+    );
+  }
+
+  async function restore() {
+    let state = null;
+    try {
+      state = JSON.parse(localStorage.getItem(STATE_KEY) || "null");
+    } catch (e) {}
+    if (!state || Date.now() - state.at > 3 * 3600 * 1000) return;
+    if (state.mode === "synth") useSynth({ resume: true, step: state.step, paused: state.paused });
+    else if (state.mode === "file") {
+      const rec = await loadTrack().catch(() => null);
+      if (rec && rec.blob) useFile(rec.blob, { resume: true, name: rec.name, pos: state.pos, paused: state.paused });
+    } else if (state.mode === "mic" && navigator.permissions) {
+      const perm = await navigator.permissions.query({ name: "microphone" }).catch(() => null);
+      if (perm && perm.state === "granted") useMic({ resume: true });
+    }
   }
 
   function stop() {
@@ -231,13 +362,12 @@
     bassEnv = 0;
     kick = 0;
     kickTarget = 0;
-    scoreAvg = 0;
-    peakRef = 0.05;
-    recentPeak = 0;
-    pending = null;
-    fluxAvg = 0;
-    armed = true;
-    prevDb = null;
+    kSlow = 0;
+    mSlow = 0;
+    kPeak = 1e-6;
+    kPrev1 = 0;
+    kPrev2 = 0;
+    kArmed = true;
   }
 
   function dbAt(x) {
@@ -273,17 +403,11 @@
     }
     const k0 = Math.max(1, Math.floor(LO / binHz));
     const k1 = Math.ceil(150 / binHz);
-    if (!prevDb || prevDb.length !== k1 + 1) prevDb = new Float32Array(k1 + 1).fill(MIN_DB);
-    let flux = 0;
     for (let k = k0; k <= k1; k++) {
       const db = Math.max(MIN_DB, spec[k] > -200 ? spec[k] : -200);
       bassPow += Math.pow(10, db / 10);
-      const floored = Math.max(-72, db);
-      flux += Math.max(0, floored - prevDb[k]);
-      prevDb[k] = floored;
       bassBins++;
     }
-    flux = (flux / bassBins) * Math.min(1.5, 16.7 / Math.max(4, dt));
     const bassDb = 10 * Math.log10(bassPow / Math.max(1, bassBins) + 1e-20);
     const bassRaw = Math.min(1, Math.max(0, (bassDb - MIN_DB) / SPAN_DB));
 
@@ -311,50 +435,86 @@
 
     const bass = Math.pow(Math.min(1, Math.max(0, (bassRaw - (bassRef - 0.42)) / 0.42)), 1.6);
     bassEnv += (bass - bassEnv) * (bass > bassEnv ? 1 - Math.exp(-dt / 18) : 1 - Math.exp(-dt / 220));
-    bassTap.getFloatTimeDomainData(wave);
-    let peak = 0;
-    for (let k = 0; k < wave.length; k++) {
-      const v = wave[k] < 0 ? -wave[k] : wave[k];
-      if (v > peak) peak = v;
-    }
-    recentPeak = Math.max(peak, recentPeak * Math.exp(-dt / 80));
-    peakRef = Math.max(recentPeak, peakRef * Math.exp(-dt / 4000), 0.02);
-    const threshold = Math.max(1.6, fluxAvg * 2.4);
-    if (flux < threshold * 0.5) armed = true;
-    const onset = armed && flux > threshold && bass > 0.2 && now - lastGlitch > 120;
-    fluxAvg += (flux - fluxAvg) * (1 - Math.exp(-dt / 350));
-    kickTarget *= Math.exp(-dt / 150);
-    if (onset) {
-      lastGlitch = now;
-      armed = false;
-      const punch = Math.min(1, (flux / threshold - 1) * 0.4 + bass * 0.6);
-      kickTarget = Math.max(kickTarget, punch);
-      const loud = Math.min(1, recentPeak / peakRef);
-      const score = loud * 0.7 + bass * 0.3;
-      const strong = loud >= 0.72 && score >= Math.max(0.55, scoreAvg * 0.85);
-      scoreAvg = scoreAvg ? scoreAvg * 0.8 + score * 0.2 : score;
-      fire(strong, score, punch, bass);
-      pending = strong ? null : { at: now, punch };
-    } else if (pending) {
-      const loud = Math.min(1, recentPeak / peakRef);
-      if (loud >= 0.72 && bass > 0.3) {
-        fire(true, loud * 0.7 + bass * 0.3, pending.punch, bass);
-        pending = null;
-      } else if (now - pending.at > 90) pending = null;
-    }
-    kick += (kickTarget - kick) * (1 - Math.exp(-dt / 30));
-    const pulse = Math.min(1, Math.max(kick, bassEnv * 0.8));
+    if (mode === "synth") synthKicks(now);
+    else if (!detector) detectKick(now, dt);
+    kickTarget *= Math.exp(-dt / 160);
+    kick += (kickTarget - kick) * (1 - Math.exp(-dt / 25));
+    const pulse = Math.min(1, Math.max(kick, bassEnv * 0.45));
     if (window.BG && window.BG.setPulse) window.BG.setPulse(pulse);
     if (logo && document.documentElement.dataset.view === "home") logo.style.setProperty("--beat", pulse.toFixed(3));
   }
 
-  function fire(strong, score, punch, bass) {
+  const latency = () => Math.min(0.25, Math.max(0, (audio.outputLatency || 0) + (audio.baseLatency || 0)));
+
+  // Kick from the audio-thread detector: show it when that moment actually reaches the speakers.
+  function onKick(event) {
+    if (mode !== "file" && mode !== "mic") return;
+    const { t, level } = event.data;
+    const wait = (t + (mode === "mic" ? 0 : latency()) - audio.currentTime) * 1000;
+    const go = () => mode !== "idle" && hitKick(performance.now(), level);
+    if (wait > 4) setTimeout(go, Math.min(wait, 300));
+    else go();
+  }
+
+  // Site soundtrack: fire exactly on the scheduled kicks, compensating for output latency.
+  function synthKicks(now) {
+    if (!synth || !synth.takeHits) return;
+    const at = audio.currentTime - latency();
+    const hit = synth
+      .takeHits(at)
+      .filter((h) => at - h.t < 0.15)
+      .pop();
+    if (hit) hitKick(now, hit.level);
+  }
+
+  function energy(tap, buf) {
+    tap.getFloatTimeDomainData(buf);
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+    return sum / buf.length;
+  }
+
+  // Own track / microphone: a kick is a sudden jump of low energy (35–150 Hz, which also catches the
+  // kick's falling pitch) that the band around 350 Hz does not share. Bass notes bring harmonics
+  // there, so they are ignored.
+  function detectKick(now, dt) {
+    const e = energy(kickTap, kickBuf);
+    const m = energy(midTap, midBuf);
+    const ratio = e / (kSlow + 1e-7);
+    const midRatio = m / (mSlow + 1e-7);
+    kPeak = Math.max(e, kPeak * Math.exp(-dt / 6000), 1e-6);
+    if (ratio < 1.25) kArmed = true;
+    const loud = e / kPeak;
+    // a clearly bigger hit may override a recent weaker trigger (a bass note just before the kick)
+    const free = now - lastKick > 150 || e > lastKickE * 1.8;
+    if (kArmed && free && e > kPrev2 * 1.45 && ratio > 1.9 && loud > 0.4 && ratio > midRatio) {
+      kArmed = false;
+      lastKickE = e;
+      hitKick(now, Math.min(1, Math.sqrt(loud)));
+    } else if (!kArmed && free && e > lastKickE * 1.8 && e > kPrev2 * 1.45 && loud > 0.4) {
+      lastKickE = e;
+      hitKick(now, Math.min(1, Math.sqrt(loud)));
+    }
+    const slow = 1 - Math.exp(-dt / 450);
+    kSlow += (e - kSlow) * slow;
+    mSlow += (m - mSlow) * slow;
+    kPrev2 = kPrev1;
+    kPrev1 = e;
+  }
+
+  function hitKick(now, level) {
+    lastKick = now;
+    kickTarget = Math.max(kickTarget, 0.55 + level * 0.45);
+    fire(level >= 0.85, level);
+  }
+
+  function fire(strong, level) {
     if (!window.APP || !window.APP.beat) return;
     window.APP.beat({
       strong,
-      power: Math.min(1, score),
-      strength: strong ? 2.2 + punch * 0.4 : Math.min(1.3, 0.7 + bass * 0.4 + punch * 0.3),
-      ms: strong ? 240 + punch * 120 : 110 + bass * 100,
+      power: Math.min(1, 0.45 + level * 0.55),
+      strength: strong ? 2.5 : 1.2 + level * 0.6,
+      ms: strong ? 320 : 170 + level * 90,
     });
   }
 
@@ -373,17 +533,20 @@
     const live = mode !== "idle";
     const bw = Math.max(2, pitch - 2);
     const off = (pitch - bw) / 2;
-    if (live && bassEnv > 0.02) {
-      ctx.globalAlpha = Math.min(1, bassEnv);
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, w * 0.5, h);
-    }
     ctx.globalAlpha = live ? 1 : 0.32;
     ctx.fillStyle = fill;
     for (let i = 0; i < cols; i++) {
       const bh = bars[i] * h;
       if (bh < 0.5) continue;
       ctx.fillRect(i * pitch + off, h - bh, bw, bh);
+    }
+    if (live && kick > 0.05) {
+      ctx.globalAlpha = Math.min(0.6, kick * 0.6);
+      ctx.fillStyle = "#ffe3e7";
+      for (let i = 0; i < cols; i++) {
+        const bh = bars[i] * h;
+        if (bh >= 0.5) ctx.fillRect(i * pitch + off, h - bh, bw, bh);
+      }
     }
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "destination-out";
@@ -457,9 +620,11 @@
       if (synth.playing) synth.stop();
       else synth.start();
       syncToggle();
+      saveState();
       return;
     }
     if (!player) return;
+    wantPlay = player.paused;
     if (player.paused) player.play().catch(() => {});
     else player.pause();
   });
@@ -487,6 +652,10 @@
     start();
   });
 
+  setInterval(() => mode !== "idle" && !document.hidden && saveState(), 2000);
+  window.addEventListener("pagehide", saveState);
+
   size();
   start();
+  restore();
 })();
