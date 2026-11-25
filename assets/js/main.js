@@ -433,6 +433,139 @@
     holder.classList.add("is-3d");
   }
 
+  const offsecRoot = $("[data-offsec]");
+  const offsecRain = { raf: 0, cols: [], visible: false, last: 0, ctx: null, w: 0, h: 0 };
+
+  function offsecFrame(now) {
+    const r = offsecRain;
+    r.raf = requestAnimationFrame(offsecFrame);
+    if (now - r.last < (isLite() ? 110 : 60)) return;
+    r.last = now;
+    const { ctx, w, h } = r;
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "rgba(0, 0, 0, 0.16)";
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalCompositeOperation = "source-over";
+    r.cols.forEach((c) => {
+      c.y += c.speed;
+      const row = Math.floor(c.y);
+      if (row === c.row) return;
+      if (c.row >= 0 && c.prev) {
+        ctx.fillStyle = "rgba(159, 239, 0, 0.75)";
+        ctx.fillText(c.prev, c.x, c.row * 12);
+      }
+      c.row = row;
+      if (row * 12 > h + 24) {
+        if (Math.random() < 0.1) {
+          c.y = -Math.random() * 6;
+          c.row = -1;
+        }
+        return;
+      }
+      if (row < 0) return;
+      c.prev = RAIN[(Math.random() * RAIN.length) | 0];
+      ctx.fillStyle = "#e9ffc2";
+      ctx.fillText(c.prev, c.x, row * 12);
+    });
+  }
+
+  function syncOffsec() {
+    const r = offsecRain;
+    if (!r.ctx) return;
+    const run = r.visible && !document.hidden && state.page === "about" && !reduceMotion;
+    if (run && !r.raf) r.raf = requestAnimationFrame(offsecFrame);
+    else if (!run && r.raf) {
+      cancelAnimationFrame(r.raf);
+      r.raf = 0;
+    }
+  }
+
+  function renderOffsec() {
+    const o = data.offsec;
+    if (!offsecRoot || !o) return;
+    const canvas = el("canvas", { class: "offsec-rain", "aria-hidden": "true" });
+    const banner = el(
+      "div",
+      { class: "offsec-banner" },
+      canvas,
+      el("p", { class: "offsec-title", text: "OFFENSIVE SECURITY · TRAINING" })
+    );
+    const track = el(
+      "ul",
+      { class: "offsec-track" },
+      o.track.map(([name, status, kind]) =>
+        el(
+          "li",
+          { class: `offsec-item is-${kind}` },
+          el("span", { class: "offsec-dot", "aria-hidden": "true" }),
+          el("span", { class: "offsec-name", text: L(name) }),
+          el("span", { class: "offsec-status", text: L(status) })
+        )
+      )
+    );
+    const tools = el(
+      "ul",
+      { class: "skill-chips offsec-tools" },
+      o.tools.map((name, i) => el("li", { class: "skill-chip", vars: { "--i": i } }, name))
+    );
+    offsecRoot.replaceChildren(
+      el(
+        "div",
+        { class: "term-bar", "aria-hidden": "true" },
+        el("span", { text: "~/security/offsec.md" }),
+        el("span", { class: "offsec-live", text: "● training" })
+      ),
+      banner,
+      el(
+        "div",
+        { class: "offsec-body" },
+        el(
+          "div",
+          null,
+          el("h3", { class: "offsec-h", text: L(o.title) }),
+          el("p", { class: "offsec-text", text: L(o.text) }),
+          tools
+        ),
+        track
+      )
+    );
+    const r = offsecRain;
+    const size = () => {
+      const dpr = isLite() ? 1 : Math.min(2, window.devicePixelRatio || 1);
+      r.w = banner.clientWidth;
+      r.h = banner.clientHeight;
+      canvas.width = Math.round(r.w * dpr);
+      canvas.height = Math.round(r.h * dpr);
+      r.ctx = canvas.getContext("2d");
+      r.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      r.ctx.font = '700 12px "JetBrains Mono", monospace';
+      r.ctx.textBaseline = "top";
+      r.cols = Array.from({ length: Math.ceil(r.w / 9) }, (_, i) => ({
+        x: i * 9,
+        y: Math.random() * 10 - 4,
+        speed: 0.3 + Math.random() * 0.6,
+        row: -1,
+        prev: "",
+      }));
+    };
+    size();
+    if (!offsecRain.observed) {
+      offsecRain.observed = true;
+      if ("ResizeObserver" in window) new ResizeObserver(() => offsecRoot.isConnected && size()).observe(offsecRoot);
+      if ("IntersectionObserver" in window)
+        new IntersectionObserver((entries) => {
+          offsecRain.visible = entries.some((e) => e.isIntersecting);
+          syncOffsec();
+        }).observe(offsecRoot);
+      else offsecRain.visible = true;
+      document.addEventListener("visibilitychange", syncOffsec);
+      document.addEventListener("pagechange", syncOffsec);
+    }
+    cancelAnimationFrame(r.raf);
+    r.raf = 0;
+    syncOffsec();
+  }
+
   function setupMatrix() {
     if (!aboutCard || matrixRain.canvas) return;
     const canvas = el("canvas", { class: "matrix-bg", "aria-hidden": "true" });
@@ -1245,7 +1378,7 @@
   const PAGE_RENDER = {
     services: [renderServicesStats, renderServices],
     voip: [renderVoip],
-    about: [setupMatrix, setupLogo3d, renderFocus, renderSkillLevels, renderSkills, renderExperience],
+    about: [setupMatrix, setupLogo3d, renderOffsec, renderFocus, renderSkillLevels, renderSkills, renderExperience],
     contact: [renderContacts],
   };
   const rendered = new Set();

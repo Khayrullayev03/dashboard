@@ -22,6 +22,44 @@ window.PORTFOLIO = {
     },
   },
 
+  offsec: {
+    title: {
+      ru: "Наступательная безопасность",
+      uz: "Hujumkor xavfsizlik",
+      en: "Offensive security",
+    },
+    text: {
+      ru: "Помимо администрирования прокачиваю наступательную безопасность: тренируюсь в лабораториях Hack The Box, разбираю сетевые атаки, пентест веб-приложений и основы реверс-инжиниринга. Когда понимаешь, как атакуют, строишь защиту, которую гораздо сложнее взломать.",
+      uz: "Administratorlikdan tashqari hujumkor xavfsizlikni rivojlantiryapman: Hack The Box laboratoriyalarida mashq qilaman, tarmoq hujumlari, veb-ilovalar pentesti va revers-injiniring asoslarini o‘rganaman. Qanday hujum qilishlarini tushunsangiz, buzish ancha qiyin bo‘lgan himoya qurasiz.",
+      en: "Beyond administration, I'm building up offensive security skills: training in Hack The Box labs and working through network attacks, web app pentesting and reverse engineering basics. Once you understand how attacks work, you build defences that are much harder to break.",
+    },
+    track: [
+      ["Hack The Box", { ru: "тренируюсь", uz: "mashq qilyapman", en: "training" }, "active"],
+      [
+        {
+          ru: "Пентест веб-приложений · OWASP Top 10",
+          uz: "Veb-ilovalar pentesti · OWASP Top 10",
+          en: "Web app pentesting · OWASP Top 10",
+        },
+        { ru: "в процессе", uz: "jarayonda", en: "in progress" },
+        "active",
+      ],
+      [
+        { ru: "Сетевые атаки и эксплуатация", uz: "Tarmoq hujumlari va ekspluatatsiya", en: "Network exploitation" },
+        { ru: "в процессе", uz: "jarayonda", en: "in progress" },
+        "active",
+      ],
+      [
+        { ru: "Реверс-инжиниринг", uz: "Revers-injiniring", en: "Reverse engineering" },
+        { ru: "изучаю", uz: "o‘rganyapman", en: "learning" },
+        "learn",
+      ],
+      ["OSCP", { ru: "цель", uz: "maqsad", en: "goal" }, "goal"],
+      ["CRTO", { ru: "цель", uz: "maqsad", en: "goal" }, "goal"],
+    ],
+    tools: ["Kali Linux", "Nmap", "Burp Suite", "Wireshark", "Metasploit", "Hashcat"],
+  },
+
   voip: {
     compare: {
       cols: {
