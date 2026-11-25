@@ -1,4 +1,20 @@
 {
- "comments": [],
- "seen": {}
+ "comments": [
+  {
+   "id": "y1Zzu3YkfPtM",
+   "time": 1795628809,
+   "nick": "Арслан",
+   "text": "заебись сайт у тебя, за сколько продашь свой проект?"
+  },
+  {
+   "id": "8LJxIFdwpn3B",
+   "time": 1795628969,
+   "nick": "vv",
+   "text": "KASAL BOMELA"
+  }
+ ],
+ "seen": {
+  "y1Zzu3YkfPtM": 1795628809,
+  "8LJxIFdwpn3B": 1795628969
+ }
 }
