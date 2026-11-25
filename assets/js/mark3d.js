@@ -171,6 +171,8 @@ void main() {
       speed: 0.55,
       depth: 0.1,
       tilt: -0.14,
+      swing: 0,
+      entry: false,
       ...options,
     };
     let gl = null;
@@ -273,8 +275,9 @@ void main() {
       const fov = 0.52;
       const fit = Math.max(1, mesh.aspect / view) * 1.08;
       const dist = fit / Math.tan(fov / 2) + opts.depth;
-      const spin = opts.speed ? t * opts.speed : 0.45;
-      const yaw = spin + yawOffset + pointerYaw;
+      const spin = opts.swing ? Math.sin(t * opts.speed) * opts.swing : opts.speed ? t * opts.speed : 0.45;
+      const intro = opts.entry ? Math.pow(1 - Math.min(1, t / 1.6), 3) * Math.PI * 2 : 0;
+      const yaw = spin + intro + yawOffset + pointerYaw;
       const pitch = opts.tilt + Math.sin(t * 0.8) * 0.04 + pointerPitch;
       const r = rotation(yaw, pitch);
       gl.uniformMatrix4fv(u.proj, false, perspective(fov, view, 0.1, 40));

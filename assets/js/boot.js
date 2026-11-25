@@ -17,6 +17,7 @@
   }
 
   root.classList.add("js");
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   var nav = navigator;
   var saved = null;
   try {

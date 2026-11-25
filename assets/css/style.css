@@ -4225,3 +4225,9 @@ html.is-framed body::before {
     margin-top: 2svh;
   }
 }
+
+html.intro-lock,
+html.intro-lock body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}

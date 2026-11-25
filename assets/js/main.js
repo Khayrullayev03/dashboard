@@ -144,6 +144,7 @@
   function showHero({ animate: withAnimation = true } = {}) {
     if (heroShown) return;
     heroShown = true;
+    root.classList.remove("intro-lock");
     if (!withAnimation || reduceMotion) {
       dropIntroMark();
       homePage.classList.replace("is-intro", "is-hero");
@@ -1462,7 +1463,7 @@
   function startIntroMark() {
     if (!markCanvas || !window.MARK3D || reduceMotion) return;
     markCanvas.classList.add("is-on");
-    introMark = window.MARK3D.create(markCanvas, { lite: isLite(), speed: 0.9 });
+    introMark = window.MARK3D.create(markCanvas, { lite: isLite(), speed: 1.1, swing: 0.52, entry: true });
     if (!introMark) {
       markCanvas.classList.remove("is-on");
       return;
@@ -1519,6 +1520,8 @@
   const startId = location.hash.slice(1);
   showPage(resolvePage(startId) || "home", { animate: false });
   if (state.page === "home" && logo && !reduceMotion) {
+    root.classList.add("intro-lock");
+    window.scrollTo(0, 0);
     startIntroMark();
     logo.clear();
     setTimeout(
