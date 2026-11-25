@@ -313,12 +313,11 @@
   function sizeMatrix() {
     const m = matrixRain;
     if (!m.canvas) return;
-    const dpr = isLite() ? 1 : Math.min(2, window.devicePixelRatio || 1);
+    // 1× resolution on purpose: the rain is a faint backdrop, and retina pixels would cost 4× more
     m.w = aboutCard.clientWidth;
     m.h = aboutCard.clientHeight;
-    m.canvas.width = Math.round(m.w * dpr);
-    m.canvas.height = Math.round(m.h * dpr);
-    m.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    m.canvas.width = m.w;
+    m.canvas.height = m.h;
     m.ctx.font = `700 ${RAIN_PX}px "JetBrains Mono", monospace`;
     m.ctx.textBaseline = "top";
     const step = RAIN_PX * 0.75;
@@ -436,7 +435,7 @@
   function setupMatrix() {
     if (!aboutCard || matrixRain.canvas) return;
     const canvas = el("canvas", { class: "matrix-bg", "aria-hidden": "true" });
-    aboutCard.prepend(canvas);
+    aboutCard.prepend(canvas, el("div", { class: "matrix-fade", "aria-hidden": "true" }));
     matrixRain.canvas = canvas;
     matrixRain.ctx = canvas.getContext("2d");
     sizeMatrix();
@@ -1324,7 +1323,7 @@
       }
       if (now - start >= 2000) {
         const fps = (frames * 1000) / (now - start);
-        bad = fps < 38 || slow > frames * 0.25 ? bad + 1 : 0;
+        bad = fps < 50 || slow > frames * 0.15 ? bad + 1 : 0;
         start = 0;
         windows++;
         if (bad >= 3) return setPerf("lite", true);
@@ -1459,16 +1458,21 @@
     );
   }
 
-  const markCanvas = $("[data-home-mark]");
+  let markCanvas = $("[data-home-mark]");
   let introMark = null;
 
   function startIntroMark() {
-    if (!markCanvas || !window.MARK3D || reduceMotion) return;
+    if (!markCanvas || reduceMotion) return;
     markCanvas.classList.add("is-on");
-    introMark = window.MARK3D.create(markCanvas, { lite: isLite(), speed: 1.1, swing: 0.52, entry: true });
+    introMark = window.MARK3D
+      ? window.MARK3D.create(markCanvas, { lite: isLite(), speed: 1.1, swing: 0.52, entry: true })
+      : null;
     if (!introMark) {
-      markCanvas.classList.remove("is-on");
-      return;
+      // no hardware WebGL: a light CSS version of the logo instead of the 3D mesh
+      const img = el("img", { class: "home-mark is-on is-flat", src: "assets/img/logo-mark.webp", alt: "" });
+      markCanvas.replaceWith(img);
+      markCanvas = img;
+      introMark = { start() {}, stop() {}, dispose() {} };
     }
     introMark.start();
     setTimeout(() => markCanvas.classList.add("is-shown"), 500);

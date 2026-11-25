@@ -585,10 +585,10 @@
     function draw(time) {
       g.clear();
       drawMap(g, time);
-      mapPre.innerHTML = g.html();
+      g.paint(mapPre);
       lg.clear();
       drawLadder(lg, time);
-      ladderPre.innerHTML = lg.html();
+      lg.paint(ladderPre);
     }
     function frame(now) {
       raf = requestAnimationFrame(frame);

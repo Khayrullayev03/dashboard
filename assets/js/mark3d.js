@@ -177,11 +177,24 @@ void main() {
     };
     let gl = null;
     try {
-      gl = canvas.getContext("webgl", { alpha: true, antialias: !opts.lite, premultipliedAlpha: true });
+      gl = canvas.getContext("webgl", {
+        alpha: true,
+        antialias: !opts.lite,
+        premultipliedAlpha: true,
+        failIfMajorPerformanceCaveat: true,
+      });
     } catch (e) {
       gl = null;
     }
     if (!gl || !gl.getExtension("OES_element_index_uint")) return null;
+    const info = gl.getExtension("WEBGL_debug_renderer_info");
+    const renderer = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+    if (/swiftshader|llvmpipe|softpipe|software|basic render|mesa offscreen/i.test(renderer)) {
+      // CPU-rendered WebGL would stall the page: let the caller use its CSS fallback
+      const lose = gl.getExtension("WEBGL_lose_context");
+      if (lose) lose.loseContext();
+      return null;
+    }
 
     const vs = compile(gl, gl.VERTEX_SHADER, VS);
     const fs = compile(gl, gl.FRAGMENT_SHADER, FS);

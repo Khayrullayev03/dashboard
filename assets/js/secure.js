@@ -423,7 +423,7 @@
         draw(time) {
           g.clear();
           card.draw(g, time);
-          pre.innerHTML = g.html();
+          g.paint(pre);
         },
       };
       player.draw(2.5 + i);

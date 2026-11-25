@@ -27,6 +27,22 @@
     (nav.deviceMemory && nav.deviceMemory <= 4) ||
     (nav.hardwareConcurrency && nav.hardwareConcurrency <= 4) ||
     (nav.connection && nav.connection.saveData);
+  // No hardware GPU (blocked driver, VM, remote desktop): WebGL and blur run on the CPU.
+  var SOFT = /swiftshader|llvmpipe|softpipe|software|basic render|microsoft basic|mesa offscreen/i;
+  function noGpu() {
+    try {
+      var gl = document.createElement("canvas").getContext("webgl", { failIfMajorPerformanceCaveat: true });
+      if (!gl) return true;
+      var info = gl.getExtension("WEBGL_debug_renderer_info");
+      var name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+      var lose = gl.getExtension("WEBGL_lose_context");
+      if (lose) lose.loseContext();
+      return SOFT.test(name);
+    } catch (e) {
+      return true;
+    }
+  }
+  if (!weak && saved !== "lite" && saved !== "full") weak = noGpu();
   root.dataset.perf = saved === "lite" || saved === "full" ? saved : weak ? "lite" : "full";
   if (saved) root.dataset.perfLocked = "1";
 

@@ -57,7 +57,7 @@
     if (!loc) {
       const msg = `[ ${t("info.locating")} ]`;
       if (blink(time, 0.8)) g.put(Math.round((W - msg.length) / 2), Math.round(H / 2), msg, 1);
-      pre.innerHTML = g.html();
+      g.paint(pre);
       return;
     }
 
@@ -99,7 +99,7 @@
     for (let r = 1; r <= lines.length; r++) g.put(left + 1, top + r, " ".repeat(width), 0);
     g.box(left, top, width + 2, lines.length + 2, 1);
     lines.forEach((l, i) => g.put(left + 2, top + 1 + i, l, i === 0 ? 1 : 3));
-    pre.innerHTML = g.html();
+    g.paint(pre);
   }
 
   function browserName() {

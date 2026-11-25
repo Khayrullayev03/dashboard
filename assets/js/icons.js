@@ -418,7 +418,7 @@
       draw(t) {
         g.clear();
         scene(g, t);
-        pre.innerHTML = g.html();
+        g.paint(pre);
       },
     };
     player.draw(1.3);

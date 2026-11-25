@@ -642,9 +642,9 @@
     drawMap(mapG, t, st);
     drawFeed(feedG, t, st);
     drawModels(modelsG, t, st);
-    mapPre.innerHTML = mapG.html();
-    feedPre.innerHTML = feedG.html();
-    modelsPre.innerHTML = modelsG.html();
+    mapG.paint(mapPre);
+    feedG.paint(feedPre);
+    modelsG.paint(modelsPre);
   }
 
   const now = () => clock + (raf ? (performance.now() - resumedAt) / 1000 : 0);

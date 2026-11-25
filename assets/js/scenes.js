@@ -89,6 +89,31 @@
         }
         return out;
       },
+      // Writes the grid into a <pre>, touching only the rows that changed since the last frame.
+      paint(pre) {
+        const html = g.html();
+        let rows = pre._rows;
+        const attached = rows && rows[0] && rows[0].parentNode === pre;
+        if (attached && pre._html === html) return;
+        pre._html = html;
+        const lines = html.split("\n");
+        if (!attached || rows.length !== lines.length) {
+          pre.textContent = "";
+          rows = lines.map((_, i) => {
+            const row = document.createElement("span");
+            pre.append(row);
+            if (i < lines.length - 1) pre.append("\n");
+            return row;
+          });
+          pre._rows = rows;
+        }
+        for (let i = 0; i < lines.length; i++) {
+          if (rows[i]._html !== lines[i]) {
+            rows[i]._html = lines[i];
+            rows[i].innerHTML = lines[i];
+          }
+        }
+      },
     };
     return g;
   }
@@ -802,7 +827,7 @@
     function draw(t) {
       g.clear();
       scene(g, t);
-      pre.innerHTML = g.html();
+      g.paint(pre);
     }
     function loop(now) {
       raf = requestAnimationFrame(loop);

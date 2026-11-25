@@ -92,12 +92,13 @@
   }
 
   function resize() {
-    const dpr = lite() ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+    // The faint field is drawn at 1x; only the moon gets extra pixels on HiDPI screens.
+    const dpr = lite() ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
     width = window.innerWidth;
     height = window.innerHeight;
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvas.width = width;
+    canvas.height = height;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.font = `500 ${FONT_PX}px "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace`;
     ctx.textBaseline = "top";
     cellW = ctx.measureText("0").width || 8;
@@ -218,8 +219,8 @@
   let layerGeo = null;
 
   function sizeLayer(dpr) {
-    layer.width = canvas.width;
-    layer.height = canvas.height;
+    layer.width = Math.round(width * dpr);
+    layer.height = Math.round(height * dpr);
     lctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     lctx.font = ctx.font;
     lctx.textBaseline = "top";
