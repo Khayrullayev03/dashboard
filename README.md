@@ -51,7 +51,7 @@ assets/
     soundtrack.js саундтрек сайта, синтезируется в браузере (Web Audio)
     stats.js      раздел «Кто заходил» и оценка сайта
     ascii-logo.js, worldmap.js   данные для ASCII-логотипа и карты
-supabase/schema.sql   таблицы и функции для статистики и оценок
+supabase/migrations/  таблицы и функции для статистики и оценок (Supabase применяет их сам при пуше)
 ```
 
 Контент меняется в `assets/js/data.js`, переводы интерфейса — в `assets/js/i18n.js`.
@@ -62,8 +62,11 @@ supabase/schema.sql   таблицы и функции для статистик
 Пока ключи не заданы, раздел и оценка скрыты.
 
 1. Создать проект в Supabase.
-2. SQL Editor → вставить `supabase/schema.sql` → Run.
-3. Project Settings → API: скопировать Project URL и публичный ключ (anon / publishable) в `assets/js/config.js`.
+2. Project Settings → Integrations → GitHub: подключить этот репозиторий, рабочая папка `.`, ветка `main`,
+   включить **Deploy to production**. Тогда миграции из `supabase/migrations` применяются к базе сами при каждом пуше.
+   Без интеграции: SQL Editor → вставить файл из `supabase/migrations` → Run (файлы можно запускать повторно).
+3. Project Settings → API Keys: скопировать Project URL и публичный ключ (publishable `sb_publishable_…` или
+   legacy anon) в `assets/js/config.js`. Секретный ключ (secret / service_role) на сайт не ставить.
 
 Хранится анонимно: источник перехода, город по часовому поясу, тип устройства, раздел. IP не сохраняется.
 Ссылки с меткой источника: `https://khayrullayev03.github.io/dashboard/?from=telegram`.
@@ -115,8 +118,8 @@ supabase/schema.sql   таблицы и функции для статистик
 - Защита от встраивания в чужие страницы (iframe): сайт внутри фрейма не показывается.
 - Карта Kaspersky открывается в песочнице (`sandbox`), без права управлять страницей.
 - Supabase: запись только через функции `add_visit` и `add_rating` с лимитами по IP (IP хранится только как хеш с
-  секретной солью), один голос с одного IP, общий потолок записей в час и в сутки. После изменения схемы выполните
-  `supabase/schema.sql` в SQL Editor ещё раз.
+  секретной солью), один голос с одного IP, общий потолок записей в час и в сутки. Изменения схемы — новым файлом в
+  `supabase/migrations` (применится при пуше через GitHub-интеграцию).
 - GitHub Action закреплён по хешу коммита.
 - Права на код и контент: `LICENSE` (все права защищены).
 
