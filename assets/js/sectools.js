@@ -340,7 +340,31 @@
   let vulnFailed = false;
   let vulnRetries = 0;
 
+  // The vulnerability feed comes from our Supabase function `feeds` (NVD + EPSS, cached for an hour);
+  // direct requests to NVD and FIRST are only a fallback.
+  const site = window.SITE_CONFIG || {};
+  const FEEDS =
+    site.supabaseUrl && site.supabaseKey ? `${site.supabaseUrl.replace(/\/+$/, "")}/functions/v1/feeds` : "";
+
+  async function vulnsViaProxy() {
+    const headers = { apikey: site.supabaseKey };
+    if (site.supabaseKey.startsWith("eyJ")) headers.Authorization = `Bearer ${site.supabaseKey}`;
+    const res = await fetch(`${FEEDS}?src=vulns`, { headers });
+    if (!res.ok) throw new Error(res.status);
+    const d = await res.json();
+    if (!Array.isArray(d.cves)) throw new Error("feed");
+    return { cves: d.cves, top: d.top || [], total: d.total || 0, hot: d.hot || 0 };
+  }
+
   async function loadVulns() {
+    if (FEEDS) {
+      try {
+        vulns = await vulnsViaProxy();
+        vulnFailed = false;
+        renderVulns();
+        return;
+      } catch (e) {}
+    }
     const day = 86400000;
     const iso = (d) => d.toISOString().slice(0, 23);
     const end = new Date();

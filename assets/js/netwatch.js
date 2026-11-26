@@ -142,22 +142,42 @@
     return res.json();
   }
 
+  // Normally the data comes from our Supabase function `feeds`, which caches SANS ISC for 30 min
+  // (no per-visitor rate limits or blocks). Direct requests to SANS are only a fallback.
+  const site = window.SITE_CONFIG || {};
+  const FEEDS =
+    site.supabaseUrl && site.supabaseKey ? `${site.supabaseUrl.replace(/\/+$/, "")}/functions/v1/feeds` : "";
+
+  async function viaProxy() {
+    const headers = { apikey: site.supabaseKey };
+    if (site.supabaseKey.startsWith("eyJ")) headers.Authorization = `Bearer ${site.supabaseKey}`;
+    const res = await fetch(`${FEEDS}?src=isc`, { headers });
+    if (!res.ok) throw new Error(res.status);
+    const d = await res.json();
+    return { level: d.level, date: d.date, ports: d.ports || [], ips: d.ips || [] };
+  }
+
+  async function direct() {
+    const [infocon, ports, ips] = await Promise.allSettled([
+      getJSON("infocon?json"),
+      getJSON("topports/records/8?json"),
+      getJSON("sources/attacks/6?json"),
+    ]);
+    if (ports.status !== "fulfilled") throw new Error("isc");
+    const portList = Object.keys(ports.value)
+      .filter((k) => /^\d+$/.test(k))
+      .map((k) => ports.value[k]);
+    return {
+      level: String((infocon.status === "fulfilled" && infocon.value.status) || "green").toLowerCase(),
+      date: ports.value.date,
+      ports: portList,
+      ips: ips.status === "fulfilled" && Array.isArray(ips.value) ? ips.value : [],
+    };
+  }
+
   async function loadStats() {
     try {
-      const [infocon, ports, ips] = await Promise.all([
-        getJSON("infocon?json"),
-        getJSON("topports/records/8?json"),
-        getJSON("sources/attacks/6?json"),
-      ]);
-      const portList = Object.keys(ports)
-        .filter((k) => /^\d+$/.test(k))
-        .map((k) => ports[k]);
-      stats = {
-        level: String(infocon.status || "green").toLowerCase(),
-        date: ports.date,
-        ports: portList,
-        ips: Array.isArray(ips) ? ips : [],
-      };
+      stats = FEEDS ? await viaProxy().catch(direct) : await direct();
       statsFailed = false;
     } catch (e) {
       statsFailed = !stats;

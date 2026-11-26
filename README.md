@@ -51,7 +51,8 @@ assets/
     soundtrack.js саундтрек сайта, синтезируется в браузере (Web Audio)
     stats.js      раздел «Кто заходил» и оценка сайта
     ascii-logo.js, worldmap.js   данные для ASCII-логотипа и карты
-supabase/migrations/  таблицы и функции для статистики и оценок (Supabase применяет их сам при пуше)
+supabase/migrations/  таблицы и функции: статистика, оценки, гостевая книга, кэш лент
+supabase/functions/feeds/  Edge Function: данные SANS ISC и NVD/EPSS через кэш (30–60 мин)
 ```
 
 Контент меняется в `assets/js/data.js`, переводы интерфейса — в `assets/js/i18n.js`.
