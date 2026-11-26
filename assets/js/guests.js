@@ -417,11 +417,13 @@
   }
 
   const bookBox = page.querySelector("[data-guest-book]");
-  const cfg = (window.SITE_CONFIG && window.SITE_CONFIG.guestbook) || {};
-  const server = String(cfg.server || "https://ntfy.sh").replace(/\/+$/, "");
-  const topic = /^[A-Za-z0-9_-]{1,64}$/.test(cfg.topic || "") ? cfg.topic : "";
-  const ready = Boolean(topic);
-  const book = { stored: null, seen: new Set(), live: [], mine: [], failed: false, shown: 20, opened: 0, timer: 0 };
+  // Comments live in Supabase (table `guestbook`): add_comment checks and rate-limits them,
+  // list_comments returns the visible ones. The owner hides or deletes rows in the Table Editor.
+  const site = window.SITE_CONFIG || {};
+  const api = String(site.supabaseUrl || "").replace(/\/+$/, "");
+  const apiKey = site.supabaseKey || "";
+  const ready = Boolean(api && apiKey);
+  const book = { stored: null, mine: [], failed: false, shown: 20, opened: 0, timer: 0 };
   let bookUI = null;
 
   const LINK =
@@ -440,24 +442,23 @@
       .trim();
   const hasLink = (s) => LINK.test(s);
 
-  // A keep-alive copy carries the original id and time in its tags: o-<id>, t-<unix>.
-  function origin(m) {
-    const tags = Array.isArray(m.tags) ? m.tags.map(String) : [];
-    const oid = (tags.find((tag) => tag.startsWith("o-")) || "").slice(2);
-    const ot = Number((tags.find((tag) => tag.startsWith("t-")) || "").slice(2));
-    if (/^[A-Za-z0-9]{6,24}$/.test(oid) && ot && ot <= m.time && ot >= m.time - 30 * 86400) return [oid, ot];
-    return [String(m.id), Number(m.time)];
+  function rpc(name, body) {
+    const headers = { apikey: apiKey, "Content-Type": "application/json" };
+    if (apiKey.startsWith("eyJ")) headers.Authorization = `Bearer ${apiKey}`;
+    return fetch(`${api}/rest/v1/rpc/${name}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body || {}),
+      cache: "no-store",
+    });
   }
 
-  function fromMessage(m) {
-    if (!m || m.event !== "message" || m.attachment || !m.id || !m.time) return null;
-    const nick = cleanNick(m.title);
-    const text = cleanText(m.message);
-    if (nick.length < 2 || nick.length > 32 || text.length < 2 || text.length > 500) return null;
-    if (hasLink(nick) || hasLink(text)) return null;
-    const [id, time] = origin(m);
-    return { id, time, nick, text, posted: Number(m.time) };
-  }
+  const fromRow = (r) => ({
+    id: String(r.id),
+    time: Math.floor(new Date(r.created_at).getTime() / 1000),
+    nick: cleanNick(r.nick),
+    text: cleanText(r.body),
+  });
 
   const nickColor = (nick) => {
     const palette = ["#f2334a", "#ff8c9a", "#ffd23f", "#45d483", "#6ed2ff", "#cfd1d7"];
@@ -530,9 +531,7 @@
 
   function entries() {
     const byId = new Map();
-    [...(book.stored || []), ...book.live.filter((c) => !book.seen.has(c.id)), ...book.mine].forEach((c) =>
-      byId.set(c.id, c)
-    );
+    [...(book.stored || []), ...book.mine].forEach((c) => byId.set(c.id, c));
     return [...byId.values()].sort((a, b) => b.time - a.time || (a.id < b.id ? 1 : -1));
   }
 
@@ -554,8 +553,7 @@
     bookUI.countEl.textContent = all.length ? countLabel(all.length) : "";
     if (!all.length) {
       if (ready) {
-        const loaded = book.stored || book.live.length || book.liveOk;
-        bookUI.list.append(el("li", "guest-empty", loaded ? T("empty") : book.failed ? T("error") : T("loading")));
+        bookUI.list.append(el("li", "guest-empty", book.stored ? T("empty") : book.failed ? T("error") : T("loading")));
       }
       bookUI.more.hidden = true;
       return;
@@ -573,63 +571,17 @@
     bookUI.more.hidden = all.length <= book.shown;
   }
 
-  async function loadStored() {
-    const res = await fetch(`assets/data/guestbook.json?_=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(res.status);
-    const data = await res.json();
-    const comments = Array.isArray(data.comments) ? data.comments : [];
-    book.stored = comments
-      .map((c) => fromMessage({ event: "message", id: c.id, time: c.time, title: c.nick, message: c.text }))
-      .filter(Boolean);
-    book.seen = new Set([...Object.keys(data.seen || {}), ...book.stored.map((c) => c.id)]);
-  }
-
-  async function loadLive() {
-    const res = await fetch(`${server}/${topic}/json?poll=1&since=all`, { cache: "no-store" });
-    if (!res.ok) throw new Error(res.status);
-    const lines = (await res.text()).split("\n");
-    const live = [];
-    lines.forEach((line) => {
-      if (!line.trim()) return;
-      try {
-        const c = fromMessage(JSON.parse(line));
-        if (c) live.push(c);
-      } catch (e) {}
-    });
-    book.live = live.slice(-100);
-    book.liveOk = true;
-  }
-
-  // ntfy.sh forgets messages after 12 h. If a comment is still not in guestbook.json after 8 h
-  // (GitHub skipped the scheduled syncs), any visitor's browser re-posts a copy with the original
-  // id and time, which gives it another 12 h until a sync saves it for good.
-  const KEEP_AFTER = 8 * 3600;
-  function keepAlive() {
-    const now = Date.now() / 1000;
-    const newest = new Map();
-    book.live.forEach((c) => {
-      const prev = newest.get(c.id);
-      if (!prev || c.posted > prev.posted) newest.set(c.id, c);
-    });
-    newest.forEach((c, id) => {
-      if (book.seen.has(id) || now - c.posted < KEEP_AFTER) return;
-      const key = `gbKeep:${id}`;
-      if (Number(store.get(key) || 0) > Date.now() - 3600 * 1000) return;
-      store.set(key, String(Date.now()));
-      const tags = encodeURIComponent(`keep,o-${c.id},t-${c.time}`);
-      fetch(`${server}/${topic}?title=${encodeURIComponent(c.nick)}&tags=${tags}&priority=1`, {
-        method: "POST",
-        body: c.text,
-        cache: "no-store",
-      }).catch(() => {});
-    });
-  }
-
   async function loadBook() {
     if (!ready) return;
-    const [stored, live] = await Promise.allSettled([loadStored(), loadLive()]);
-    book.failed = stored.status === "rejected" && live.status === "rejected" && !book.stored;
-    if (stored.status === "fulfilled" && live.status === "fulfilled") keepAlive();
+    try {
+      const res = await rpc("list_comments", { p_limit: 300 });
+      if (!res.ok) throw new Error(res.status);
+      const rows = await res.json();
+      book.stored = (Array.isArray(rows) ? rows : []).map(fromRow).filter((c) => c.nick && c.text);
+      book.failed = false;
+    } catch (e) {
+      book.failed = !book.stored;
+    }
     renderBook();
   }
 
@@ -654,19 +606,17 @@
     }
     bookUI.send.disabled = true;
     try {
-      const res = await fetch(`${server}/${topic}?title=${encodeURIComponent(nick)}&tags=speech_balloon`, {
-        method: "POST",
-        body: text,
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(res.status);
-      const sent = fromMessage(await res.json().catch(() => null)) || {
-        id: `local-${Date.now()}`,
-        time: Math.floor(Date.now() / 1000),
-        nick,
-        text,
-      };
-      book.mine.push(sent);
+      const res = await rpc("add_comment", { p_nick: nick, p_text: text });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        const code = data && data.message;
+        bookUI.status.textContent = T(
+          code === "links" ? "noLinks" : code === "slow_down" ? "wait" : code === "bad_length" ? "tooShort" : "fail"
+        );
+        bookUI.send.disabled = false;
+        return;
+      }
+      book.mine.push(fromRow({ id: data.id, created_at: data.created_at, nick, body: text }));
       store.set("gbLast", String(Date.now()));
       bookUI.text.value = "";
       bookUI.counter.textContent = "0/500";
