@@ -21,8 +21,9 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const skillById = new Map(skills.map((s) => [s.id, s]));
   const LEVELS = { basic: 3, intermediate: 6, confident: 8, advanced: 9, expert: 10 };
-  const PAGES = ["home", "services", "voip", "about", "info", "who", "guests", "contact"];
+  const PAGES = ["home", "services", "voip", "about", "info", "guests", "contact"];
   const ALIASES = {
+    who: "guests",
     office: "services",
     telephony: "voip",
     pbx: "voip",

@@ -49,7 +49,7 @@ assets/
     visualizer.js аудиовизуализатор: спектр 20 Гц – 16 кГц в шапке, глитч и вспышки на ударах
     kick-worklet.js  детектор бочки в аудиопотоке (свой трек и микрофон)
     soundtrack.js саундтрек сайта, синтезируется в браузере (Web Audio)
-    stats.js      раздел «Кто заходил» и оценка сайта
+    stats.js      анонимная статистика визитов (в Supabase) и оценка сайта
     ascii-logo.js, worldmap.js   данные для ASCII-логотипа и карты
 supabase/migrations/  таблицы и функции: статистика, оценки, гостевая книга, кэш лент
 supabase/functions/feeds/  Edge Function: данные SANS ISC и NVD/EPSS через кэш (30–60 мин)
@@ -59,7 +59,9 @@ supabase/functions/feeds/  Edge Function: данные SANS ISC и NVD/EPSS че
 
 ## Статистика и оценки
 
-Раздел «Кто заходил» и блок оценки работают через [Supabase](https://supabase.com) (бесплатный тариф):
+Статистика визитов и блок оценки работают через [Supabase](https://supabase.com) (бесплатный тариф). Отдельного
+раздела на сайте нет: статистику смотреть в Supabase → Table Editor → `visits` или SQL `select public.visit_summary();`.
+Проект
 проект «dashboard», регион Франкфурт. Бесплатный проект засыпает после 7 дней без запросов — тогда в панели
 Supabase нажать Restore (пока сайт посещают, он не засыпает).
 

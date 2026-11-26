@@ -117,9 +117,6 @@
     }
   }
 
-  const sourceName = (id) => SOURCES[id] || (id === "direct" ? t("who.direct") : id === "other" ? t("who.other") : id);
-  const pageName = (id) => t(id === "home" ? "nav.main" : `nav.${id}`);
-
   function track(page) {
     if (!enabled) return;
     const seen = new Set((store.get("sessionStorage", "seen") || "").split(",").filter(Boolean));
@@ -145,117 +142,6 @@
     const bar = el("span", "meter-bar");
     bar.append("[", el("span", "meter-fill", "█".repeat(n)), el("span", "meter-empty", "░".repeat(20 - n)), "]");
     return bar;
-  }
-
-  function ago(iso) {
-    const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
-    if (min < 1) return t("who.now");
-    if (min < 60) return t("who.min", { n: min });
-    if (min < 1440) return t("who.hour", { n: Math.round(min / 60) });
-    return t("who.day", { n: Math.round(min / 1440) });
-  }
-
-  const whoRoot = document.querySelector("[data-who]");
-  const whoLink = document.querySelector('.nav a[href="#who"]');
-  let summary = null;
-  let failed = false;
-  let timer = 0;
-
-  function panel(title, label, body) {
-    const box = el("div", "term who-panel");
-    const bar = el("div", "term-bar");
-    bar.append(el("span", null, title), el("span", null, label));
-    box.append(bar, body);
-    return box;
-  }
-
-  function bars(rows, total, name) {
-    const list = el("ul", "who-bars");
-    rows.forEach((row) => {
-      const share = total ? row.n / total : 0;
-      const li = el("li", "who-bar");
-      li.append(
-        el("span", "who-bar-name", name(row)),
-        meter(share),
-        el("span", "who-bar-val", `${Math.round(share * 100)}% · ${row.n}`)
-      );
-      list.append(li);
-    });
-    return list;
-  }
-
-  function renderWho() {
-    if (!whoRoot) return;
-    whoRoot.textContent = "";
-    if (!enabled || failed || !summary) {
-      whoRoot.append(el("p", "who-note", !enabled ? t("who.off") : failed ? t("who.error") : t("who.loading")));
-      return;
-    }
-    const total = summary.total || 0;
-    const sources = summary.sources || [];
-    const top = sources[0];
-
-    const stats = el("div", "services-stats who-stats");
-    [
-      [String(total), t("who.total")],
-      [String(summary.today || 0), t("who.today")],
-      [top ? sourceName(top.source) : "—", t("who.top")],
-    ].forEach(([value, label]) => {
-      const card = el("div", "term stat-card");
-      card.append(el("span", "stat-num", value), el("span", "stat-label", label));
-      stats.append(card);
-    });
-    whoRoot.append(stats);
-
-    if (!total) {
-      whoRoot.append(el("p", "who-note", t("who.empty")));
-      return;
-    }
-
-    const grid = el("div", "who-grid");
-    grid.append(
-      panel(
-        "~/who/sources",
-        t("who.sources"),
-        bars(sources, total, (r) => sourceName(r.source))
-      ),
-      panel(
-        "~/who/pages",
-        t("who.pages"),
-        bars(summary.pages || [], total, (r) => pageName(r.page))
-      )
-    );
-    whoRoot.append(grid);
-
-    const feed = el("ol", "who-feed");
-    (summary.recent || []).forEach((v) => {
-      const li = el("li", "who-row");
-      li.append(
-        el("span", "who-time", ago(v.created_at)),
-        el("span", "who-src", sourceName(v.source)),
-        el("span", "who-meta", [v.place, t(`who.${v.device}`)].filter(Boolean).join(" · ")),
-        el("span", "who-page", `→ ${pageName(v.page)}`)
-      );
-      feed.append(li);
-    });
-    const live = el("span", "live", "● live");
-    const recent = panel("~/who/live", "", feed);
-    recent.querySelector(".term-bar span:last-child").replaceWith(live);
-    recent.classList.add("who-recent");
-    whoRoot.append(recent, el("p", "who-note", t("who.note")));
-  }
-
-  function loadWho() {
-    if (!enabled) return renderWho();
-    request("rpc/visit_summary")
-      .then((data) => {
-        summary = data;
-        failed = false;
-      })
-      .catch(() => {
-        failed = true;
-      })
-      .then(renderWho);
   }
 
   const ratingRoot = document.querySelector("[data-rating]");
@@ -339,22 +225,7 @@
       });
   }
 
-  function syncWho(page) {
-    clearInterval(timer);
-    if (page !== "who") return;
-    loadWho();
-    if (enabled) timer = setInterval(loadWho, 30000);
-  }
-
-  if (whoLink) whoLink.hidden = !enabled;
-  document.addEventListener("pagechange", (event) => {
-    track(event.detail);
-    syncWho(event.detail);
-  });
-  document.addEventListener("langchange", () => {
-    renderWho();
-    renderRating();
-  });
-  renderWho();
+  document.addEventListener("pagechange", (event) => track(event.detail));
+  document.addEventListener("langchange", renderRating);
   loadRating();
 })();

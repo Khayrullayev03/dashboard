@@ -2387,37 +2387,12 @@ html.bg-ready .page-home.is-intro .home-stage::before {
     0 16px 44px -10px var(--accent-glow);
 }
 
-.who-stats {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.who-grid {
-  display: grid;
-  gap: 22px;
-  margin-bottom: 22px;
-}
-
-@media (min-width: 980px) {
-  .who-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.who-bars,
-.who-feed,
 .rating-dist {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.who-bars {
-  display: grid;
-  gap: 10px;
-  padding: 18px 20px 20px;
-}
-
-.who-bar,
 .rating-row {
   display: grid;
   grid-template-columns: 12ch auto 1fr;
@@ -2426,88 +2401,9 @@ html.bg-ready .page-home.is-intro .home-stage::before {
   font-size: 13px;
 }
 
-.who-bar-name {
-  overflow: hidden;
-  color: var(--bright);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.who-bar-val,
 .rating-row-val {
   color: var(--muted);
   white-space: nowrap;
-}
-
-.who-feed {
-  display: grid;
-  padding: 6px 20px 12px;
-}
-
-.who-row {
-  display: grid;
-  grid-template-columns: 13ch 15ch minmax(0, 1fr) auto;
-  gap: 1.5ch;
-  padding: 9px 0;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.07);
-  font-size: 13px;
-}
-
-.who-row:last-child {
-  border-bottom: 0;
-}
-
-.who-time {
-  color: var(--muted);
-}
-
-.who-src {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.who-meta {
-  overflow: hidden;
-  color: var(--text);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.who-page {
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.who-note {
-  margin: 18px 0 0;
-  color: var(--muted);
-  font-size: 12.5px;
-}
-
-.who-recent .live {
-  color: var(--accent);
-  animation: blink 1.6s steps(1) infinite;
-}
-
-@media (max-width: 720px) {
-  .who-stats {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .who-bar {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-  .who-bar .meter-bar {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    overflow: hidden;
-  }
-  .who-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-  .who-meta,
-  .who-page {
-    grid-column: 1 / -1;
-  }
 }
 
 .rating {
@@ -2638,11 +2534,6 @@ html.bg-ready .page-home.is-intro .home-stage::before {
     width: 40px;
     height: 40px;
   }
-}
-
-.who-stats .stat-card:last-child .stat-num {
-  overflow-wrap: anywhere;
-  font-size: clamp(1.9rem, 2.6vw + 1rem, 3.2rem);
 }
 
 .secure-principles {

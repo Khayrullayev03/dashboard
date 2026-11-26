@@ -1376,7 +1376,6 @@
     voip: call,
     about: rain,
     info: decrypt,
-    who: logs,
     guests: scan,
     contact: shatter,
   };
