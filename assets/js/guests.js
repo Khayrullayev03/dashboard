@@ -440,13 +440,23 @@
       .trim();
   const hasLink = (s) => LINK.test(s);
 
+  // A keep-alive copy carries the original id and time in its tags: o-<id>, t-<unix>.
+  function origin(m) {
+    const tags = Array.isArray(m.tags) ? m.tags.map(String) : [];
+    const oid = (tags.find((tag) => tag.startsWith("o-")) || "").slice(2);
+    const ot = Number((tags.find((tag) => tag.startsWith("t-")) || "").slice(2));
+    if (/^[A-Za-z0-9]{6,24}$/.test(oid) && ot && ot <= m.time && ot >= m.time - 30 * 86400) return [oid, ot];
+    return [String(m.id), Number(m.time)];
+  }
+
   function fromMessage(m) {
     if (!m || m.event !== "message" || m.attachment || !m.id || !m.time) return null;
     const nick = cleanNick(m.title);
     const text = cleanText(m.message);
     if (nick.length < 2 || nick.length > 32 || text.length < 2 || text.length > 500) return null;
     if (hasLink(nick) || hasLink(text)) return null;
-    return { id: String(m.id), time: Number(m.time), nick, text };
+    const [id, time] = origin(m);
+    return { id, time, nick, text, posted: Number(m.time) };
   }
 
   const nickColor = (nick) => {
@@ -590,10 +600,36 @@
     book.liveOk = true;
   }
 
+  // ntfy.sh forgets messages after 12 h. If a comment is still not in guestbook.json after 8 h
+  // (GitHub skipped the scheduled syncs), any visitor's browser re-posts a copy with the original
+  // id and time, which gives it another 12 h until a sync saves it for good.
+  const KEEP_AFTER = 8 * 3600;
+  function keepAlive() {
+    const now = Date.now() / 1000;
+    const newest = new Map();
+    book.live.forEach((c) => {
+      const prev = newest.get(c.id);
+      if (!prev || c.posted > prev.posted) newest.set(c.id, c);
+    });
+    newest.forEach((c, id) => {
+      if (book.seen.has(id) || now - c.posted < KEEP_AFTER) return;
+      const key = `gbKeep:${id}`;
+      if (Number(store.get(key) || 0) > Date.now() - 3600 * 1000) return;
+      store.set(key, String(Date.now()));
+      const tags = encodeURIComponent(`keep,o-${c.id},t-${c.time}`);
+      fetch(`${server}/${topic}?title=${encodeURIComponent(c.nick)}&tags=${tags}&priority=1`, {
+        method: "POST",
+        body: c.text,
+        cache: "no-store",
+      }).catch(() => {});
+    });
+  }
+
   async function loadBook() {
     if (!ready) return;
     const [stored, live] = await Promise.allSettled([loadStored(), loadLive()]);
     book.failed = stored.status === "rejected" && live.status === "rejected" && !book.stored;
+    if (stored.status === "fulfilled" && live.status === "fulfilled") keepAlive();
     renderBook();
   }
 

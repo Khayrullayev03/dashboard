@@ -20,6 +20,19 @@ LINK = re.compile(
 CONTROL = re.compile(r"[\u0000-\u0008\u000b-\u001f\u007f-\u009f​-‏‪-‮⁦-⁩]")
 
 
+ORIG_ID = re.compile(r"^[A-Za-z0-9]{6,24}$")
+
+
+def origin(message):
+    """A keep-alive copy carries the original id and time in its tags (o-<id>, t-<unix>)."""
+    tags = message.get("tags") or []
+    oid = next((t[2:] for t in tags if str(t).startswith("o-")), "")
+    ot = next((t[2:] for t in tags if str(t).startswith("t-")), "")
+    if ORIG_ID.match(oid) and ot.isdigit() and message["time"] - 30 * 86400 <= int(ot) <= message["time"]:
+        return oid, int(ot)
+    return str(message["id"]), int(message["time"])
+
+
 def clean(message):
     if message.get("event") != "message" or message.get("attachment"):
         return None
@@ -30,7 +43,8 @@ def clean(message):
         return None
     if LINK.search(nick) or LINK.search(text):
         return None
-    return {"id": str(message["id"]), "time": int(message["time"]), "nick": nick, "text": text}
+    oid, otime = origin(message)
+    return {"id": oid, "time": otime, "nick": nick, "text": text}
 
 
 def output(changed):
@@ -68,19 +82,27 @@ def main():
     known = {c["id"] for c in comments}
     pairs = {(c["nick"].lower(), c["text"].lower()) for c in comments}
     fresh, added = 0, 0
+    now = int(time.time())
     for message in messages:
         mid = str(message["id"])
         if mid in seen or mid in known:
             continue
         fresh += 1
-        seen[mid] = int(message["time"])
+        # `seen` keeps the processing time, so an id is remembered for 13 h after we handled it,
+        # longer than ntfy keeps any message or copy of it
+        seen[mid] = now
         comment = clean(message)
         if not comment or added >= PER_RUN:
             continue
+        if comment["id"] != mid:
+            if comment["id"] in seen or comment["id"] in known:
+                continue
+            seen[comment["id"]] = now
         pair = (comment["nick"].lower(), comment["text"].lower())
         if pair in pairs:
             continue
         pairs.add(pair)
+        known.add(comment["id"])
         comments.append(comment)
         added += 1
 
