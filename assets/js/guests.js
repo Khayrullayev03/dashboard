@@ -116,10 +116,11 @@
     error: C("Не удалось загрузить комментарии", "Izohlarni yuklab bo‘lmadi", "Couldn't load comments"),
     sent: C("Спасибо! Комментарий опубликован.", "Rahmat! Izoh e’lon qilindi.", "Thanks! Your comment is published."),
     rules: C(
-      "Комментарий увидят все гости сайта. Ссылки не принимаются.",
-      "Izohni saytning barcha mehmonlari ko‘radi. Havolalar qabul qilinmaydi.",
-      "Every visitor will see your comment. Links are not accepted."
+      "Комментарий увидят все гости сайта. Ссылки не принимаются. От 300 символов — особый стиль «★ Легенда».",
+      "Izohni saytning barcha mehmonlari ko‘radi. Havolalar qabul qilinmaydi. 300 belgidan — «★ Afsona» uslubi.",
+      "Every visitor will see your comment. Links are not accepted. 300+ characters earn the «★ Legend» style."
     ),
+    legend: C("★ легенда", "★ afsona", "★ legend"),
     noLinks: C(
       "Без ссылок, пожалуйста — уберите адрес сайта из текста",
       "Havolasiz, iltimos — matndan sayt manzilini olib tashlang",
@@ -424,6 +425,8 @@
   const apiKey = site.supabaseKey || "";
   const ready = Boolean(api && apiKey);
   const book = { stored: null, mine: [], failed: false, shown: 20, opened: 0, timer: 0 };
+  // comments this long get the "★ Legend" look
+  const LEGEND = 300;
   let bookUI = null;
 
   const LINK =
@@ -507,9 +510,14 @@
       renderBook();
     });
     const countEl = el("span", "guest-count");
-    bookBox.replaceChildren(bar("~/guests/guestbook.log", countEl), form, status, list, more);
+    const aurora = el("div", "guest-aurora");
+    aurora.setAttribute("aria-hidden", "true");
+    bookBox.replaceChildren(aurora, bar("~/guests/guestbook.log", countEl), form, status, list, more);
     bookUI = { form, nick, text, trap, counter, send, rules, status, list, more, countEl };
-    text.addEventListener("input", () => (counter.textContent = `${text.value.length}/500`));
+    text.addEventListener("input", () => {
+      counter.textContent = `${text.value.length}/500`;
+      counter.classList.toggle("is-legend", text.value.trim().length >= LEGEND);
+    });
     const opened = () => (book.opened = book.opened || Date.now());
     nick.addEventListener("focus", opened);
     text.addEventListener("focus", opened);
@@ -559,12 +567,14 @@
       return;
     }
     all.slice(0, book.shown).forEach((e, i) => {
-      const li = el("li", "guest-entry");
+      const legend = e.text.length >= LEGEND;
+      const li = el("li", `guest-entry${legend ? " is-legend" : ""}`);
       li.style.setProperty("--i", Math.min(i, 12));
       const meta = el("div", "guest-meta");
       const who = el("span", "guest-who", e.nick);
-      who.style.color = nickColor(e.nick);
+      who.style.color = legend ? "#ffcf6b" : nickColor(e.nick);
       meta.append(el("span", "guest-time", `[${stamp(e.time)}]`), who);
+      if (legend) meta.append(el("span", "guest-badge", T("legend")));
       li.append(meta, el("p", "guest-msg", e.text));
       bookUI.list.append(li);
     });
