@@ -398,7 +398,13 @@
           label: S("PoE-коммутатор", "PoE-kommutator", "PoE switch"),
           sub: "VLAN 20 · QoS",
         },
-        pbx: { x: 370, y: 250, icon: UNIT("PBX"), label: S("IP-АТС", "IP-ATS", "IP PBX"), sub: "IP-PBX" },
+        pbx: {
+          x: 370,
+          y: 250,
+          icon: UNIT("PBX"),
+          label: S("IP-АТС", "IP-ATS", "IP PBX"),
+          sub: S("внутр. номера", "ichki raqamlar", "extensions"),
+        },
         crm: {
           x: 370,
           y: 100,

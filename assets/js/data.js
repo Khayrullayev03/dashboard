@@ -31,12 +31,7 @@ window.PORTFOLIO = {
       },
       rows: {
         ru: [
-          [
-            "Где стоит",
-            "станция и медные линии в офисе",
-            "сервер IP-PBX у вас",
-            "у провайдера: RingCentral, 8x8",
-          ],
+          ["Где стоит", "станция и медные линии в офисе", "свой сервер IP-АТС у вас", "у провайдера: RingCentral, 8x8"],
           ["Запуск", "дорого: станция + линии", "средне: сервер + IP-телефоны", "дёшево: только подписка"],
           ["Каждый месяц", "абонплата за каждую линию", "SIP-транк, дешёвые звонки", "оплата за пользователя"],
           ["Удалённая работа", "нет", "через VPN и софтфон", "из любой точки мира"],
@@ -52,7 +47,7 @@ window.PORTFOLIO = {
           [
             "Qayerda turadi",
             "stansiya va mis liniyalar ofisda",
-            "IP-PBX serveri sizda",
+            "IP-ATS serveri sizda",
             "provayderda: RingCentral, 8x8",
           ],
           ["Ishga tushirish", "qimmat: stansiya + liniyalar", "o‘rtacha: server + IP-telefonlar", "arzon: faqat obuna"],
@@ -75,7 +70,7 @@ window.PORTFOLIO = {
           [
             "Where it lives",
             "a box and copper lines in the office",
-            "your own IP-PBX server",
+            "your own IP PBX server",
             "at the provider: RingCentral, 8x8",
           ],
           ["Setup cost", "high: the box plus lines", "medium: a server plus IP phones", "low: just a subscription"],
@@ -91,20 +86,7 @@ window.PORTFOLIO = {
         ],
       },
     },
-    stack: [
-      "IP-PBX",
-      "IP-PBX",
-      "SIP",
-      "RTP",
-      "Softswitch",
-      "E1",
-      "IVR",
-      "QoS",
-      "Voice VLAN",
-      "PoE",
-      "RingCentral",
-      "8x8",
-    ],
+    stack: ["SIP", "RTP", "Softswitch", "E1", "IVR", "QoS", "Voice VLAN", "PoE", "RingCentral", "8x8"],
   },
 
   card: {
@@ -858,19 +840,19 @@ window.PORTFOLIO = {
       },
       points: {
         ru: [
-          "IP-АТС IP-PBX: внутренние номера, IVR, очереди",
+          "IP-АТС: внутренние номера, IVR, очереди",
           "SIP-транки, Softswitch оператора, медиашлюзы E1",
           "IP-телефоны и софтфоны, PoE, отдельный VLAN для голоса",
           "Запись разговоров, переадресация, качество связи (QoS)",
         ],
         uz: [
-          "IP-PBX IP-ATS: ichki raqamlar, IVR, navbatlar",
+          "IP-ATS: ichki raqamlar, IVR, navbatlar",
           "SIP-tranklar, operator Softswitch’i, E1 media shlyuzlari",
           "IP-telefonlar va softfonlar, PoE, ovoz uchun alohida VLAN",
           "Suhbatlarni yozish, yo‘naltirish, aloqa sifati (QoS)",
         ],
         en: [
-          "IP-PBX IP PBX: extensions, IVR, queues",
+          "IP PBX: extensions, IVR, queues",
           "SIP trunks, carrier softswitch, E1 media gateways",
           "IP phones and softphones, PoE, a dedicated voice VLAN",
           "Call recording, forwarding, call quality (QoS)",

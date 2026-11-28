@@ -87,9 +87,9 @@
     [
       TXT.pbx,
       {
-        ru: "офисная станция (IP-PBX): внутренние номера, IVR, очереди, запись разговоров",
-        uz: "ofis stansiyasi (IP-PBX): ichki raqamlar, IVR, navbatlar, suhbatlarni yozish",
-        en: "office phone system (IP-PBX): extensions, IVR, queues, call recording",
+        ru: "офисная станция: внутренние номера, IVR, очереди, запись разговоров",
+        uz: "ofis stansiyasi: ichki raqamlar, IVR, navbatlar, suhbatlarni yozish",
+        en: "office phone system: extensions, IVR, queues, call recording",
       },
     ],
     [
@@ -315,7 +315,7 @@
     }
     g.put(24, 5, "VLAN · voice", 2);
 
-    g.put(44, 2, "IP-PBX", 0);
+    g.put(44, 2, L(TXT.pbx), 0);
     g.put(44, 3, "ext 101-199", 2);
     g.put(44, 4, "● online", reached.has("pbx") && !blink(t, 0.6) ? 1 : 5);
     g.put(44, 5, "IVR · queue", 2);
