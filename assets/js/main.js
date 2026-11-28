@@ -21,12 +21,13 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const skillById = new Map(skills.map((s) => [s.id, s]));
   const LEVELS = { basic: 3, intermediate: 6, confident: 8, advanced: 9, expert: 10 };
-  const PAGES = ["home", "services", "voip", "about", "info", "guests", "contact"];
+  const PAGES = ["home", "services", "about", "info", "guests", "contact"];
   const ALIASES = {
     who: "guests",
     office: "services",
-    telephony: "voip",
-    pbx: "voip",
+    voip: "services",
+    telephony: "services",
+    pbx: "services",
     skills: "about",
     experience: "about",
     projects: "about",
@@ -530,8 +531,6 @@
   const officeBlock = $("[data-office]");
   const servicePlayers = new Map();
 
-  const voipRoot = $("[data-voip-services]");
-
   function buildServiceRow(service, i, page) {
     const num = String(i + 1).padStart(2, "0");
     const text = el(
@@ -585,7 +584,6 @@
       el("div", { class: "service-body" }, art, text)
     );
     if (service.feature === "office" && officeBlock) row.append(officeBlock);
-    if (service.feature === "voip" && window.VOIP) row.append(window.VOIP.create());
     if (service.feature === "secure" && window.SECURE) row.append(window.SECURE.create());
     return row;
   }
@@ -608,48 +606,6 @@
       "services",
       (data.services || []).filter((s) => !s.page)
     );
-  }
-
-  function renderVoip() {
-    if (!voipRoot) return;
-    renderServiceList(
-      voipRoot,
-      "voip",
-      (data.services || []).filter((s) => s.page === "voip")
-    );
-    const voip = data.voip || {};
-    const table = $("[data-voip-compare]");
-    if (table && voip.compare) {
-      const cols = L(voip.compare.cols) || [];
-      const head = el(
-        "thead",
-        null,
-        el(
-          "tr",
-          null,
-          el("th", { scope: "col" }),
-          ...cols.map((c, i) => el("th", { scope: "col", class: `col-${i}`, text: c }))
-        )
-      );
-      const body = el(
-        "tbody",
-        null,
-        (L(voip.compare.rows) || []).map(([label, ...cells]) =>
-          el(
-            "tr",
-            null,
-            el("th", { scope: "row", text: label }),
-            ...cells.map((c, i) => el("td", { class: `col-${i}`, text: c }))
-          )
-        )
-      );
-      table.replaceChildren(head, body);
-    }
-    const stack = $("[data-voip-stack]");
-    if (stack)
-      stack.replaceChildren(
-        ...(voip.stack || []).map((name, i) => el("li", { class: "skill-chip", vars: { "--i": i } }, name))
-      );
   }
 
   const visibleServices = new Set();
@@ -1244,7 +1200,6 @@
 
   const PAGE_RENDER = {
     services: [renderServicesStats, renderServices],
-    voip: [renderVoip],
     about: [setupMatrix, setupLogo3d, renderFocus, renderSkillLevels, renderSkills, renderExperience],
     contact: [renderContacts],
   };
@@ -1266,10 +1221,7 @@
 
   const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 200));
   setTimeout(
-    () =>
-      ["services", "voip", "about", "contact"].forEach((id, i) =>
-        setTimeout(() => idle(() => ensurePage(id)), i * 800)
-      ),
+    () => ["services", "about", "contact"].forEach((id, i) => setTimeout(() => idle(() => ensurePage(id)), i * 800)),
     6000
   );
   document.addEventListener("langchange", () => {

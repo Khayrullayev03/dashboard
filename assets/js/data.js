@@ -5,9 +5,9 @@ window.PORTFOLIO = {
     location: { city: "Tashkent", lat: 41.3, lon: 69.3 },
     role: { ru: "Системный администратор", uz: "Tizim administratori", en: "System administrator" },
     tags: {
-      ru: ["Windows Server · AD", "Сети · VPN", "СКС · CCTV", "IP-телефония"],
-      uz: ["Windows Server · AD", "Tarmoqlar · VPN", "SKS · CCTV", "IP-telefoniya"],
-      en: ["Windows Server · AD", "Networks · VPN", "Cabling · CCTV", "IP telephony"],
+      ru: ["Windows Server · AD", "Сети · VPN", "СКС · CCTV", "Мониторинг · бэкап"],
+      uz: ["Windows Server · AD", "Tarmoqlar · VPN", "SKS · CCTV", "Monitoring · zaxira"],
+      en: ["Windows Server · AD", "Networks · VPN", "Cabling · CCTV", "Monitoring · backup"],
     },
     country: { ru: "Узбекистан", uz: "O‘zbekiston", en: "Uzbekistan" },
     focusLine: {
@@ -16,77 +16,10 @@ window.PORTFOLIO = {
       en: "Windows Server · AD · networks · cabling",
     },
     about: {
-      ru: "Я — системный администратор, к которому обращаются, когда IT должно просто работать. Больше 30 компаний доверили мне свою инфраструктуру: серверы Windows и Active Directory, сети и VPN, СКС и видеонаблюдение, IP-телефонию и облачные АТС. Я не латаю дыры — я выстраиваю систему так, чтобы поломок не было: резервные копии, мониторинг, права доступа и порядок в технике. Вы занимаетесь своим делом, а я отвечаю за то, чтобы связь, почта, камеры и компьютеры работали каждый день. Напишите мне — разберу вашу задачу и предложу решение.",
-      uz: "Men — IT shunchaki ishlashi kerak bo‘lganda murojaat qilinadigan tizim administratoriman. 30 dan ortiq kompaniya o‘z infratuzilmasini menga ishonib topshirgan: Windows serverlari va Active Directory, tarmoqlar va VPN, SKS va videokuzatuv, IP-telefoniya va bulutli ATS. Men teshiklarni yamamayman — tizimni buzilishlar bo‘lmaydigan qilib quraman: zaxira nusxalar, monitoring, kirish huquqlari va texnikada tartib. Siz o‘z ishingiz bilan shug‘ullanasiz, men esa aloqa, pochta, kameralar va kompyuterlar har kuni ishlashi uchun javob beraman. Menga yozing — vazifangizni ko‘rib chiqib, yechim taklif qilaman.",
-      en: "I'm the system administrator people call when IT just has to work. More than 30 companies trust me with their infrastructure: Windows servers and Active Directory, networks and VPN, structured cabling and CCTV, IP telephony and cloud PBX. I don't patch holes — I build systems that don't break: backups, monitoring, access rights and order in the hardware. You run your business, and I make sure phones, mail, cameras and computers work every single day. Message me — I'll look at your task and propose a solution.",
+      ru: "Я — системный администратор, к которому обращаются, когда IT должно просто работать. Больше 30 компаний доверили мне свою инфраструктуру: серверы Windows и Active Directory, сети и VPN, СКС и видеонаблюдение. Я не латаю дыры — я выстраиваю систему так, чтобы поломок не было: резервные копии, мониторинг, права доступа и порядок в технике. Вы занимаетесь своим делом, а я отвечаю за то, чтобы связь, почта, камеры и компьютеры работали каждый день. Напишите мне — разберу вашу задачу и предложу решение.",
+      uz: "Men — IT shunchaki ishlashi kerak bo‘lganda murojaat qilinadigan tizim administratoriman. 30 dan ortiq kompaniya o‘z infratuzilmasini menga ishonib topshirgan: Windows serverlari va Active Directory, tarmoqlar va VPN, SKS va videokuzatuv. Men teshiklarni yamamayman — tizimni buzilishlar bo‘lmaydigan qilib quraman: zaxira nusxalar, monitoring, kirish huquqlari va texnikada tartib. Siz o‘z ishingiz bilan shug‘ullanasiz, men esa aloqa, pochta, kameralar va kompyuterlar har kuni ishlashi uchun javob beraman. Menga yozing — vazifangizni ko‘rib chiqib, yechim taklif qilaman.",
+      en: "I'm the system administrator people call when IT just has to work. More than 30 companies trust me with their infrastructure: Windows servers and Active Directory, networks and VPN, structured cabling and CCTV. I don't patch holes — I build systems that don't break: backups, monitoring, access rights and order in the hardware. You run your business, and I make sure the network, mail, cameras and computers work every single day. Message me — I'll look at your task and propose a solution.",
     },
-  },
-
-  voip: {
-    compare: {
-      cols: {
-        ru: ["Обычная АТС", "IP-АТС в офисе", "Облачная АТС"],
-        uz: ["Oddiy ATS", "Ofisdagi IP-ATS", "Bulutli ATS"],
-        en: ["Classic PBX", "On-site IP PBX", "Cloud PBX"],
-      },
-      rows: {
-        ru: [
-          ["Где стоит", "станция и медные линии в офисе", "свой сервер IP-АТС у вас", "у провайдера: RingCentral, 8x8"],
-          ["Запуск", "дорого: станция + линии", "средне: сервер + IP-телефоны", "дёшево: только подписка"],
-          ["Каждый месяц", "абонплата за каждую линию", "SIP-транк, дешёвые звонки", "оплата за пользователя"],
-          ["Удалённая работа", "нет", "через VPN и софтфон", "из любой точки мира"],
-          ["Рост", "упирается в порты станции", "десятки и сотни номеров", "без ограничений"],
-          [
-            "Лучше всего для",
-            "маленький офис без интернета",
-            "офис от 10 человек, полный контроль",
-            "распределённые команды и колл-центры",
-          ],
-        ],
-        uz: [
-          [
-            "Qayerda turadi",
-            "stansiya va mis liniyalar ofisda",
-            "IP-ATS serveri sizda",
-            "provayderda: RingCentral, 8x8",
-          ],
-          ["Ishga tushirish", "qimmat: stansiya + liniyalar", "o‘rtacha: server + IP-telefonlar", "arzon: faqat obuna"],
-          [
-            "Har oy",
-            "har bir liniya uchun abonent to‘lovi",
-            "SIP-trank, arzon qo‘ng‘iroqlar",
-            "har bir foydalanuvchi uchun to‘lov",
-          ],
-          ["Masofaviy ish", "yo‘q", "VPN va softfon orqali", "dunyoning istalgan nuqtasidan"],
-          ["O‘sish", "stansiya portlariga taqaladi", "o‘nlab va yuzlab raqamlar", "cheklovsiz"],
-          [
-            "Kimga mos",
-            "internetsiz kichik ofis",
-            "10 kishidan ortiq ofis, to‘liq nazorat",
-            "tarqoq jamoalar va kol-markazlar",
-          ],
-        ],
-        en: [
-          [
-            "Where it lives",
-            "a box and copper lines in the office",
-            "your own IP PBX server",
-            "at the provider: RingCentral, 8x8",
-          ],
-          ["Setup cost", "high: the box plus lines", "medium: a server plus IP phones", "low: just a subscription"],
-          ["Monthly", "a fee for every line", "a SIP trunk, cheap calls", "a per-user subscription"],
-          ["Remote work", "no", "over VPN and a softphone", "from anywhere in the world"],
-          ["Growth", "limited by the box's ports", "tens to hundreds of extensions", "no limits"],
-          [
-            "Best for",
-            "a small office without internet",
-            "offices of 10+ people wanting full control",
-            "distributed teams and call centres",
-          ],
-        ],
-      },
-    },
-    stack: ["SIP", "RTP", "Softswitch", "E1", "IVR", "QoS", "Voice VLAN", "PoE", "RingCentral", "8x8"],
   },
 
   card: {
@@ -825,68 +758,6 @@ window.PORTFOLIO = {
           "VLANs, guest Wi-Fi",
           "VPN for remote access",
           "Diagnostics and troubleshooting",
-        ],
-      },
-    },
-    {
-      id: "voip",
-      page: "voip",
-      feature: "voip",
-      title: { ru: "IP-телефония (VoIP)", uz: "IP-telefoniya (VoIP)", en: "IP telephony (VoIP)" },
-      desc: {
-        ru: "Подключу офис к IP-телефонии: IP-АТС, SIP-транк к оператору и выход на городскую, междугородную и международную связь. На схеме — путь звонка от абонента A до абонента B за рубежом.",
-        uz: "Ofisni IP-telefoniyaga ulayman: IP-ATS, operatorga SIP-trank va shahar, shaharlararo hamda xalqaro aloqaga chiqish. Sxemada — A abonentdan xorijdagi B abonentgacha qo‘ng‘iroq yo‘li.",
-        en: "I connect offices to IP telephony: an IP PBX, a SIP trunk to the carrier and access to local, long-distance and international calls. The diagram shows a call from caller A to callee B abroad.",
-      },
-      points: {
-        ru: [
-          "IP-АТС: внутренние номера, IVR, очереди",
-          "SIP-транки, Softswitch оператора, медиашлюзы E1",
-          "IP-телефоны и софтфоны, PoE, отдельный VLAN для голоса",
-          "Запись разговоров, переадресация, качество связи (QoS)",
-        ],
-        uz: [
-          "IP-ATS: ichki raqamlar, IVR, navbatlar",
-          "SIP-tranklar, operator Softswitch’i, E1 media shlyuzlari",
-          "IP-telefonlar va softfonlar, PoE, ovoz uchun alohida VLAN",
-          "Suhbatlarni yozish, yo‘naltirish, aloqa sifati (QoS)",
-        ],
-        en: [
-          "IP PBX: extensions, IVR, queues",
-          "SIP trunks, carrier softswitch, E1 media gateways",
-          "IP phones and softphones, PoE, a dedicated voice VLAN",
-          "Call recording, forwarding, call quality (QoS)",
-        ],
-      },
-    },
-    {
-      id: "cloudpbx",
-      page: "voip",
-      scene: "cloudpbx",
-      title: { ru: "Облачная АТС", uz: "Bulutli ATS", en: "Cloud PBX" },
-      desc: {
-        ru: "Переведу офис на облачную телефонию — RingCentral, 8x8 и аналоги. Свой сервер не нужен: сотрудники звонят с IP-телефонов, компьютеров и смартфонов из любой точки мира.",
-        uz: "Ofisni bulutli telefoniyaga o‘tkazaman — RingCentral, 8x8 va o‘xshashlari. O‘z serveringiz kerak emas: xodimlar IP-telefon, kompyuter va smartfondan dunyoning istalgan nuqtasidan qo‘ng‘iroq qiladi.",
-        en: "I move offices to cloud telephony: RingCentral, 8x8 and similar. No server of your own: staff call from IP phones, computers and smartphones from anywhere in the world.",
-      },
-      points: {
-        ru: [
-          "RingCentral, 8x8: номера, пользователи, лицензии",
-          "IVR, очереди, группы вызова, переадресация",
-          "Софтфоны, мобильные приложения и IP-телефоны",
-          "Перенос номеров и интеграция с CRM",
-        ],
-        uz: [
-          "RingCentral, 8x8: raqamlar, foydalanuvchilar, litsenziyalar",
-          "IVR, navbatlar, qo‘ng‘iroq guruhlari, yo‘naltirish",
-          "Softfonlar, mobil ilovalar va IP-telefonlar",
-          "Raqamlarni ko‘chirish va CRM bilan integratsiya",
-        ],
-        en: [
-          "RingCentral, 8x8: numbers, users, licences",
-          "IVR, queues, ring groups, forwarding",
-          "Softphones, mobile apps and IP phones",
-          "Number porting and CRM integration",
         ],
       },
     },
